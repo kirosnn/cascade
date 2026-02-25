@@ -1,6 +1,6 @@
 # @cascade/react
 
-A React renderer for building terminal user interfaces using [Cascade core](https://github.com/anomalyco/cascade). Create rich, interactive console applications with familiar React patterns and components.
+A React renderer for building terminal user interfaces using [Cascade core](https://github.com/kirosnn/cascade). Create rich, interactive console applications with familiar React patterns and components.
 
 ## Installation
 
