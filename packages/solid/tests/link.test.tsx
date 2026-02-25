@@ -62,7 +62,7 @@ describe("Link Rendering Tests", () => {
     testSetup = await testRender(
       () => (
         <text>
-          Check out <a href="https://github.com/anomalyco/cascade">GitHub</a> and{" "}
+          Check out <a href="https://github.com/kirosnn/cascade">GitHub</a> and{" "}
           <a href="https://cascade.com">our website</a>
         </text>
       ),
