@@ -13,7 +13,10 @@
     "publish:solid": "cd packages/solid && bun run publish",
     "prepare-release": "bun scripts/prepare-release.ts",
     "prettier:write": "prettier --write .",
-    "test": "bun run --filter '@cascade/core' --filter '@cascade/solid' --filter '@cascade/react' --if-present test"
+    "test:core": "bun test packages/core/src",
+    "test:react": "cd packages/react && bun test",
+    "test:solid": "cd packages/solid && bun test",
+    "test": "bun run test:core && bun run test:react && bun run test:solid"
   },
   "devDependencies": {
     "prettier": "3.6.2"
