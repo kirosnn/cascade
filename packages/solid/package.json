@@ -4,7 +4,7 @@
   "description": "SolidJS renderer for Cascade",
   "repository": {
     "type": "git",
-    "url": "https://github.com/anomalyco/cascade",
+    "url": "https://github.com/kirosnn/cascade",
     "directory": "packages/solid"
   },
   "module": "index.ts",
