@@ -362,3 +362,79 @@ test("paste input is suspended when renderer is suspended", async () => {
 
   renderer.keyInput.off("paste", onPaste)
 })
+
+test("ctrl+c destroys renderer when exitOnCtrlC is enabled", async () => {
+  const setup = await createTestRenderer({ exitOnCtrlC: true })
+  const ctrlRenderer = setup.renderer
+  const ctrlInput = setup.mockInput
+
+  ctrlRenderer.start()
+  expect(ctrlRenderer.isDestroyed).toBe(false)
+
+  ctrlInput.pressCtrlC()
+  await Bun.sleep(10)
+
+  expect(ctrlRenderer.isDestroyed).toBe(true)
+})
+
+test("ctrl+c copies active mouse selection instead of closing renderer", async () => {
+  const setup = await createTestRenderer({ exitOnCtrlC: true })
+  const ctrlRenderer = setup.renderer
+  const ctrlInput = setup.mockInput
+
+  const copied: string[] = []
+  // @ts-expect-error testing override
+  ctrlRenderer.copyToClipboard = (text: string) => {
+    copied.push(text)
+    return true
+  }
+  // @ts-expect-error testing private field injection
+  ctrlRenderer.currentSelection = {
+    getSelectedText: () => "selected by mouse",
+    touchedRenderables: [],
+    isDragging: false,
+  }
+
+  ctrlRenderer.start()
+  ctrlInput.pressCtrlC()
+  await Bun.sleep(10)
+
+  expect(copied).toEqual(["selected by mouse"])
+  expect(ctrlRenderer.isDestroyed).toBe(false)
+  // @ts-expect-error checking private field
+  expect(ctrlRenderer.currentSelection).toBe(null)
+
+  ctrlRenderer.destroy()
+})
+
+test("ctrl+c can be handled without destroying renderer when exitOnCtrlC is disabled", async () => {
+  const setup = await createTestRenderer({ exitOnCtrlC: false })
+  const ctrlRenderer = setup.renderer
+  const ctrlInput = setup.mockInput
+
+  let seenCtrlC = false
+  ctrlRenderer.keyInput.on("keypress", (event) => {
+    if (event.name === "c" && event.ctrl) {
+      seenCtrlC = true
+    }
+  })
+
+  ctrlRenderer.start()
+  ctrlInput.pressCtrlC()
+  await Bun.sleep(10)
+
+  expect(seenCtrlC).toBe(true)
+  expect(ctrlRenderer.isDestroyed).toBe(false)
+
+  ctrlRenderer.destroy()
+})
+
+test("copyToClipboard uses best available clipboard backend", () => {
+  const spy = {
+    copyToBestAvailable: (_text: string) => true,
+  }
+
+  // @ts-expect-error testing private field replacement
+  renderer.clipboard = spy
+  expect(renderer.copyToClipboard("hello")).toBe(true)
+})
