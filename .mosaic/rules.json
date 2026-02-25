@@ -26,7 +26,8 @@
       "Test-Path .git/MERGE_HEAD *",
       "Test-Path .git/rebase-apply; *",
       "$i=0; Get-Content *",
-      "cd C:\\Users\\Nassim\\Projects\\mosaic; *"
+      "cd C:\\Users\\Nassim\\Projects\\mosaic; *",
+      "cd C:/Users/Nassim/Projects/otui; *"
     ]
   }
 }
