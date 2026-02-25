@@ -1,4 +1,4 @@
-# Agent Guidelines for opentui
+# Agent Guidelines for cascade
 
 Default to using Bun instead of Node.js.
 
