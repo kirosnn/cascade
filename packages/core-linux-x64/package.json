@@ -1,0 +1,23 @@
+{
+  "name": "@cascade/core-linux-x64",
+  "version": "0.1.82",
+  "description": "Prebuilt linux-x64 binaries for @cascade/core",
+  "main": "index.ts",
+  "types": "index.ts",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kirosnn/cascade",
+    "directory": "packages/core"
+  },
+  "keywords": [
+    "prebuild",
+    "prebuilt"
+  ],
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "x64"
+  ]
+}
