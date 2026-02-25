@@ -2,7 +2,7 @@ import { test, expect, beforeEach, beforeAll, afterAll, describe } from "bun:tes
 import { TreeSitterClient, addDefaultParsers } from "./client"
 import { tmpdir } from "os"
 import { join, resolve } from "path"
-import { mkdir, readdir, stat } from "fs/promises"
+import { mkdir, mkdtemp, readdir, stat, writeFile } from "fs/promises"
 import type { FiletypeParserOptions } from "./types"
 
 describe("TreeSitterClient Caching", () => {
@@ -212,8 +212,10 @@ describe("TreeSitterClient Caching", () => {
   })
 
   test("should handle directory creation errors gracefully", async () => {
-    const invalidDataPath = "/invalid/path/that/cannot/be/created"
-    const client = new TreeSitterClient({ dataPath: invalidDataPath })
+    const fileParentDir = await mkdtemp(join(tmpdir(), "tree-sitter-invalid-data-path-"))
+    const fileAsDataPath = join(fileParentDir, "not-a-directory")
+    await writeFile(fileAsDataPath, "x")
+    const client = new TreeSitterClient({ dataPath: fileAsDataPath })
 
     await expect(client.initialize()).rejects.toThrow()
 
