@@ -3,7 +3,7 @@
   "description": "Cascade is a TypeScript library on a native Zig core for building terminal user interfaces (TUIs)",
   "repository": {
     "type": "git",
-    "url": "https://github.com/anomalyco/cascade",
+    "url": "https://github.com/kirosnn/cascade",
     "directory": "packages/core"
   },
   "types": "src/index.ts",
@@ -50,12 +50,8 @@
     "bun-webgpu": "0.1.5",
     "planck": "^1.4.2",
     "three": "0.177.0",
-    "@cascade/core-darwin-x64": "0.1.82",
-    "@cascade/core-darwin-arm64": "0.1.82",
-    "@cascade/core-linux-x64": "0.1.82",
-    "@cascade/core-linux-arm64": "0.1.82",
-    "@cascade/core-win32-x64": "0.1.82",
-    "@cascade/core-win32-arm64": "0.1.82"
+    "@cascade/core-win32-x64": "workspace:*",
+    "@cascade/core-win32-arm64": "workspace:*"
   },
   "exports": {
     ".": {
