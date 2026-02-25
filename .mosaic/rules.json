@@ -1,0 +1,32 @@
+{
+  "bash": {
+    "autoRun": [
+      "mosaic mcp *",
+      "git add *",
+      "git commit *",
+      "git push *",
+      "git status *",
+      "git diff *",
+      "powershell *",
+      "Get-ChildItem .git *",
+      "Write-Output MERGE_HEAD: $(Test-Path .git\\MERGE_HEAD); *",
+      "git rev-parse *",
+      "if (Test-Path *",
+      "Get-ChildItem package.json; *",
+      "Test-Path .git\\MERGE_HEAD; *",
+      "Get-Item .git\\MERGE_HEAD, *",
+      "Write-Output MERGE_HEAD=$(Test-Path .git\\MERGE_HEAD); *",
+      "if ((Test-Path *",
+      "git branch *",
+      "Get-Location; git *",
+      "bun run lint; *",
+      "New-Item File *",
+      "echo Hello *",
+      "git remote *",
+      "Test-Path .git/MERGE_HEAD *",
+      "Test-Path .git/rebase-apply; *",
+      "$i=0; Get-Content *",
+      "cd C:\\Users\\Nassim\\Projects\\mosaic; *"
+    ]
+  }
+}

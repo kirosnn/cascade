@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "generatedAt": "2026-02-25T21:53:18.086Z",
+  "workspace": "C:\\Users\\Nassim\\Projects\\otui",
+  "entries": [
+    {
+      "id": "commitpush",
+      "title": "commitpush",
+      "path": ".mosaic/skills/local/commitpush.md",
+      "fileSlug": "commitpush",
+      "priority": 50,
+      "tags": [
+        "git",
+        "automation",
+        "quality"
+      ],
+      "requires": [],
+      "summary": "Commit each changed file with a professional English message and push directly without running tests.",
+      "onActivateRun": false,
+      "description": "Commit each changed file with a professional English message and push directly without running tests.",
+      "updatedAt": 1771913783019,
+      "sizeBytes": 5444,
+      "contentHash": "5444:1771913783019:128:# commitpush\n\n## When to use (trigger conditions)\nUse this skill when:\n- You have a working tree with changes and you want **one"
+    }
+  ],
+  "byId": {
+    "commitpush": [
+      ".mosaic/skills/local/commitpush.md"
+    ]
+  }
+}
