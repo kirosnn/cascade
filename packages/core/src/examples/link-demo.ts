@@ -134,9 +134,9 @@ export function run(renderer: CliRenderer): void {
     RGBA.fromHex("#1e293be6"), // Dark slate
     t`${bold(fg("#f472b6")("♥ Project Info"))}
 
-${fg("#e2e8f0")("Source:")} ${link("https://github.com/anomalyco/cascade")(underline(fg("#38bdf8")("GitHub Repository")))}
+${fg("#e2e8f0")("Source:")} ${link("https://github.com/kirosnn/cascade")(underline(fg("#38bdf8")("GitHub Repository")))}
 ${fg("#e2e8f0")("Web:")}    ${link("https://cascade.com")(underline(fg("#34d399")("Official Website")))}
-${fg("#e2e8f0")("License:")} ${link("https://github.com/anomalyco/cascade/blob/main/LICENSE")(underline(fg("#fbbf24")("MIT")))}`,
+${fg("#e2e8f0")("License:")} ${link("https://github.com/kirosnn/cascade/blob/main/LICENSE")(underline(fg("#fbbf24")("MIT")))}`,
   )
 
   // Card 2: Documentation
@@ -152,9 +152,9 @@ ${fg("#e2e8f0")("License:")} ${link("https://github.com/anomalyco/cascade/blob/m
     t`${bold(fg("#a78bfa")("📚 Documentation"))}
 
 ${fg("#cbd5e1")("Get started with:")}
-• ${link("https://github.com/anomalyco/cascade#readme")(bold(fg("#fff")("Quick Start")))}
-• ${link("https://github.com/anomalyco/cascade/tree/main/packages/core/src/examples")(fg("#fff")("Examples"))}
-• ${link("https://github.com/anomalyco/cascade/issues")(fg("#fff")("Known Issues"))}`,
+• ${link("https://github.com/kirosnn/cascade#readme")(bold(fg("#fff")("Quick Start")))}
+• ${link("https://github.com/kirosnn/cascade/tree/main/packages/core/src/examples")(fg("#fff")("Examples"))}
+• ${link("https://github.com/kirosnn/cascade/issues")(fg("#fff")("Known Issues"))}`,
   )
 
   // Card 3: Socials
@@ -169,7 +169,7 @@ ${fg("#cbd5e1")("Get started with:")}
     RGBA.fromHex("#0f766ecc"), // Teal
     t`${bold(fg("#2dd4bf")("👋 Connect"))}
 
-${link("https://x.com/anomalyco")(fg("#60a5fa")("Twitter / X"))}
+${link("https://x.com/kirosnnn")(fg("#60a5fa")("Twitter / X"))}
 ${link("https://discord.gg/Fc8UPAeV")(fg("#818cf8")("Discord Community"))}`,
   )
 }
