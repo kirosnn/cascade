@@ -8,7 +8,7 @@
 ## Setup
 
 ```bash
-git clone https://github.com/anomalyco/cascade.git
+git clone https://github.com/kirosnn/cascade.git
 cd cascade
 bun install
 ```
