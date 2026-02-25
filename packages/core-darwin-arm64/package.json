@@ -1,0 +1,23 @@
+{
+  "name": "@cascade/core-darwin-arm64",
+  "version": "0.1.82",
+  "description": "Prebuilt darwin-arm64 binaries for @cascade/core",
+  "main": "index.ts",
+  "types": "index.ts",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kirosnn/cascade",
+    "directory": "packages/core"
+  },
+  "keywords": [
+    "prebuild",
+    "prebuilt"
+  ],
+  "os": [
+    "darwin"
+  ],
+  "cpu": [
+    "arm64"
+  ]
+}
