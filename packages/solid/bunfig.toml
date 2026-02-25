@@ -1,0 +1,5 @@
+preload = ["@cascade/solid/preload"]
+
+[test]
+preload = ["@cascade/solid/preload"]
+root = "tests"

@@ -1,0 +1,51 @@
+{
+  "name": "@cascade/solid",
+  "version": "0.1.82",
+  "description": "SolidJS renderer for Cascade",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anomalyco/cascade",
+    "directory": "packages/solid"
+  },
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "main": "index.ts",
+  "license": "MIT",
+  "scripts": {
+    "build": "bun scripts/build.ts",
+    "publish": "bun scripts/publish.ts",
+    "test": "bun test"
+  },
+  "exports": {
+    ".": {
+      "types": "./index.ts",
+      "import": "./index.ts"
+    },
+    "./preload": {
+      "import": "./scripts/preload.ts"
+    },
+    "./bun-plugin": {
+      "import": "./scripts/solid-plugin.ts"
+    },
+    "./jsx-runtime": "./jsx-runtime.d.ts",
+    "./jsx-dev-runtime": "./jsx-runtime.d.ts"
+  },
+  "devDependencies": {
+    "@types/babel__core": "7.20.5",
+    "@types/bun": "latest",
+    "@types/node": "^24.0.0",
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@babel/core": "7.28.0",
+    "@babel/preset-typescript": "7.27.1",
+    "@cascade/core": "workspace:*",
+    "babel-plugin-module-resolver": "5.0.2",
+    "babel-preset-solid": "1.9.9",
+    "s-js": "^0.4.9"
+  },
+  "peerDependencies": {
+    "solid-js": "1.9.9"
+  }
+}

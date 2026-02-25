@@ -1,0 +1,138 @@
+import { readFileSync, writeFileSync } from "fs"
+import { join, resolve, dirname } from "path"
+import { fileURLToPath } from "url"
+import { execSync } from "child_process"
+import process from "process"
+
+interface PackageJson {
+  name: string
+  version: string
+  optionalDependencies?: Record<string, string>
+  dependencies?: Record<string, string>
+  [key: string]: any
+}
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+const rootDir = resolve(__dirname, "..")
+
+const args = process.argv.slice(2)
+let version = args.find((arg) => !arg.startsWith("--"))
+
+if (!version) {
+  console.error("Error: Please provide a version number")
+  console.error("Usage: bun scripts/prepare-release.ts <version>")
+  console.error("Example: bun scripts/prepare-release.ts 0.2.0")
+  console.error("         bun scripts/prepare-release.ts '*' (auto-increment patch)")
+  process.exit(1)
+}
+
+// Handle auto-increment case
+if (version === "*") {
+  try {
+    const corePackageJsonPath = join(rootDir, "packages", "core", "package.json")
+    const corePackageJson: PackageJson = JSON.parse(readFileSync(corePackageJsonPath, "utf8"))
+    const currentVersion = corePackageJson.version
+
+    // Parse current version and increment patch
+    const versionParts = currentVersion.split(".")
+    if (versionParts.length !== 3) {
+      console.error(`Error: Invalid current version format: ${currentVersion}`)
+      process.exit(1)
+    }
+
+    const major = parseInt(versionParts[0])
+    const minor = parseInt(versionParts[1])
+    const patch = parseInt(versionParts[2]) + 1
+
+    version = `${major}.${minor}.${patch}`
+    console.log(`Auto-incrementing version from ${currentVersion} to ${version}`)
+  } catch (error) {
+    console.error(`Error: Failed to read current version: ${error}`)
+    process.exit(1)
+  }
+}
+
+if (!/^\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?$/.test(version)) {
+  console.error(`Error: Invalid version format: ${version}`)
+  console.error("Version should follow semver format (e.g., 1.0.0, 1.0.0-beta.1)")
+  process.exit(1)
+}
+
+console.log(`\nPreparing release ${version} for core, react, and solid packages...\n`)
+
+const corePackageJsonPath = join(rootDir, "packages", "core", "package.json")
+console.log("Updating @cascade/core...")
+
+try {
+  const corePackageJson: PackageJson = JSON.parse(readFileSync(corePackageJsonPath, "utf8"))
+
+  corePackageJson.version = version
+
+  if (corePackageJson.optionalDependencies) {
+    for (const depName in corePackageJson.optionalDependencies) {
+      if (depName.startsWith("@cascade/core-")) {
+        corePackageJson.optionalDependencies[depName] = version
+        console.log(`  Updated ${depName} to ${version}`)
+      }
+    }
+  }
+
+  writeFileSync(corePackageJsonPath, JSON.stringify(corePackageJson, null, 2) + "\n")
+  console.log(`  @cascade/core updated to version ${version}`)
+} catch (error) {
+  console.error(`  Failed to update @cascade/core: ${error}`)
+  process.exit(1)
+}
+
+const reactPackageJsonPath = join(rootDir, "packages", "react", "package.json")
+console.log("\nUpdating @cascade/react...")
+
+try {
+  const reactPackageJson: PackageJson = JSON.parse(readFileSync(reactPackageJsonPath, "utf8"))
+
+  reactPackageJson.version = version
+
+  writeFileSync(reactPackageJsonPath, JSON.stringify(reactPackageJson, null, 2) + "\n")
+  console.log(`  @cascade/react updated to version ${version}`)
+  console.log(`  Note: @cascade/core dependency will be set to ${version} during build`)
+} catch (error) {
+  console.error(`  Failed to update @cascade/react: ${error}`)
+  process.exit(1)
+}
+
+const solidPackageJsonPath = join(rootDir, "packages", "solid", "package.json")
+console.log("\nUpdating @cascade/solid...")
+
+try {
+  const solidPackageJson: PackageJson = JSON.parse(readFileSync(solidPackageJsonPath, "utf8"))
+
+  solidPackageJson.version = version
+
+  writeFileSync(solidPackageJsonPath, JSON.stringify(solidPackageJson, null, 2) + "\n")
+  console.log(`  @cascade/solid updated to version ${version}`)
+  console.log(`  Note: @cascade/core dependency will be set to ${version} during build`)
+} catch (error) {
+  console.error(`  Failed to update @cascade/solid: ${error}`)
+  process.exit(1)
+}
+
+console.log("\nUpdating bun.lock...")
+try {
+  execSync("bun install", { cwd: rootDir, stdio: "inherit" })
+  console.log("  bun.lock updated successfully")
+} catch (error) {
+  console.error(`  Failed to update bun.lock: ${error}`)
+  process.exit(1)
+}
+
+console.log(`
+Successfully prepared release ${version} for core, react, and solid packages!
+
+Next steps:
+1. Review the changes: git diff
+2. Build the packages: bun run build
+3. Commit the changes: git add -A && git commit -m "Release v${version}" && git push
+4. Publish to npm: bun run publish
+5. Push to GitHub: git push
+  `)
