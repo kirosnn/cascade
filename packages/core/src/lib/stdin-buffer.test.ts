@@ -318,7 +318,7 @@ describe("StdinBuffer", () => {
       expect(emittedSequences).toEqual(["h", "\x1b[<35;10;5m", "e", "l"])
     })
 
-    // Regression: https://github.com/anomalyco/cascade/issues/644
+    // Regression: https://github.com/kirosnn/cascade/issues/644
     // Option+Arrow on macOS sends double-escape sequences like \x1b\x1b[D.
     // The stdin buffer was incorrectly splitting these into \x1b\x1b (meta+escape)
     // and literal "[D" characters, instead of keeping the whole sequence together.
