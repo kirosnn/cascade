@@ -1,6 +1,6 @@
 # @cascade/solid
 
-Solid.js support for [Cascade](https://github.com/anomalyco/cascade).
+Solid.js support for [Cascade](https://github.com/kirosnn/cascade).
 
 ## Installation
 
@@ -37,7 +37,7 @@ render(() => <text>Hello, World!</text>)
 
 4. Run with `bun index.tsx`.
 
-5. To build use [Bun.build](https://bun.com/docs/bundler) ([source](https://github.com/anomalyco/cascade/issues/122)):
+5. To build use [Bun.build](https://bun.com/docs/bundler) ([source](https://github.com/kirosnn/cascade/issues/122)):
 
 ```ts
 import solidPlugin from "@cascade/solid/bun-plugin"
