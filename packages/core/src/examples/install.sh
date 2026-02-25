@@ -4,7 +4,7 @@ set -e
 # Cascade Examples Installation Script
 # Downloads and runs the latest cascade-examples binary
 
-REPO="anomalyco/cascade"
+REPO="kirosnn/cascade"
 GITHUB_API="https://api.github.com/repos/$REPO"
 
 RED='\033[0;31m'
