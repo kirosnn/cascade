@@ -608,6 +608,13 @@ export class CliRenderer extends EventEmitter implements RenderContext {
     const useKittyForParsing = kittyConfig !== null
     this._keyHandler = new InternalKeyHandler(useKittyForParsing)
     this._keyHandler.on("keypress", (event) => {
+      if (event.name === "c" && event.ctrl) {
+        if (this.copyActiveSelectionToClipboard()) {
+          event.preventDefault()
+          return
+        }
+      }
+
       if (this.exitOnCtrlC && event.name === "c" && event.ctrl) {
         process.nextTick(() => {
           this.destroy()
@@ -620,7 +627,13 @@ export class CliRenderer extends EventEmitter implements RenderContext {
 
     this._stdinBuffer = new StdinBuffer({ timeout: 5 })
 
-    this._console = new TerminalConsole(this, config.consoleOptions)
+    const consoleOptions = { ...(config.consoleOptions || {}) }
+    if (!consoleOptions.onCopySelection) {
+      consoleOptions.onCopySelection = (text: string) => {
+        this.copyToClipboard(text)
+      }
+    }
+    this._console = new TerminalConsole(this, consoleOptions)
     this.useConsole = config.useConsole ?? true
     this._openConsoleOnError = config.openConsoleOnError ?? process.env.NODE_ENV !== "production"
     this._onDestroy = config.onDestroy
@@ -1573,6 +1586,35 @@ export class CliRenderer extends EventEmitter implements RenderContext {
 
   public copyToClipboardOSC52(text: string, target?: ClipboardTarget): boolean {
     return this.clipboard.copyToClipboardOSC52(text, target)
+  }
+
+  public copyToSystemClipboard(text: string): boolean {
+    return this.clipboard.copyToSystemClipboard(text)
+  }
+
+  public readFromSystemClipboard(): string | null {
+    return this.clipboard.readFromSystemClipboard()
+  }
+
+  public copyToClipboard(text: string, target?: ClipboardTarget): boolean {
+    return this.clipboard.copyToBestAvailable(text, target)
+  }
+
+  private copyActiveSelectionToClipboard(): boolean {
+    const selection = this.currentSelection
+    if (!selection) {
+      return false
+    }
+
+    const selectedText = selection.getSelectedText()
+    if (!selectedText) {
+      return false
+    }
+
+    this.copyToClipboard(selectedText)
+    this.clearSelection()
+    this.requestRender()
+    return true
   }
 
   public clearClipboardOSC52(target?: ClipboardTarget): boolean {
