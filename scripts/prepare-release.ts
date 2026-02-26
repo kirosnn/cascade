@@ -59,7 +59,7 @@ if (!/^\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?$/.test(version)) {
   process.exit(1)
 }
 
-console.log(`\nPreparing release ${version} for core, react, and solid packages...\n`)
+console.log(`\nPreparing release ${version} for core, react, solid, and create-cascade packages...\n`)
 
 const corePackageJsonPath = join(rootDir, "packages", "core", "package.json")
 const nativePackageDirs = [
@@ -139,6 +139,19 @@ try {
   process.exit(1)
 }
 
+const createCascadePackageJsonPath = join(rootDir, "packages", "create-cascade", "package.json")
+console.log("\nUpdating create-cascade...")
+
+try {
+  const createCascadePackageJson: PackageJson = JSON.parse(readFileSync(createCascadePackageJsonPath, "utf8"))
+  createCascadePackageJson.version = version
+  writeFileSync(createCascadePackageJsonPath, JSON.stringify(createCascadePackageJson, null, 2) + "\n")
+  console.log(`  create-cascade updated to version ${version}`)
+} catch (error) {
+  console.error(`  Failed to update create-cascade: ${error}`)
+  process.exit(1)
+}
+
 console.log("\nUpdating bun.lock...")
 try {
   execSync("bun install", { cwd: rootDir, stdio: "inherit" })
@@ -149,7 +162,7 @@ try {
 }
 
 console.log(`
-Successfully prepared release ${version} for core, react, and solid packages!
+Successfully prepared release ${version} for core, react, solid, and create-cascade packages!
 
 Next steps:
 1. Review the changes: git diff
