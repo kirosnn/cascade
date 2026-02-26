@@ -112,16 +112,28 @@ type ComponentProps<TOptions extends RenderableOptions<TRenderable>, TRenderable
 
 /** Valid text content types for Text component children */
 type TextChildren = string | number | boolean | null | undefined | React.ReactNode
+type TextStyleFlags = {
+  bold?: boolean
+  italic?: boolean
+  underline?: boolean
+  dim?: boolean
+  blink?: boolean
+  inverse?: boolean
+  hidden?: boolean
+  strikethrough?: boolean
+}
 
 // ============================================================================
 // Built-in Component Props
 // ============================================================================
 
-export type TextProps = ComponentProps<TextOptions, TextRenderable> & {
+export type TextProps = ComponentProps<TextOptions, TextRenderable> &
+  TextStyleFlags & {
   children?: TextChildren
 }
 
-export type SpanProps = ComponentProps<TextNodeOptions, TextNodeRenderable> & {
+export type SpanProps = Omit<ComponentProps<TextNodeOptions, TextNodeRenderable>, "style"> & {
+  style?: Partial<Omit<TextNodeOptions, GetNonStyledProperties<RenderableConstructor<TextNodeRenderable>>>> & TextStyleFlags
   children?: TextChildren
 }
 
