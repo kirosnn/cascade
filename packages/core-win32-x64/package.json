@@ -1,7 +1,7 @@
 {
-  "name": "@cascade/core-win32-x64",
-  "version": "0.1.82",
-  "description": "Prebuilt win32-x64 binaries for @cascade/core",
+  "name": "@cascadetui/core-win32-x64",
+  "version": "0.1.2",
+  "description": "Prebuilt win32-x64 binaries for @cascadetui/core",
   "main": "index.ts",
   "types": "index.ts",
   "license": "MIT",
