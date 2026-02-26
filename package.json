@@ -11,7 +11,7 @@
     "publish:core": "cd packages/core && bun run publish",
     "publish:react": "cd packages/react && bun run publish",
     "publish:solid": "cd packages/solid && bun run publish",
-    "publish:create": "cd packages/create-cascade && bun run publish",
+    "publish:create": "cd packages/create-cascade && bun run publish:pkg",
     "prepare-release": "bun scripts/prepare-release.ts",
     "prettier:write": "prettier --write .",
     "test:core": "bun test packages/core/src",
