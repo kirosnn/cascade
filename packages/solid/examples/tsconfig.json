@@ -6,7 +6,7 @@
     "module": "Preserve",
     "moduleDetection": "force",
     "jsx": "preserve",
-    "jsxImportSource": "@cascade/solid",
+    "jsxImportSource": "@cascadetui/solid",
     "allowJs": true,
     // Bundler mode
     "moduleResolution": "bundler",
