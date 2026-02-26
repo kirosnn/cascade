@@ -1,4 +1,4 @@
-const singletonCacheSymbol = Symbol.for("@cascade/core/singleton")
+const singletonCacheSymbol = Symbol.for("@cascadetui/core/singleton")
 
 /**
  * Ensures a value is initialized once per process,
