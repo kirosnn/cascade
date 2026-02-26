@@ -1,7 +1,7 @@
 {
-  "name": "@cascade/core-linux-arm64",
-  "version": "0.1.82",
-  "description": "Prebuilt linux-arm64 binaries for @cascade/core",
+  "name": "@cascadetui/core-linux-arm64",
+  "version": "0.1.2",
+  "description": "Prebuilt linux-arm64 binaries for @cascadetui/core",
   "main": "index.ts",
   "types": "index.ts",
   "license": "MIT",
