@@ -48,6 +48,7 @@ export namespace JSX {
     select: SelectProps
     scrollbox: ScrollBoxProps
     "ascii-font": AsciiFontProps
+    asciifont: AsciiFontProps
     "tab-select": TabSelectProps
     "line-number": LineNumberProps
     // Text modifiers
