@@ -1,5 +1,5 @@
-import { createCliRenderer, TextAttributes } from "@cascade/core"
-import { createRoot, useTimeline } from "@cascade/react"
+import { createCliRenderer, TextAttributes } from "@cascadetui/core"
+import { createRoot, useTimeline } from "@cascadetui/react"
 import { useEffect, useState } from "react"
 
 type Stats = {
