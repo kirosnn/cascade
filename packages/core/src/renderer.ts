@@ -78,6 +78,13 @@ registerEnvVar({
   default: false,
 })
 
+registerEnvVar({
+  name: "CASCADE_LOG_CRASH_REPORTS",
+  description: "Log detailed crash reports to the console when a crash is captured.",
+  type: "boolean",
+  default: false,
+})
+
 export interface CliRendererConfig {
   stdin?: NodeJS.ReadStream
   stdout?: NodeJS.WriteStream
@@ -104,6 +111,7 @@ export interface CliRendererConfig {
   useKittyKeyboard?: KittyKeyboardOptions | null
   backgroundColor?: ColorInput
   openConsoleOnError?: boolean
+  logCrashReportsToConsole?: boolean
   prependInputHandlers?: ((sequence: string) => boolean)[]
   onDestroy?: () => void
 }
@@ -214,8 +222,10 @@ export class MouseEvent {
   public readonly scroll?: ScrollInfo
   public readonly target: Renderable | null
   public readonly isDragging?: boolean
+  public readonly clickCount: number
   private _propagationStopped: boolean = false
   private _defaultPrevented: boolean = false
+  private _visitedRenderableNums: Set<number> = new Set()
 
   public get propagationStopped(): boolean {
     return this._propagationStopped
@@ -225,7 +235,10 @@ export class MouseEvent {
     return this._defaultPrevented
   }
 
-  constructor(target: Renderable | null, attributes: RawMouseEvent & { source?: Renderable; isDragging?: boolean }) {
+  constructor(
+    target: Renderable | null,
+    attributes: RawMouseEvent & { source?: Renderable; isDragging?: boolean; clickCount?: number },
+  ) {
     this.target = target
     this.type = attributes.type
     this.button = attributes.button
@@ -235,6 +248,7 @@ export class MouseEvent {
     this.scroll = attributes.scroll
     this.source = attributes.source
     this.isDragging = attributes.isDragging
+    this.clickCount = attributes.clickCount ?? 1
   }
 
   public stopPropagation(): void {
@@ -243,6 +257,14 @@ export class MouseEvent {
 
   public preventDefault(): void {
     this._defaultPrevented = true
+  }
+
+  public tryVisit(renderable: Renderable): boolean {
+    if (this._visitedRenderableNums.has(renderable.num)) {
+      return false
+    }
+    this._visitedRenderableNums.add(renderable.num)
+    return true
   }
 }
 
@@ -320,6 +342,21 @@ export async function createCliRenderer(config: CliRendererConfig = {}): Promise
 export enum CliRenderEvents {
   DEBUG_OVERLAY_TOGGLE = "debugOverlay:toggle",
   DESTROY = "destroy",
+  CRASH = "crash",
+}
+
+export type RuntimeEventRecord = {
+  timestamp: string
+  type: string
+  payload: Record<string, unknown>
+}
+
+export type CrashReport = {
+  timestamp: string
+  source: string
+  message: string
+  stack?: string
+  recentEvents: RuntimeEventRecord[]
 }
 
 export enum RendererControlState {
@@ -450,10 +487,13 @@ export class CliRenderer extends EventEmitter implements RenderContext {
   private _hasPointer: boolean = false
   private _lastPointerModifiers: RawMouseEvent["modifiers"] = { shift: false, alt: false, ctrl: false }
   private _currentMousePointerStyle: MousePointerStyle | undefined = undefined
+  private _lastClick: { x: number; y: number; button: number; timestamp: number; count: number } | null = null
+  private readonly clickCountThresholdMs: number = 400
 
   private _currentFocusedRenderable: Renderable | null = null
   private lifecyclePasses: Set<Renderable> = new Set()
   private _openConsoleOnError: boolean = true
+  private _logCrashReportsToConsole: boolean = env.CASCADE_LOG_CRASH_REPORTS
   private _paletteDetector: TerminalPaletteDetector | null = null
   private _cachedPalette: TerminalColors | null = null
   private _paletteDetectionPromise: Promise<TerminalColors> | null = null
@@ -467,13 +507,27 @@ export class CliRenderer extends EventEmitter implements RenderContext {
 
   private _debugInputs: Array<{ timestamp: string; sequence: string }> = []
   private _debugModeEnabled: boolean = env.CASCADE_DEBUG
+  private recentRuntimeEvents: RuntimeEventRecord[] = []
+  private crashReports: CrashReport[] = []
+  private maxRecentRuntimeEvents = 200
+  private maxCrashReports = 20
 
-  private handleError: (error: Error) => void = ((error: Error) => {
-    console.error(error)
+  private handleProcessCrash = (reason: unknown, source: "uncaughtException" | "unhandledRejection"): void => {
+    const report = this.reportCrash(reason, source)
+    console.error(reason)
 
     if (this._openConsoleOnError) {
       this.console.show()
+      this.console.log(`[crash:${report.source}] ${report.message}`)
     }
+  }
+
+  private uncaughtExceptionHandler: (error: Error) => void = ((error: Error) => {
+    this.handleProcessCrash(error, "uncaughtException")
+  }).bind(this)
+
+  private unhandledRejectionHandler: (reason: unknown) => void = ((reason: unknown) => {
+    this.handleProcessCrash(reason, "unhandledRejection")
   }).bind(this)
 
   private dumpOutputCache(optionalMessage: string = ""): void {
@@ -600,8 +654,8 @@ export class CliRenderer extends EventEmitter implements RenderContext {
 
     process.on("warning", this.warningHandler)
 
-    process.on("uncaughtException", this.handleError)
-    process.on("unhandledRejection", this.handleError)
+    process.on("uncaughtException", this.uncaughtExceptionHandler)
+    process.on("unhandledRejection", this.unhandledRejectionHandler)
     process.on("beforeExit", this.exitHandler)
 
     const kittyConfig = config.useKittyKeyboard ?? {}
@@ -636,6 +690,7 @@ export class CliRenderer extends EventEmitter implements RenderContext {
     this._console = new TerminalConsole(this, consoleOptions)
     this.useConsole = config.useConsole ?? true
     this._openConsoleOnError = config.openConsoleOnError ?? process.env.NODE_ENV !== "production"
+    this._logCrashReportsToConsole = config.logCrashReportsToConsole ?? env.CASCADE_LOG_CRASH_REPORTS
     this._onDestroy = config.onDestroy
 
     global.requestAnimationFrame = (callback: FrameRequestCallback) => {
@@ -1071,15 +1126,19 @@ export class CliRenderer extends EventEmitter implements RenderContext {
     this.queryPixelResolution()
   }
 
-  private stdinListener: (data: Buffer) => void = ((data: Buffer) => {
+  private stdinListener: (data: Buffer | string | Uint8Array | ArrayBuffer) => void = (
+    (data: Buffer | string | Uint8Array | ArrayBuffer) => {
+      const chunk = this.normalizeInputChunk(data)
+
     // Mouse first (consume and stop if handled)
-    if (this._useMouse && this.handleMouseData(data)) {
-      return
-    }
+      if (this._useMouse && this.handleMouseData(chunk)) {
+        return
+      }
 
     // Everything else goes through the sequence buffer
-    this._stdinBuffer.process(data)
-  }).bind(this)
+      this._stdinBuffer.process(chunk)
+    }
+  ).bind(this)
 
   public addInputHandler(handler: (sequence: string) => boolean): void {
     this.inputHandlers.push(handler)
@@ -1169,6 +1228,10 @@ export class CliRenderer extends EventEmitter implements RenderContext {
     this.stdin.setEncoding("utf8")
     this.stdin.on("data", this.stdinListener)
     this._stdinBuffer.on("data", (sequence: string) => {
+      this.recordRuntimeEvent("input:data", {
+        sequence: sequence.length > 120 ? `${sequence.slice(0, 120)}...` : sequence,
+        length: sequence.length,
+      })
       // Capture all input in debug mode
       if (this._debugModeEnabled) {
         this._debugInputs.push({
@@ -1184,6 +1247,9 @@ export class CliRenderer extends EventEmitter implements RenderContext {
       }
     })
     this._stdinBuffer.on("paste", (data: string) => {
+      this.recordRuntimeEvent("input:paste", {
+        length: data.length,
+      })
       this._keyHandler.processPaste(data)
     })
   }
@@ -1197,7 +1263,12 @@ export class CliRenderer extends EventEmitter implements RenderContext {
 
     if (this.autoFocus && event.type === "down" && event.button === MouseButton.LEFT && !event.defaultPrevented) {
       let current: Renderable | null = target
+      const visited = new Set<Renderable>()
       while (current) {
+        if (visited.has(current)) {
+          break
+        }
+        visited.add(current)
         if (current.focusable) {
           current.focus()
           break
@@ -1209,7 +1280,7 @@ export class CliRenderer extends EventEmitter implements RenderContext {
     return event
   }
 
-  private handleMouseData(data: Buffer): boolean {
+  private handleMouseData(data: Buffer | string): boolean {
     const mouseEvents = this.mouseParser.parseAllMouseEvents(data)
 
     if (mouseEvents.length === 0) return false
@@ -1232,6 +1303,19 @@ export class CliRenderer extends EventEmitter implements RenderContext {
       mouseEvent.y -= this.renderOffset
     }
 
+    const clickCount = this.resolveClickCount(mouseEvent)
+    const mouseEventWithClickCount = { ...mouseEvent, clickCount }
+    this.recordRuntimeEvent("input:mouse", {
+      type: mouseEvent.type,
+      x: mouseEvent.x,
+      y: mouseEvent.y,
+      button: mouseEvent.button,
+      clickCount,
+      ctrl: mouseEvent.modifiers.ctrl,
+      alt: mouseEvent.modifiers.alt,
+      shift: mouseEvent.modifiers.shift,
+    })
+
     this._latestPointer.x = mouseEvent.x
     this._latestPointer.y = mouseEvent.y
     this._hasPointer = true
@@ -1245,7 +1329,7 @@ export class CliRenderer extends EventEmitter implements RenderContext {
         mouseEvent.y >= consoleBounds.y &&
         mouseEvent.y < consoleBounds.y + consoleBounds.height
       ) {
-        const event = new MouseEvent(null, mouseEvent)
+        const event = new MouseEvent(null, mouseEventWithClickCount)
         const handled = this._console.handleMouse(event)
         if (handled) return true
       }
@@ -1263,7 +1347,7 @@ export class CliRenderer extends EventEmitter implements RenderContext {
       const scrollTarget = maybeRenderable ?? fallbackTarget
 
       if (scrollTarget) {
-        const event = new MouseEvent(scrollTarget, mouseEvent)
+        const event = new MouseEvent(scrollTarget, mouseEventWithClickCount)
         scrollTarget.processMouseEvent(event)
       }
       return true
@@ -1289,7 +1373,7 @@ export class CliRenderer extends EventEmitter implements RenderContext {
 
       if (canStartSelection && maybeRenderable) {
         this.startSelection(maybeRenderable, mouseEvent.x, mouseEvent.y)
-        this.dispatchMouseEvent(maybeRenderable, mouseEvent)
+        this.dispatchMouseEvent(maybeRenderable, mouseEventWithClickCount)
         return true
       }
     }
@@ -1298,7 +1382,7 @@ export class CliRenderer extends EventEmitter implements RenderContext {
       this.updateSelection(maybeRenderable, mouseEvent.x, mouseEvent.y)
 
       if (maybeRenderable) {
-        const event = new MouseEvent(maybeRenderable, { ...mouseEvent, isDragging: true })
+        const event = new MouseEvent(maybeRenderable, { ...mouseEventWithClickCount, isDragging: true })
         maybeRenderable.processMouseEvent(event)
       }
 
@@ -1307,7 +1391,7 @@ export class CliRenderer extends EventEmitter implements RenderContext {
 
     if (mouseEvent.type === "up" && this.currentSelection?.isDragging) {
       if (maybeRenderable) {
-        const event = new MouseEvent(maybeRenderable, { ...mouseEvent, isDragging: true })
+        const event = new MouseEvent(maybeRenderable, { ...mouseEventWithClickCount, isDragging: true })
         maybeRenderable.processMouseEvent(event)
       }
 
@@ -1325,13 +1409,13 @@ export class CliRenderer extends EventEmitter implements RenderContext {
 
     if (!sameElement && (mouseEvent.type === "drag" || mouseEvent.type === "move")) {
       if (this.lastOverRenderable && this.lastOverRenderable !== this.capturedRenderable) {
-        const event = new MouseEvent(this.lastOverRenderable, { ...mouseEvent, type: "out" })
+        const event = new MouseEvent(this.lastOverRenderable, { ...mouseEventWithClickCount, type: "out" })
         this.lastOverRenderable.processMouseEvent(event)
       }
       this.lastOverRenderable = maybeRenderable
       if (maybeRenderable) {
         const event = new MouseEvent(maybeRenderable, {
-          ...mouseEvent,
+          ...mouseEventWithClickCount,
           type: "over",
           source: this.capturedRenderable,
         })
@@ -1340,18 +1424,18 @@ export class CliRenderer extends EventEmitter implements RenderContext {
     }
 
     if (this.capturedRenderable && mouseEvent.type !== "up") {
-      const event = new MouseEvent(this.capturedRenderable, mouseEvent)
+      const event = new MouseEvent(this.capturedRenderable, mouseEventWithClickCount)
       this.capturedRenderable.processMouseEvent(event)
       return true
     }
 
     if (this.capturedRenderable && mouseEvent.type === "up") {
-      const event = new MouseEvent(this.capturedRenderable, { ...mouseEvent, type: "drag-end" })
+      const event = new MouseEvent(this.capturedRenderable, { ...mouseEventWithClickCount, type: "drag-end" })
       this.capturedRenderable.processMouseEvent(event)
-      this.capturedRenderable.processMouseEvent(new MouseEvent(this.capturedRenderable, mouseEvent))
+      this.capturedRenderable.processMouseEvent(new MouseEvent(this.capturedRenderable, mouseEventWithClickCount))
       if (maybeRenderable) {
         const event = new MouseEvent(maybeRenderable, {
-          ...mouseEvent,
+          ...mouseEventWithClickCount,
           type: "drop",
           source: this.capturedRenderable,
         })
@@ -1372,7 +1456,7 @@ export class CliRenderer extends EventEmitter implements RenderContext {
       } else {
         this.setCapturedRenderable(undefined)
       }
-      event = this.dispatchMouseEvent(maybeRenderable, mouseEvent)
+      event = this.dispatchMouseEvent(maybeRenderable, mouseEventWithClickCount)
     } else {
       this.setCapturedRenderable(undefined)
       this.lastOverRenderable = undefined
@@ -1586,6 +1670,137 @@ export class CliRenderer extends EventEmitter implements RenderContext {
 
   public copyToClipboardOSC52(text: string, target?: ClipboardTarget): boolean {
     return this.clipboard.copyToClipboardOSC52(text, target)
+  }
+
+  private normalizeInputChunk(data: Buffer | string | Uint8Array | ArrayBuffer): Buffer | string {
+    if (typeof data === "string") {
+      return data
+    }
+    if (Buffer.isBuffer(data)) {
+      return data
+    }
+    if (data instanceof Uint8Array) {
+      return Buffer.from(data.buffer, data.byteOffset, data.byteLength)
+    }
+    return Buffer.from(data)
+  }
+
+  private resolveClickCount(mouseEvent: RawMouseEvent): number {
+    if (mouseEvent.type !== "down" || mouseEvent.button > MouseButton.RIGHT) {
+      return 1
+    }
+
+    const now = Date.now()
+    const previous = this._lastClick
+    const isConsecutive =
+      previous &&
+      previous.button === mouseEvent.button &&
+      previous.x === mouseEvent.x &&
+      previous.y === mouseEvent.y &&
+      now - previous.timestamp <= this.clickCountThresholdMs
+
+    const count = isConsecutive ? previous.count + 1 : 1
+    this._lastClick = {
+      x: mouseEvent.x,
+      y: mouseEvent.y,
+      button: mouseEvent.button,
+      timestamp: now,
+      count,
+    }
+
+    return count
+  }
+
+  private normalizeCrashError(reason: unknown): { message: string; stack?: string } {
+    if (reason instanceof Error) {
+      return {
+        message: reason.message || reason.name || "Unknown error",
+        stack: reason.stack,
+      }
+    }
+
+    if (typeof reason === "string") {
+      return { message: reason }
+    }
+
+    try {
+      return { message: JSON.stringify(reason) }
+    } catch {
+      return { message: String(reason) }
+    }
+  }
+
+  private recordRuntimeEvent(type: string, payload: Record<string, unknown>): void {
+    this.recentRuntimeEvents.push({
+      timestamp: new Date().toISOString(),
+      type,
+      payload,
+    })
+    if (this.recentRuntimeEvents.length > this.maxRecentRuntimeEvents) {
+      this.recentRuntimeEvents.shift()
+    }
+  }
+
+  public reportCrash(reason: unknown, source: string = "manual", extra?: Record<string, unknown>): CrashReport {
+    const error = this.normalizeCrashError(reason)
+    const report: CrashReport = {
+      timestamp: new Date().toISOString(),
+      source,
+      message: error.message,
+      stack: error.stack,
+      recentEvents: [...this.recentRuntimeEvents],
+    }
+
+    if (extra && Object.keys(extra).length > 0) {
+      report.recentEvents.push({
+        timestamp: report.timestamp,
+        type: "crash:context",
+        payload: extra,
+      })
+    }
+
+    this.crashReports.push(report)
+    if (this.crashReports.length > this.maxCrashReports) {
+      this.crashReports.shift()
+    }
+
+    if (this._logCrashReportsToConsole) {
+      console.error(this.formatCrashReportForConsole(report))
+    }
+
+    this.emit(CliRenderEvents.CRASH, report)
+    return report
+  }
+
+  private formatCrashReportForConsole(report: CrashReport): string {
+    const lines: string[] = []
+    lines.push("[Cascade Crash Report]")
+    lines.push(`timestamp=${report.timestamp}`)
+    lines.push(`source=${report.source}`)
+    lines.push(`message=${report.message}`)
+    if (report.stack) {
+      lines.push("stack:")
+      lines.push(report.stack)
+    }
+    if (report.recentEvents.length > 0) {
+      lines.push(`recentEvents(${report.recentEvents.length}):`)
+      for (const entry of report.recentEvents) {
+        lines.push(`${entry.timestamp} ${entry.type} ${JSON.stringify(entry.payload)}`)
+      }
+    }
+    return lines.join("\n")
+  }
+
+  public getCrashReports(): CrashReport[] {
+    return [...this.crashReports]
+  }
+
+  public getRecentRuntimeEvents(): RuntimeEventRecord[] {
+    return [...this.recentRuntimeEvents]
+  }
+
+  public clearCrashReports(): void {
+    this.crashReports = []
   }
 
   public copyToSystemClipboard(text: string): boolean {
@@ -1855,8 +2070,8 @@ export class CliRenderer extends EventEmitter implements RenderContext {
     this._destroyPending = false
 
     process.removeListener("SIGWINCH", this.sigwinchHandler)
-    process.removeListener("uncaughtException", this.handleError)
-    process.removeListener("unhandledRejection", this.handleError)
+    process.removeListener("uncaughtException", this.uncaughtExceptionHandler)
+    process.removeListener("unhandledRejection", this.unhandledRejectionHandler)
     process.removeListener("warning", this.warningHandler)
     process.removeListener("beforeExit", this.exitHandler)
     capture.removeListener("write", this.captureCallback)
@@ -1982,6 +2197,7 @@ export class CliRenderer extends EventEmitter implements RenderContext {
         try {
           await frameCallback(deltaTime)
         } catch (error) {
+          this.reportCrash(error, "frame-callback")
           console.error("Error in frame callback:", error)
         }
       }
@@ -2032,6 +2248,9 @@ export class CliRenderer extends EventEmitter implements RenderContext {
           this.renderTimeout = null
         }
       }
+    } catch (error) {
+      this.reportCrash(error, "render-loop")
+      console.error("Error in render loop:", error)
     } finally {
       this.rendering = false
       if (this._destroyPending) {
@@ -2132,6 +2351,30 @@ export class CliRenderer extends EventEmitter implements RenderContext {
     this.selectionContainers = []
   }
 
+  public selectWord(x: number, y: number): void {
+    let current = this.resolveSelectionMethodTarget(x, y)
+    while (current) {
+      if (current.selectWord(x, y)) return
+      current = current.parent
+    }
+  }
+
+  public selectLine(x: number, y: number): void {
+    let current = this.resolveSelectionMethodTarget(x, y)
+    while (current) {
+      if (current.selectLine(x, y)) return
+      current = current.parent
+    }
+  }
+
+  public updateSelectionWordSnap(x: number, y: number): void {
+    let current = this.resolveSelectionMethodTarget(x, y)
+    while (current) {
+      if (current.updateSelectionWordSnap(x, y)) return
+      current = current.parent
+    }
+  }
+
   /**
    * Start a new selection at the given coordinates.
    * Used by both mouse and keyboard selection.
@@ -2198,7 +2441,10 @@ export class CliRenderer extends EventEmitter implements RenderContext {
 
   private isWithinContainer(renderable: Renderable, container: Renderable): boolean {
     let current: Renderable | null = renderable
+    const visited = new Set<Renderable>()
     while (current) {
+      if (visited.has(current)) return false
+      visited.add(current)
       if (current === container) return true
       current = current.parent
     }
@@ -2211,6 +2457,35 @@ export class CliRenderer extends EventEmitter implements RenderContext {
       this.emit("selection", this.currentSelection)
       this.notifySelectablesOfSelectionChange()
     }
+  }
+
+  private resolveSelectionMethodTarget(x: number, y: number): Renderable | null {
+    const maybeRenderableId = this.hitTest(x, y)
+    let current = Renderable.renderablesByNumber.get(maybeRenderableId) ?? null
+
+    while (current) {
+      if (current.selectable && !current.isDestroyed) {
+        return current
+      }
+      current = current.parent
+    }
+
+    const candidates = [...Renderable.renderablesByNumber.values()]
+    for (let i = candidates.length - 1; i >= 0; i -= 1) {
+      const candidate = candidates[i]
+      if (
+        candidate.selectable &&
+        !candidate.isDestroyed &&
+        x >= candidate.x &&
+        x < candidate.x + candidate.width &&
+        y >= candidate.y &&
+        y < candidate.y + candidate.height
+      ) {
+        return candidate
+      }
+    }
+
+    return null
   }
 
   private notifySelectablesOfSelectionChange(): void {
