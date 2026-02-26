@@ -5,7 +5,7 @@ Test utilities for cascade terminal UI testing.
 ## Test Renderer
 
 ```ts
-import { createTestRenderer } from "@cascade/core/testing"
+import { createTestRenderer } from "@cascadetui/core/testing"
 
 const { renderer, mockInput, mockMouse, renderOnce, captureCharFrame, resize } = await createTestRenderer({
   width: 80,
@@ -23,7 +23,7 @@ resize(100, 30)
 ## Mock Keyboard Input
 
 ```ts
-import { createMockKeys, KeyCodes } from "@cascade/core/testing"
+import { createMockKeys, KeyCodes } from "@cascadetui/core/testing"
 
 const mockInput = createMockKeys(renderer)
 
@@ -72,7 +72,7 @@ All `pressKey()`, `pressEnter()`, `pressEscape()`, `pressTab()`, `pressBackspace
 ## Mock Mouse Input
 
 ```ts
-import { createMockMouse, MouseButtons } from "@cascade/core/testing"
+import { createMockMouse, MouseButtons } from "@cascadetui/core/testing"
 
 const mockMouse = createMockMouse(renderer)
 
@@ -121,7 +121,7 @@ const buttons = mockMouse.getPressedButtons() // MouseButton[]
 Simple function spy for testing callbacks.
 
 ```ts
-import { createSpy } from "@cascade/core/testing"
+import { createSpy } from "@cascadetui/core/testing"
 
 const spy = createSpy()
 
@@ -140,7 +140,7 @@ spy.reset()
 Record frames during rendering for testing or analysis.
 
 ```ts
-import { TestRecorder } from "@cascade/core/testing"
+import { TestRecorder } from "@cascadetui/core/testing"
 
 const { renderer, renderOnce } = await createTestRenderer({ width: 80, height: 24 })
 const recorder = new TestRecorder(renderer)
@@ -193,7 +193,7 @@ Each frame contains:
 
 ```ts
 import { test, expect } from "bun:test"
-import { createTestRenderer } from "@cascade/core/testing"
+import { createTestRenderer } from "@cascadetui/core/testing"
 
 test("button click", async () => {
   const { renderer, mockMouse, renderOnce, captureCharFrame } = await createTestRenderer({ width: 80, height: 24 })
