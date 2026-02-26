@@ -1,4 +1,4 @@
-import { TextAttributes, type TextareaRenderable } from "@cascade/core"
+import { TextAttributes, type TextareaRenderable } from "@cascadetui/core"
 import { useTextareaKeybindings } from "./textarea-keybindings"
 
 export function TextareaMinimalDemo() {
