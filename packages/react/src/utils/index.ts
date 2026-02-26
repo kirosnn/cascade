@@ -6,7 +6,7 @@ import {
   SelectRenderableEvents,
   TabSelectRenderable,
   TabSelectRenderableEvents,
-} from "@cascade/core"
+} from "@cascadetui/core"
 import type { Instance, Props, Type } from "../types/host"
 
 function initEventListeners(instance: Instance, eventName: string, listener: any, previousListener?: any) {
