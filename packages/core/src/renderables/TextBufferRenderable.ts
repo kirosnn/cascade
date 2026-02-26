@@ -428,6 +428,82 @@ export abstract class TextBufferRenderable extends Renderable implements LineInf
     return localX >= 0 && localX < this.width && localY >= 0 && localY < this.height
   }
 
+  public selectWord(x: number, y: number): boolean {
+    if (!this.selectable) return false
+
+    const localX = x - this.x
+    const localY = y - this.y
+    const offset = this.resolveOffsetAtLocalPoint(localX, localY)
+    if (offset === null) return false
+
+    const range = this.getWordRangeAtOffset(offset)
+    if (!range) return false
+
+    const startPoint = this.resolveGlobalPointFromOffset(range.start)
+    const endPoint = this.resolveGlobalPointFromOffset(range.end)
+    if (!startPoint || !endPoint) return false
+
+    this._ctx.startSelection(this, startPoint.x, startPoint.y)
+    this._ctx.updateSelection(this, endPoint.x, endPoint.y, { finishDragging: true })
+    return true
+  }
+
+  public selectLine(x: number, y: number): boolean {
+    if (!this.selectable) return false
+
+    const localX = x - this.x
+    const localY = y - this.y
+    const offset = this.resolveOffsetAtLocalPoint(localX, localY)
+    if (offset === null) return false
+
+    const range = this.getLineRangeAtOffset(offset)
+    if (!range) return false
+
+    const startPoint = this.resolveGlobalPointFromOffset(range.start)
+    const endPoint = this.resolveGlobalPointFromOffset(range.end)
+    if (!startPoint || !endPoint) return false
+
+    this._ctx.startSelection(this, startPoint.x, startPoint.y)
+    this._ctx.updateSelection(this, endPoint.x, endPoint.y, { finishDragging: true })
+    return true
+  }
+
+  public updateSelectionWordSnap(x: number, y: number): boolean {
+    if (!this.selectable) return false
+
+    const selection = this._ctx.getSelection()
+    if (!selection) return false
+
+    const localX = x - this.x
+    const localY = y - this.y
+    const focusOffset = this.resolveOffsetAtLocalPoint(localX, localY)
+    if (focusOffset === null) return false
+
+    const range = this.getWordRangeAtOffset(focusOffset)
+    if (!range) return false
+
+    const anchorOffset = this.resolveOffsetAtLocalPoint(selection.anchor.x - this.x, selection.anchor.y - this.y)
+
+    let targetOffset = range.end
+    if (anchorOffset !== null) {
+      if (anchorOffset <= range.start) {
+        targetOffset = range.end
+      } else if (anchorOffset >= range.end) {
+        targetOffset = range.start
+      } else {
+        const toStart = Math.abs(range.start - anchorOffset)
+        const toEnd = Math.abs(range.end - anchorOffset)
+        targetOffset = toStart <= toEnd ? range.start : range.end
+      }
+    }
+
+    const targetPoint = this.resolveGlobalPointFromOffset(targetOffset)
+    if (!targetPoint) return false
+
+    this._ctx.updateSelection(this, targetPoint.x, targetPoint.y)
+    return true
+  }
+
   onSelectionChanged(selection: Selection | null): boolean {
     const localSelection = convertGlobalToLocalSelection(selection, this.x, this.y)
     this.lastLocalSelection = localSelection
@@ -473,6 +549,132 @@ export abstract class TextBufferRenderable extends Renderable implements LineInf
 
   getSelection(): { start: number; end: number } | null {
     return this.textBufferView.getSelection()
+  }
+
+  private resolveOffsetAtLocalPoint(localX: number, localY: number): number | null {
+    if (this.width <= 0 || this.height <= 0) return null
+
+    const lineInfo = this.textBufferView.lineInfo
+    if (lineInfo.lineStarts.length === 0) return null
+
+    let lineIndex = localY + this._scrollY
+    if (lineIndex < 0 || lineIndex >= lineInfo.lineStarts.length) {
+      if (localY >= 0 && localY < lineInfo.lineStarts.length) {
+        lineIndex = localY
+      } else {
+        lineIndex = Math.max(0, Math.min(lineIndex, lineInfo.lineStarts.length - 1))
+      }
+    }
+
+    const lineStart = lineInfo.lineStarts[lineIndex]
+    const lineWidth = lineInfo.lineWidths[lineIndex] ?? 0
+    const column = this._wrapMode === "none" ? localX + this._scrollX : localX
+    const clampedColumn = Math.max(0, Math.min(Math.floor(column), lineWidth))
+    return lineStart + clampedColumn
+  }
+
+  private getLineRangeAtOffset(offset: number): { start: number; end: number } | null {
+    const lineInfo = this.textBufferView.lineInfo
+    if (lineInfo.lineStarts.length === 0) return null
+
+    let lineIndex = 0
+    for (let i = lineInfo.lineStarts.length - 1; i >= 0; i -= 1) {
+      if (offset >= lineInfo.lineStarts[i]) {
+        lineIndex = i
+        break
+      }
+    }
+
+    const start = lineInfo.lineStarts[lineIndex]
+    const width = lineInfo.lineWidths[lineIndex] ?? 0
+    const end = start + width
+    return { start, end }
+  }
+
+  private getWordRangeAtOffset(offset: number): { start: number; end: number } | null {
+    const lineRange = this.getLineRangeAtOffset(offset)
+    if (!lineRange) return null
+    if (lineRange.end <= lineRange.start) {
+      return lineRange
+    }
+
+    const lineText = this.readTextRange(lineRange.start, lineRange.end)
+    if (lineText.length === 0) {
+      return lineRange
+    }
+
+    let localIndex = Math.max(0, Math.min(offset - lineRange.start, lineText.length - 1))
+    if (localIndex >= lineText.length) {
+      localIndex = lineText.length - 1
+    }
+
+    const classify = (char: string): "word" | "space" | "symbol" => {
+      if (/\s/.test(char)) return "space"
+      if (/[A-Za-z0-9_]/.test(char)) return "word"
+      return "symbol"
+    }
+
+    const kind = classify(lineText[localIndex] ?? "")
+    let start = localIndex
+    let end = localIndex + 1
+
+    while (start > 0 && classify(lineText[start - 1] ?? "") === kind) {
+      start -= 1
+    }
+    while (end < lineText.length && classify(lineText[end] ?? "") === kind) {
+      end += 1
+    }
+
+    return {
+      start: lineRange.start + start,
+      end: lineRange.start + end,
+    }
+  }
+
+  private readTextRange(start: number, end: number): string {
+    const previousSelection = this.textBufferView.getSelection()
+    this.textBufferView.setSelection(start, end, this._selectionBg, this._selectionFg)
+    const text = this.textBufferView.getSelectedText()
+
+    if (previousSelection) {
+      this.textBufferView.setSelection(previousSelection.start, previousSelection.end, this._selectionBg, this._selectionFg)
+    } else {
+      this.textBufferView.resetSelection()
+    }
+
+    return text
+  }
+
+  private resolveGlobalPointFromOffset(offset: number): { x: number; y: number } | null {
+    const lineInfo = this.textBufferView.lineInfo
+    if (lineInfo.lineStarts.length === 0) return null
+
+    let lineIndex = lineInfo.lineStarts.length - 1
+    for (let i = 0; i < lineInfo.lineStarts.length; i += 1) {
+      const start = lineInfo.lineStarts[i]
+      const end = start + (lineInfo.lineWidths[i] ?? 0)
+      if (offset >= start && offset <= end) {
+        lineIndex = i
+        break
+      }
+    }
+
+    const lineStart = lineInfo.lineStarts[lineIndex]
+    const lineWidth = lineInfo.lineWidths[lineIndex] ?? 0
+    const column = Math.max(0, Math.min(offset - lineStart, lineWidth))
+
+    const viewportAdjustedY = lineIndex - this._scrollY
+    const localY = viewportAdjustedY >= 0 && viewportAdjustedY < this.height ? viewportAdjustedY : lineIndex
+    if (localY < 0 || localY >= this.height) return null
+
+    const viewportAdjustedX = this._wrapMode === "none" ? column - this._scrollX : column
+    const localX = viewportAdjustedX >= 0 && viewportAdjustedX <= this.width ? viewportAdjustedX : column
+    if (localX < 0 || localX > this.width) return null
+
+    return {
+      x: this.x + localX,
+      y: this.y + localY,
+    }
   }
 
   render(buffer: OptimizedBuffer, deltaTime: number): void {
