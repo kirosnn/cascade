@@ -1,4 +1,4 @@
-import { createTestRenderer, type TestRendererOptions } from "@cascade/core/testing"
+import { createTestRenderer, type TestRendererOptions } from "@cascadetui/core/testing"
 import { act, type ReactNode } from "react"
 import { createRoot, type Root } from "./reconciler/renderer"
 
