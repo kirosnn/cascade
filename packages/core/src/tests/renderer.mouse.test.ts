@@ -903,6 +903,39 @@ describe("renderer handleMouseData", () => {
     }
   })
 
+  test("mouse down events expose clickCount for consecutive clicks", async () => {
+    try {
+      const target = new TestRenderable(renderer, {
+        id: "click-count",
+        position: "absolute",
+        left: 2,
+        top: 2,
+        width: 6,
+        height: 4,
+      })
+      renderer.root.add(target)
+      await renderOnce()
+
+      const counts: number[] = []
+      target.onMouseDown = (event) => {
+        counts.push(event.clickCount)
+      }
+
+      const x = target.x + 1
+      const y = target.y + 1
+
+      await mockMouse.click(x, y)
+      await mockMouse.click(x, y)
+      await mockMouse.click(x, y)
+      await Bun.sleep(450)
+      await mockMouse.click(x, y)
+
+      expect(counts).toEqual([1, 2, 3, 1])
+    } finally {
+      renderer.destroy()
+    }
+  })
+
   test("basic mouse mode sequences are parsed and dispatched", async () => {
     try {
       const target = new TestRenderable(renderer, {
