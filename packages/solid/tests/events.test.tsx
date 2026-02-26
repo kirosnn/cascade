@@ -1,9 +1,9 @@
 import { describe, expect, it, beforeEach, afterEach } from "bun:test"
 import { testRender } from "../index"
 import { createSignal } from "solid-js"
-import { createSpy } from "@cascade/core/testing"
+import { createSpy } from "@cascadetui/core/testing"
 import { usePaste, useKeyboard } from "../src/elements/hooks"
-import type { PasteEvent } from "@cascade/core"
+import type { PasteEvent } from "@cascadetui/core"
 
 let testSetup: Awaited<ReturnType<typeof testRender>>
 
