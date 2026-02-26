@@ -12,7 +12,7 @@ describe("React crash logs", () => {
 
     const root = createRoot(testSetup.renderer)
 
-    function BrokenComponent() {
+    function BrokenComponent(): React.ReactNode {
       throw new Error("react-crash")
     }
 
@@ -20,7 +20,7 @@ describe("React crash logs", () => {
 
     await Bun.sleep(20)
 
-    const reports = testSetup.renderer.getCrashReports()
+    const reports = (testSetup.renderer as any).getCrashReports() as Array<{ source: string; message: string }>
     expect(reports.length).toBeGreaterThan(0)
     expect(reports.some((report) => report.source === "react-error-boundary" && report.message === "react-crash")).toBe(
       true,
@@ -29,4 +29,3 @@ describe("React crash logs", () => {
     testSetup.renderer.destroy()
   })
 })
-
