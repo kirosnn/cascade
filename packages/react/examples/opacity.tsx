@@ -1,5 +1,5 @@
-import { createCliRenderer } from "@cascade/core"
-import { createRoot, useKeyboard } from "@cascade/react"
+import { createCliRenderer } from "@cascadetui/core"
+import { createRoot, useKeyboard } from "@cascadetui/react"
 import { useState, useEffect } from "react"
 
 export default function App() {
