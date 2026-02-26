@@ -1,5 +1,6 @@
 export * from "./WGPURenderer"
 export * from "./ThreeRenderable"
+export * from "./Advanced3D"
 export * from "./TextureUtils"
 export * from "./canvas"
 export * from "./SpriteUtils"
