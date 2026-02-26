@@ -1,5 +1,5 @@
-preload = ["@cascade/solid/preload"]
+preload = ["@cascadetui/solid/preload"]
 
 [test]
-preload = ["@cascade/solid/preload"]
+preload = ["@cascadetui/solid/preload"]
 root = "tests"
