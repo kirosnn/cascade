@@ -18,8 +18,11 @@
     "test:create": "bun scripts/test-create-cascade.ts",
     "test:react": "cd packages/react && bun test",
     "test:solid": "cd packages/solid && bun test",
+    "test:web": "cd packages/web && bun test",
     "test": "bun run test:core && bun run test:react && bun run test:solid",
-    "publish:release": "bun scripts/publish-and-release.ts"
+    "publish:release": "bun scripts/publish-and-release.ts",
+    "web:dev": "cd packages/web && bun run dev",
+    "web:build": "cd packages/web && bun run build"
   },
   "devDependencies": {
     "prettier": "3.6.2"
