@@ -1,6 +1,6 @@
-import { Selection } from "@cascade/core"
-import { ConsolePosition } from "@cascade/core"
-import { render, useRenderer, useSelectionHandler, type TextProps } from "@cascade/solid"
+import { Selection } from "@cascadetui/core"
+import { ConsolePosition } from "@cascadetui/core"
+import { render, useRenderer, useSelectionHandler, type TextProps } from "@cascadetui/solid"
 import { createEffect, createSignal, onMount } from "solid-js"
 
 const words = ["Hello", "World", "Cascade", "SolidJS", "ReactJS", "TypeScript", "JavaScript", "CSS", "HTML", "JSX"]
