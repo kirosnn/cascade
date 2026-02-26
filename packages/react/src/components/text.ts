@@ -1,4 +1,4 @@
-import { TextAttributes, TextNodeRenderable, type RenderContext, type TextNodeOptions } from "@cascade/core"
+import { TextAttributes, TextNodeRenderable, type RenderContext, type TextNodeOptions } from "@cascadetui/core"
 
 export const textNodeKeys = ["span", "b", "strong", "i", "em", "u", "br", "a"] as const
 export type TextNodeKey = (typeof textNodeKeys)[number]
