@@ -10,12 +10,12 @@
     "types": ["bun", "node", "react"],
     "skipLibCheck": true,
     "jsx": "react-jsx",
-    "jsxImportSource": "@cascade/react",
+    "jsxImportSource": "@cascadetui/react",
     "moduleResolution": "bundler",
     "baseUrl": ".",
     "paths": {
-      "@cascade/core": ["../core/dist"],
-      "@cascade/core/*": ["../core/dist/*"]
+      "@cascadetui/core": ["../core/dist"],
+      "@cascadetui/core/*": ["../core/dist/*"]
     }
   },
   "include": ["src/**/*", "jsx-runtime.d.ts", "jsx-dev-runtime.d.ts", "jsx-namespace.d.ts"],
