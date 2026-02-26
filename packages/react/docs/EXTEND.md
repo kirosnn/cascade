@@ -7,8 +7,8 @@ The `extend` function allows you to add custom renderable components to the Casc
 ### Extending Components
 
 ```tsx
-import { BoxRenderable, OptimizedBuffer, RGBA, type BoxOptions, type RenderContext } from "@cascade/core"
-import { extend, render } from "@cascade/react"
+import { BoxRenderable, OptimizedBuffer, RGBA, type BoxOptions, type RenderContext } from "@cascadetui/core"
+import { extend, render } from "@cascadetui/react"
 
 class ConsoleButton extends BoxRenderable {
   public label: string = "Button"
@@ -31,7 +31,7 @@ class ConsoleButton extends BoxRenderable {
   }
 }
 
-declare module "@cascade/react" {
+declare module "@cascadetui/react" {
   interface CascadeComponents {
     consoleButton: typeof ConsoleButton
   }
@@ -54,7 +54,7 @@ For full TypeScript support, declare your extended components using module augme
 
 ```tsx
 // In your component file or declaration file
-declare module "@cascade/react" {
+declare module "@cascadetui/react" {
   interface CascadeComponents {
     consoleButton: typeof ConsoleButton
   }
