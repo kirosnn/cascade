@@ -1,4 +1,4 @@
-import type { CliRenderer, KeyHandler } from "@cascade/core"
+import type { CliRenderer, KeyHandler } from "@cascadetui/core"
 import { createContext, useContext } from "react"
 
 interface AppContext {
