@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach, afterEach } from "bun:test"
 import { testRender } from "../index"
-import type { TextRenderable } from "@cascade/core"
+import type { TextRenderable } from "@cascadetui/core"
 
 let testSetup: Awaited<ReturnType<typeof testRender>>
 
