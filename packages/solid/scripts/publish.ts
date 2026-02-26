@@ -16,7 +16,7 @@ const rootDir = resolve(__dirname, "..")
 
 const packageJson: PackageJson = JSON.parse(readFileSync(join(rootDir, "package.json"), "utf8"))
 
-console.log(`Publishing @cascade/solid@${packageJson.version}...`)
+console.log(`Publishing @cascadetui/solid@${packageJson.version}...`)
 console.log("Make sure you've run the pre-publish validation script first!")
 
 const distDir = join(rootDir, "dist")
