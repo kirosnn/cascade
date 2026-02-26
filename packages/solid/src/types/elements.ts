@@ -26,7 +26,7 @@ import type {
   TextNodeRenderable,
   TextOptions,
   TextRenderable,
-} from "@cascade/core"
+} from "@cascadetui/core"
 import type { Ref } from "solid-js"
 import type { JSX } from "../../jsx-runtime"
 
