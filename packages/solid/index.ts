@@ -1,5 +1,5 @@
-import { CliRenderer, createCliRenderer, engine, type CliRendererConfig } from "@cascade/core"
-import { createTestRenderer, type TestRendererOptions } from "@cascade/core/testing"
+import { CliRenderer, createCliRenderer, engine, type CliRendererConfig } from "@cascadetui/core"
+import { createTestRenderer, type TestRendererOptions } from "@cascadetui/core/testing"
 import type { JSX } from "./jsx-runtime"
 import { RendererContext } from "./src/elements"
 import { _render as renderInternal, createComponent } from "./src/reconciler"
