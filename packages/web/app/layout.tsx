@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import type { ReactNode } from "react"
 import "./globals.css"
+import { Analytics } from "@vercel/analytics/react"
 
 export const metadata: Metadata = {
   title: "Cascade",
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/first.png",
+        url: "/bg.png",
         width: 1200,
         height: 630,
         alt: "Cascade Documentation",
@@ -31,7 +32,7 @@ export const metadata: Metadata = {
     title: "Cascade Documentation",
     description:
       "Build fast, production-ready terminal apps with Cascade: core renderer APIs, React and Solid integrations, crash diagnostics, selection workflows, and deployment guides.",
-    images: ["/first.png"],
+    images: ["/bg.png"],
   },
 }
 
