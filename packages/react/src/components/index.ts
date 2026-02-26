@@ -33,6 +33,7 @@ export const baseComponents = {
   textarea: TextareaRenderable,
   scrollbox: ScrollBoxRenderable,
   "ascii-font": ASCIIFontRenderable,
+  asciifont: ASCIIFontRenderable,
   "tab-select": TabSelectRenderable,
   "line-number": LineNumberRenderable,
 
