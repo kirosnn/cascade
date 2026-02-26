@@ -1,11 +1,11 @@
-# @cascade/solid
+# @cascadetui/solid
 
 Solid.js support for [Cascade](https://github.com/kirosnn/cascade).
 
 ## Installation
 
 ```bash
-bun install solid-js @cascade/solid
+bun install solid-js @cascadetui/solid
 ```
 
 ## Usage
@@ -16,7 +16,7 @@ bun install solid-js @cascade/solid
 {
   "compilerOptions": {
     "jsx": "preserve",
-    "jsxImportSource": "@cascade/solid"
+    "jsxImportSource": "@cascadetui/solid"
   }
 }
 ```
@@ -24,13 +24,13 @@ bun install solid-js @cascade/solid
 2. Add preload script to bunfig.toml:
 
 ```toml
-preload = ["@cascade/solid/preload"]
+preload = ["@cascadetui/solid/preload"]
 ```
 
 3. Add render function to index.tsx:
 
 ```tsx
-import { render } from "@cascade/solid"
+import { render } from "@cascadetui/solid"
 
 render(() => <text>Hello, World!</text>)
 ```
@@ -40,7 +40,7 @@ render(() => <text>Hello, World!</text>)
 5. To build use [Bun.build](https://bun.com/docs/bundler) ([source](https://github.com/kirosnn/cascade/issues/122)):
 
 ```ts
-import solidPlugin from "@cascade/solid/bun-plugin"
+import solidPlugin from "@cascadetui/solid/bun-plugin"
 
 await Bun.build({
   entrypoints: ["./index.tsx"],
@@ -90,7 +90,7 @@ Cascade Solid exposes intrinsic JSX elements that map to Cascade renderables:
 Render a Solid component tree into a CLI renderer. If `rendererOrConfig` is omitted, a renderer is created with default options.
 
 ```tsx
-import { render } from "@cascade/solid"
+import { render } from "@cascadetui/solid"
 
 render(() => <App />)
 ```
@@ -105,7 +105,7 @@ render(() => <App />)
 Create a test renderer for snapshots and interaction tests.
 
 ```tsx
-import { testRender } from "@cascade/solid"
+import { testRender } from "@cascadetui/solid"
 
 const testSetup = await testRender(() => <App />, { width: 40, height: 10 })
 ```
@@ -115,7 +115,7 @@ const testSetup = await testRender(() => <App />, { width: 40, height: 10 })
 Register custom renderables as JSX intrinsic elements.
 
 ```tsx
-import { extend } from "@cascade/solid"
+import { extend } from "@cascadetui/solid"
 
 extend({ customBox: CustomBoxRenderable })
 ```
@@ -139,7 +139,7 @@ Returns the current component catalogue that powers JSX tag lookup.
 Render children into a different mount node, useful for overlays and tooltips.
 
 ```tsx
-import { Portal } from "@cascade/solid"
+import { Portal } from "@cascadetui/solid"
 ;<Portal mount={renderer.root}>
   <box border>Overlay</box>
 </Portal>
@@ -150,7 +150,7 @@ import { Portal } from "@cascade/solid"
 Render arbitrary intrinsic elements or components dynamically.
 
 ```tsx
-import { Dynamic } from "@cascade/solid"
+import { Dynamic } from "@cascadetui/solid"
 ;<Dynamic component={isMultiline() ? "textarea" : "input"} />
 ```
 
