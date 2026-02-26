@@ -16,7 +16,7 @@ const rootDir = resolve(__dirname, "..")
 
 const packageJson: PackageJson = JSON.parse(readFileSync(join(rootDir, "package.json"), "utf8"))
 
-console.log(`Publishing @cascade/core@${packageJson.version}...`)
+console.log(`Publishing @cascadetui/core@${packageJson.version}...`)
 console.log("Make sure you've run the pre-publish validation script first!")
 
 const libDir = join(rootDir, "dist")
@@ -28,7 +28,11 @@ const packageJsons: Record<string, PackageJson> = {
 for (const pkgName of Object.keys(packageJsons[libDir].optionalDependencies!).filter((x) =>
   x.startsWith(packageJson.name),
 )) {
-  const nativeDir = join(rootDir, "node_modules", pkgName)
+  const nativeDir = resolve(rootDir, "..", pkgName.replace("@cascadetui/", ""))
+  if (!existsSync(nativeDir)) {
+    console.error(`Native package directory not found: ${nativeDir}`)
+    process.exit(1)
+  }
   packageJsons[nativeDir] = JSON.parse(readFileSync(join(nativeDir, "package.json"), "utf8"))
 }
 
@@ -57,4 +61,4 @@ Object.entries(packageJsons).forEach(([dir, { name, version }]) => {
   console.log(`Successfully published '${name}@${version}'`)
 })
 
-console.log(`\nAll @cascade/core packages published successfully!`)
+console.log(`\nAll @cascadetui/core packages published successfully!`)
