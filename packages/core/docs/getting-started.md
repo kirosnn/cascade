@@ -1,6 +1,6 @@
 # Getting Started with Cascade
 
-Cascade is a native terminal UI core written in Zig with TypeScript bindings. The native core exposes a C ABI and can be used from any language. Cascade powers OpenCode in production today and will also power terminal.shop. It is an extensible core with a focus on correctness, stability, and high performance. It provides a component-based architecture with flexible layout capabilities, allowing you to create complex terminal applications.
+Cascade is a native terminal UI core written in Zig with TypeScript bindings. The native core exposes a C ABI and can be used from any language. It is an extensible core with a focus on correctness, stability, and high performance. It provides a component-based architecture with flexible layout capabilities, allowing you to create complex terminal applications.
 
 ## Core Concepts
 
@@ -15,7 +15,7 @@ By default, left-clicking auto-focuses the closest focusable renderable. Disable
 Cascade can detect the terminal's preferred color scheme (dark or light) when the terminal supports DEC mode 2031 color scheme updates. Read the current mode via `renderer.themeMode` and subscribe to `theme_mode` to react to changes. Possible values are `"dark"`, `"light"`, or `null` when unsupported, and no events fire in the unsupported case.
 
 ```typescript
-import { type ThemeMode } from "@cascade/core"
+import { type ThemeMode } from "@cascadetui/core"
 
 const mode = renderer.themeMode
 
@@ -43,7 +43,7 @@ Cascade includes a built-in console overlay that captures all `console.log`, `co
 ## Basic Setup
 
 ```typescript
-import { createCliRenderer, TextRenderable, Text } from "@cascade/core"
+import { createCliRenderer, TextRenderable, Text } from "@cascadetui/core"
 
 const renderer = await createCliRenderer()
 
@@ -76,7 +76,7 @@ renderer.root.add(greeting)
 When focused, you can use your arrow keys to scroll through the console. `renderer.console.toggle()` will toggle the console overlay, when open but not focused, it will focus the console. `+` and `-` will increase and decrease the size of the console.
 
 ```typescript
-import { createCliRenderer, ConsolePosition } from "@cascade/core"
+import { createCliRenderer, ConsolePosition } from "@cascadetui/core"
 
 const renderer = await createCliRenderer({
   consoleOptions: {
@@ -101,7 +101,7 @@ renderer.console.toggle()
 Cascade uses the `RGBA` class for consistent color representation throughout the library. Colors are internally stored as normalized float values (0.0-1.0) for efficient processing, but the class provides convenient methods for working with different color formats.
 
 ```typescript
-import { RGBA } from "@cascade/core"
+import { RGBA } from "@cascadetui/core"
 
 const redFromInts = RGBA.fromInts(255, 0, 0, 255) // RGB integers (0-255)
 const blueFromValues = RGBA.fromValues(0.0, 0.0, 1.0, 1.0) // Float values (0.0-1.0)
@@ -116,7 +116,7 @@ The `parseColor()` utility function accepts both RGBA objects and color strings 
 Cascade provides a keyboard handler that parses terminal input and provides structured key events. Get the handler via `renderer.keyInput`, an EventEmitter that emits `keypress` and `paste` events with detailed key information.
 
 ```typescript
-import { type KeyEvent } from "@cascade/core"
+import { type KeyEvent } from "@cascadetui/core"
 
 const keyHandler = renderer.keyInput
 
@@ -147,7 +147,7 @@ Cascade provides several primitive components that you can use to build your int
 Display styled text content with support for colors, attributes, and text selection.
 
 ```typescript
-import { TextRenderable, TextAttributes, t, bold, underline, fg } from "@cascade/core"
+import { TextRenderable, TextAttributes, t, bold, underline, fg } from "@cascadetui/core"
 
 const plainText = new TextRenderable(renderer, {
   id: "plain-text",
@@ -174,7 +174,7 @@ const styledTextRenderable = new TextRenderable(renderer, {
 A container component with borders, background colors, and layout capabilities. Perfect for creating panels, frames, and organized sections.
 
 ```typescript
-import { BoxRenderable } from "@cascade/core"
+import { BoxRenderable } from "@cascadetui/core"
 
 const panel = new BoxRenderable(renderer, {
   id: "panel",
@@ -197,7 +197,7 @@ Text input field with cursor support, placeholder text, and focus states for use
 Has to be focused to receive input.
 
 ```typescript
-import { InputRenderable, InputRenderableEvents } from "@cascade/core"
+import { InputRenderable, InputRenderableEvents } from "@cascadetui/core"
 
 const nameInput = new InputRenderable(renderer, {
   id: "name-input",
@@ -222,7 +222,7 @@ A list selection component for choosing from multiple options.
 Has to be focused to receive input. Default keybindings are `up/k` and `down/j` to navigate the list, `enter` to select.
 
 ```typescript
-import { SelectRenderable, SelectRenderableEvents } from "@cascade/core"
+import { SelectRenderable, SelectRenderableEvents } from "@cascadetui/core"
 
 const menu = new SelectRenderable(renderer, {
   id: "menu",
@@ -251,7 +251,7 @@ Horizontal tab-based selection component with descriptions and scroll support.
 Has to be focused to receive input. Default keybindings are `left/[` and `right/]` to navigate the tabs, `enter` to select.
 
 ```typescript
-import { TabSelectRenderable, TabSelectRenderableEvents } from "@cascade/core"
+import { TabSelectRenderable, TabSelectRenderableEvents } from "@cascadetui/core"
 
 const tabs = new TabSelectRenderable(renderer, {
   id: "tabs",
@@ -279,7 +279,7 @@ tabs.focus()
 Display text using ASCII art fonts with multiple font styles available.
 
 ```typescript
-import { ASCIIFontRenderable, RGBA } from "@cascade/core"
+import { ASCIIFontRenderable, RGBA } from "@cascadetui/core"
 
 const title = new ASCIIFontRenderable(renderer, {
   id: "title",
@@ -297,7 +297,7 @@ const title = new ASCIIFontRenderable(renderer, {
 A low-level rendering surface for custom graphics and complex visual effects.
 
 ```typescript
-import { FrameBufferRenderable, RGBA } from "@cascade/core"
+import { FrameBufferRenderable, RGBA } from "@cascadetui/core"
 
 const canvas = new FrameBufferRenderable(renderer, {
   id: "canvas",
@@ -318,7 +318,7 @@ canvas.frameBuffer.drawText("Custom Graphics", 12, 7, RGBA.fromHex("#FFFFFF"))
 Cascade uses the Yoga layout engine, providing CSS Flexbox-like capabilities for responsive layouts:
 
 ```typescript
-import { GroupRenderable, BoxRenderable } from "@cascade/core"
+import { GroupRenderable, BoxRenderable } from "@cascadetui/core"
 
 const container = new GroupRenderable(renderer, {
   id: "container",
