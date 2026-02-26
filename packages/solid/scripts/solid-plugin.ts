@@ -35,7 +35,7 @@ const solidTransformPlugin: BunPlugin = {
           [
             solid,
             {
-              moduleName: "@cascade/solid",
+              moduleName: "@cascadetui/solid",
               generate: "universal",
             },
           ],
