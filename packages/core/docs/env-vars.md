@@ -44,6 +44,13 @@ Show the debug overlay at startup.
 **Type:** `boolean`  
 **Default:** `false`
 
+## CASCADE_LOG_CRASH_REPORTS
+
+Log detailed crash reports to the console when a crash is captured.
+
+**Type:** `boolean`  
+**Default:** `false`
+
 ## CASCADE_TRACE_FFI
 
 Enable tracing for the FFI bindings.
