@@ -5,6 +5,12 @@ import { basename, resolve } from "node:path"
 import process from "node:process"
 import { spawnSync } from "node:child_process"
 import { createInterface } from "node:readline/promises"
+import { emitKeypressEvents } from "node:readline"
+
+const ANSI_RESET = "\x1b[0m"
+const ANSI_BOLD = "\x1b[1m"
+const ANSI_DIM = "\x1b[2m"
+const ANSI_CYAN = "\x1b[36m"
 
 const FRAMEWORKS = [
   { id: "core", label: "Core", description: "Vanilla Cascade API with renderables" },
@@ -14,17 +20,17 @@ const FRAMEWORKS = [
 
 const STARTERS = {
   core: [
-    { id: "minimal", label: "Minimal", description: "Single welcome message" },
+    { id: "minimal", label: "Minimal", description: "Welcome panel with quick next steps" },
     { id: "counter", label: "Counter", description: "Live counter updated every second" },
     { id: "layout", label: "Layout", description: "Simple boxed layout starter" },
   ],
   react: [
-    { id: "minimal", label: "Minimal", description: "Render a single text node" },
+    { id: "minimal", label: "Minimal", description: "Welcome panel with quick next steps" },
     { id: "counter", label: "Counter", description: "React state with interval updates" },
     { id: "login", label: "Login", description: "Small interactive login form" },
   ],
   solid: [
-    { id: "minimal", label: "Minimal", description: "Render a single text node" },
+    { id: "minimal", label: "Minimal", description: "Welcome panel with quick next steps" },
     { id: "counter", label: "Counter", description: "Solid signal with interval updates" },
     { id: "input", label: "Input", description: "Basic input and submit interaction" },
   ],
@@ -33,8 +39,8 @@ const STARTERS = {
 function parseArgs(argv) {
   const args = argv.slice(2)
   const options = {
-    noInstall: false,
-    noStart: false,
+    install: false,
+    start: false,
     here: false,
     framework: undefined,
     starter: undefined,
@@ -45,12 +51,21 @@ function parseArgs(argv) {
   for (let i = 0; i < args.length; i += 1) {
     const arg = args[i]
 
+    if (arg === "--install") {
+      options.install = true
+      continue
+    }
+    if (arg === "--start") {
+      options.start = true
+      options.install = true
+      continue
+    }
     if (arg === "--no-install") {
-      options.noInstall = true
+      options.install = false
       continue
     }
     if (arg === "--no-start") {
-      options.noStart = true
+      options.start = false
       continue
     }
     if (arg === "--here") {
@@ -84,8 +99,8 @@ function printHelp() {
   console.log("  -f, --framework <name>  Framework: core, react, solid")
   console.log("  -s, --starter <name>    Starter preset for selected framework")
   console.log("  --here                  Use current directory")
-  console.log("  --no-install            Skip bun install")
-  console.log("  --no-start              Skip bun run dev after install")
+  console.log("  --install               Run bun install after scaffolding")
+  console.log("  --start                 Run bun install, then bun run dev")
   console.log("  -h, --help              Show help")
   console.log("")
   console.log("Examples:")
@@ -118,47 +133,83 @@ function promptLine(rl, label) {
 }
 
 async function selectOption(rl, label, options) {
-  console.log("")
-  console.log(label)
-  for (let i = 0; i < options.length; i += 1) {
-    const option = options[i]
-    console.log(`  ${i + 1}. ${option.label} (${option.id}) - ${option.description}`)
-  }
-
-  while (true) {
-    const raw = (await promptLine(rl, "Select a number: ")).trim()
-    const index = Number(raw)
-    if (Number.isInteger(index) && index >= 1 && index <= options.length) {
-      return options[index - 1].id
-    }
-    console.log("Invalid choice. Try again.")
-  }
-}
-
-async function resolveProjectName(rl, options, positionals) {
-  if (options.here) {
-    return "."
-  }
-
-  if (positionals[0]) {
-    return positionals[0]
-  }
-
   if (!process.stdin.isTTY) {
-    return "cascade-app"
+    return options[0].id
   }
 
-  const locationChoice = await selectOption(rl, "Where should the project be created?", [
-    { id: "new", label: "New folder", description: "Create and use a new project directory" },
-    { id: "here", label: "Current folder", description: "Use the current directory directly" },
-  ])
+  const stdin = process.stdin
+  const stdout = process.stdout
+  let selectedIndex = 0
+  const totalLines = options.length + 2
+  let renderedOnce = false
 
-  if (locationChoice === "here") {
-    return "."
+  const render = () => {
+    if (renderedOnce) {
+      stdout.write(`\x1b[${totalLines}F`)
+    } else {
+      stdout.write("\n")
+    }
+
+    stdout.write(`${ANSI_BOLD}${label}${ANSI_RESET}\n`)
+
+    for (let i = 0; i < options.length; i += 1) {
+      const option = options[i]
+      const isSelected = i === selectedIndex
+      const prefix = isSelected ? `${ANSI_BOLD}${ANSI_CYAN}>${ANSI_RESET}` : " "
+      const styleStart = isSelected ? `${ANSI_BOLD}${ANSI_CYAN}` : ""
+      const styleEnd = isSelected ? ANSI_RESET : ""
+      stdout.write(`${prefix} ${styleStart}${option.label}${styleEnd} ${ANSI_DIM}(${option.id}) - ${option.description}${ANSI_RESET}\n`)
+    }
+
+    stdout.write(`${ANSI_DIM}Use Up/Down arrows and Enter${ANSI_RESET}\n`)
+    renderedOnce = true
   }
 
-  const input = (await promptLine(rl, "Project name (default: cascade-app): ")).trim()
-  return input || "cascade-app"
+  return new Promise((resolve, reject) => {
+    const cleanup = () => {
+      stdin.off("keypress", onKeyPress)
+      if (stdin.isTTY) {
+        stdin.setRawMode(false)
+      }
+      stdout.write("\n")
+    }
+
+    const onKeyPress = (_, key) => {
+      if (!key) {
+        return
+      }
+
+      if (key.ctrl && key.name === "c") {
+        cleanup()
+        reject(new Error("Operation cancelled"))
+        return
+      }
+
+      if (key.name === "up") {
+        selectedIndex = selectedIndex === 0 ? options.length - 1 : selectedIndex - 1
+        render()
+        return
+      }
+
+      if (key.name === "down") {
+        selectedIndex = selectedIndex === options.length - 1 ? 0 : selectedIndex + 1
+        render()
+        return
+      }
+
+      if (key.name === "return") {
+        const selected = options[selectedIndex]
+        cleanup()
+        resolve(selected.id)
+      }
+    }
+
+    emitKeypressEvents(stdin)
+    stdin.setRawMode(true)
+    stdin.resume()
+    stdin.on("keypress", onKeyPress)
+    render()
+  })
 }
 
 async function resolveFramework(rl, frameworkArg) {
@@ -196,6 +247,46 @@ async function resolveStarter(rl, framework, starterArg) {
   return selectOption(rl, `Choose a starter for ${framework}:`, choices)
 }
 
+async function resolveLocation(rl, options, positionals) {
+  if (options.here) {
+    return "here"
+  }
+
+  if (positionals[0]) {
+    return "new"
+  }
+
+  if (!process.stdin.isTTY) {
+    return "new"
+  }
+
+  return selectOption(rl, "Where should the project be created?", [
+    { id: "new", label: "New folder", description: "Create and use a new project directory" },
+    { id: "here", label: "Current folder", description: "Use the current directory directly" },
+  ])
+}
+
+async function resolveProjectName(rl, positionals, defaultName = "cascade-app") {
+  if (positionals[0]) {
+    return positionals[0]
+  }
+
+  if (!process.stdin.isTTY) {
+    return defaultName
+  }
+
+  const input = (await promptLine(rl, `Project name (default: ${defaultName}): `)).trim()
+  return input || defaultName
+}
+
+function shouldRunInteractiveWizard(options, positionals) {
+  if (!process.stdin.isTTY) {
+    return false
+  }
+
+  return !positionals[0] && !options.here && !options.framework && !options.starter
+}
+
 function getPackageJson(projectName, framework) {
   const dependencies = {
     "@cascadetui/core": "latest",
@@ -221,6 +312,8 @@ function getPackageJson(projectName, framework) {
     type: "module",
     scripts: {
       dev: `bun run ${entry}`,
+      start: `bun run ${entry}`,
+      typecheck: "bunx tsc --noEmit",
     },
     dependencies,
   }
@@ -232,7 +325,10 @@ function getTsConfig(framework) {
     module: "ESNext",
     moduleResolution: "Bundler",
     strict: true,
+    noEmit: true,
+    verbatimModuleSyntax: true,
     skipLibCheck: true,
+    types: ["bun-types"],
   }
 
   if (framework === "react") {
@@ -267,17 +363,41 @@ function getTsConfig(framework) {
 function getSource(framework, starter) {
   const sources = {
     core: {
-      minimal: `import { TextRenderable, createCliRenderer } from "@cascadetui/core"
+      minimal: `import { BoxRenderable, TextRenderable, createCliRenderer } from "@cascadetui/core"
 
 const renderer = await createCliRenderer({ exitOnCtrlC: true })
 
-const text = new TextRenderable(renderer, {
-  content: "Hello from Cascade",
-  margin: 2,
+const panel = new BoxRenderable(renderer, {
+  border: true,
+  borderStyle: "single",
+  padding: 1,
+  margin: 1,
+  width: 56,
+  height: 8,
+  flexDirection: "column",
+})
+
+const title = new TextRenderable(renderer, {
+  content: "Hello from Cascade Core",
   fg: "#00ff99",
 })
 
-renderer.root.add(text)
+const subtitle = new TextRenderable(renderer, {
+  content: "Run bun run dev after edits to refresh your app",
+  marginTop: 1,
+  fg: "#cccccc",
+})
+
+const hint = new TextRenderable(renderer, {
+  content: "Press Ctrl+C to exit",
+  marginTop: 1,
+  fg: "#999999",
+})
+
+panel.add(title)
+panel.add(subtitle)
+panel.add(hint)
+renderer.root.add(panel)
 `,
       counter: `import { TextRenderable, createCliRenderer } from "@cascadetui/core"
 
@@ -332,7 +452,13 @@ renderer.root.add(container)
 import { createRoot } from "@cascadetui/react"
 
 function App() {
-  return <text content="Hello from Cascade + React" fg="#00ff99" />
+  return (
+    <box style={{ border: true, borderStyle: "single", padding: 1, margin: 1, width: 56, height: 8, flexDirection: "column" }}>
+      <text content="Hello from Cascade React" fg="#00ff99" />
+      <text content="Edit src/index.tsx and run bun run dev" marginTop={1} fg="#cccccc" />
+      <text content="Press Ctrl+C to exit" marginTop={1} fg="#999999" />
+    </box>
+  )
 }
 
 const renderer = await createCliRenderer({ exitOnCtrlC: true })
@@ -405,7 +531,13 @@ createRoot(renderer).render(<App />)
     solid: {
       minimal: `import { render } from "@cascadetui/solid"
 
-const App = () => <text content="Hello from Cascade + Solid" fg="#00ff99" />
+const App = () => (
+  <box style={{ border: true, borderStyle: "single", padding: 1, margin: 1, width: 56, height: 8, flexDirection: "column" }}>
+    <text content="Hello from Cascade Solid" fg="#00ff99" />
+    <text content="Edit src/index.tsx and run bun run dev" marginTop={1} fg="#cccccc" />
+    <text content="Press Ctrl+C to exit" marginTop={1} fg="#999999" />
+  </box>
+)
 
 render(App, { exitOnCtrlC: true })
 `,
@@ -502,13 +634,27 @@ async function main() {
   })
 
   try {
-    const rawProjectName = await resolveProjectName(rl, options, positionals)
-    const framework = await resolveFramework(rl, options.framework)
-    const starter = await resolveStarter(rl, framework, options.starter)
+    let framework
+    let projectName
+    let location
+    let starter
 
-    const usingCurrentDirectory = rawProjectName === "."
-    const targetDir = usingCurrentDirectory ? process.cwd() : resolve(process.cwd(), rawProjectName)
-    const packageNameSeed = usingCurrentDirectory ? basename(targetDir) : rawProjectName
+    if (shouldRunInteractiveWizard(options, positionals)) {
+      framework = await resolveFramework(rl, undefined)
+      projectName = await resolveProjectName(rl, [], "cascade-app")
+      location = await resolveLocation(rl, { ...options, here: false }, [])
+      starter = await resolveStarter(rl, framework, undefined)
+    } else {
+      framework = await resolveFramework(rl, options.framework)
+      location = await resolveLocation(rl, options, positionals)
+      const defaultName = location === "here" ? basename(process.cwd()) : "cascade-app"
+      projectName = await resolveProjectName(rl, positionals, defaultName)
+      starter = await resolveStarter(rl, framework, options.starter)
+    }
+
+    const usingCurrentDirectory = location === "here"
+    const targetDir = usingCurrentDirectory ? process.cwd() : resolve(process.cwd(), projectName)
+    const packageNameSeed = projectName
 
     writeProject(targetDir, packageNameSeed, framework, starter)
 
@@ -517,13 +663,13 @@ async function main() {
     console.log(`Framework: ${framework}`)
     console.log(`Starter: ${starter}`)
 
-    if (!options.noInstall) {
+    if (options.install) {
       console.log("")
       console.log("Installing dependencies with bun...")
       runCommand("bun", ["install"], targetDir)
     }
 
-    if (!options.noInstall && !options.noStart) {
+    if (options.start) {
       console.log("")
       console.log("Starting the project...")
       runCommand("bun", ["run", "dev"], targetDir)
@@ -533,11 +679,9 @@ async function main() {
     console.log("")
     console.log("Next steps:")
     if (!usingCurrentDirectory) {
-      console.log(`  cd ${rawProjectName}`)
+      console.log(`  cd ${projectName}`)
     }
-    if (options.noInstall) {
-      console.log("  bun install")
-    }
+    console.log("  bun install")
     console.log("  bun run dev")
   } finally {
     rl.close()
