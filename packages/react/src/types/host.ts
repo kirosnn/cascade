@@ -1,4 +1,4 @@
-import type { BaseRenderable, RootRenderable, TextNodeRenderable } from "@cascade/core"
+import type { BaseRenderable, RootRenderable, TextNodeRenderable } from "@cascadetui/core"
 import { baseComponents } from "../components"
 
 export type Type = keyof typeof baseComponents
