@@ -15,7 +15,7 @@ import {
   TextRenderable,
   type RenderContext,
   type TextNodeOptions,
-} from "@cascade/core"
+} from "@cascadetui/core"
 import type { RenderableConstructor } from "../types/elements"
 export * from "./hooks"
 export * from "./extras"
