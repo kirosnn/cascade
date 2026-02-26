@@ -1,8 +1,8 @@
 import { describe, expect, it, beforeEach, afterEach } from "bun:test"
 import { testRender, Dynamic, Portal } from "../index"
 import { createSignal, Show } from "solid-js"
-import { createSpy } from "@cascade/core/testing"
-import type { BoxRenderable } from "@cascade/core"
+import { createSpy } from "@cascadetui/core/testing"
+import type { BoxRenderable } from "@cascadetui/core"
 
 let testSetup: Awaited<ReturnType<typeof testRender>>
 
