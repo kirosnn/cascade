@@ -1,7 +1,7 @@
 import { describe, expect, it, beforeEach, afterEach } from "bun:test"
 import { testRender } from "../index"
 import { createSignal, onMount, Show } from "solid-js"
-import type { TextareaRenderable } from "@cascade/core"
+import type { TextareaRenderable } from "@cascadetui/core"
 
 let testSetup: Awaited<ReturnType<typeof testRender>>
 
