@@ -1,4 +1,4 @@
-import { CliRenderer, CliRenderEvents, engine } from "@cascade/core"
+import { CliRenderer, CliRenderEvents, engine } from "@cascadetui/core"
 import React, { type ReactNode } from "react"
 import type { OpaqueRoot } from "react-reconciler"
 import { AppContext } from "../components/app"
