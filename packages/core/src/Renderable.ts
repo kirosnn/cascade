@@ -378,6 +378,18 @@ export abstract class Renderable extends BaseRenderable {
     return false
   }
 
+  public selectWord(_x: number, _y: number): boolean {
+    return false
+  }
+
+  public selectLine(_x: number, _y: number): boolean {
+    return false
+  }
+
+  public updateSelectionWordSnap(_x: number, _y: number): boolean {
+    return false
+  }
+
   public focus(): void {
     if (this._isDestroyed || this._focused || !this._focusable) return
 
@@ -461,13 +473,29 @@ export abstract class Renderable extends BaseRenderable {
   public handlePaste?(event: PasteEvent): void
 
   public findDescendantById(id: string): Renderable | undefined {
-    for (const child of this._childrenInLayoutOrder) {
-      if (child.id === id) return child
-      if (isRenderable(child)) {
-        const found = child.findDescendantById(id)
-        if (found) return found
+    const visited = new Set<Renderable>()
+    const stack = [...this._childrenInLayoutOrder]
+
+    while (stack.length > 0) {
+      const current = stack.pop()!
+      if (visited.has(current)) {
+        continue
+      }
+      visited.add(current)
+
+      if (current.id === id) {
+        return current
+      }
+
+      const children = current.getChildren()
+      for (let i = children.length - 1; i >= 0; i -= 1) {
+        const child = children[i]
+        if (isRenderable(child)) {
+          stack.push(child)
+        }
       }
     }
+
     return undefined
   }
 
@@ -1099,6 +1127,25 @@ export abstract class Renderable extends BaseRenderable {
     obj.parent = this
   }
 
+  private assertCanAdoptChild(renderable: Renderable): void {
+    if (renderable === this) {
+      throw new Error(`Invalid render tree operation: '${this.id}' cannot contain itself`)
+    }
+
+    let current: Renderable | null = this
+    const visited = new Set<Renderable>()
+    while (current) {
+      if (visited.has(current)) {
+        throw new Error(`Invalid render tree operation: parent chain cycle detected near '${current.id}'`)
+      }
+      visited.add(current)
+      if (current === renderable) {
+        throw new Error(`Invalid render tree operation: adding '${renderable.id}' to '${this.id}' would create a cycle`)
+      }
+      current = current.parent
+    }
+  }
+
   public add(obj: Renderable | VNode<any, any[]> | unknown, index?: number): number {
     if (!obj) {
       return -1
@@ -1115,6 +1162,8 @@ export abstract class Renderable extends BaseRenderable {
       }
       return -1
     }
+
+    this.assertCanAdoptChild(renderable)
 
     const anchorRenderable = index !== undefined ? this._childrenInLayoutOrder[index] : undefined
 
@@ -1173,6 +1222,8 @@ export abstract class Renderable extends BaseRenderable {
       }
       return -1
     }
+
+    this.assertCanAdoptChild(renderable)
 
     if (!isRenderable(anchor)) {
       throw new Error("Anchor must be a Renderable")
@@ -1460,6 +1511,10 @@ export abstract class Renderable extends BaseRenderable {
   }
 
   public processMouseEvent(event: MouseEvent): void {
+    if (!event.tryVisit(this)) {
+      return
+    }
+
     this._mouseListener?.call(this, event)
     this._mouseListeners[event.type]?.call(this, event)
     this.onMouseEvent(event)
