@@ -1,6 +1,6 @@
 import { createSignal } from "solid-js"
-import { SyntaxStyle } from "@cascade/core"
-import { useKeyboard } from "@cascade/solid"
+import { SyntaxStyle } from "@cascadetui/core"
+import { useKeyboard } from "@cascadetui/solid"
 
 export default function DiffDemo() {
   const [currentView, setCurrentView] = createSignal<"unified" | "split">("unified")
