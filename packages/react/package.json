@@ -1,6 +1,6 @@
 {
-  "name": "@cascade/react",
-  "version": "0.1.82",
+  "name": "@cascadetui/react",
+  "version": "0.1.2",
   "description": "React renderer for building terminal user interfaces using Cascade core",
   "license": "MIT",
   "repository": {
@@ -61,7 +61,7 @@
     }
   },
   "dependencies": {
-    "@cascade/core": "workspace:*",
+    "@cascadetui/core": "workspace:*",
     "react-reconciler": "^0.32.0"
   }
 }
