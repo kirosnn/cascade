@@ -1,5 +1,5 @@
-import { BoxRenderable, OptimizedBuffer, RGBA, type BoxOptions, type RenderContext } from "@cascade/core"
-import { extend } from "@cascade/solid"
+import { BoxRenderable, OptimizedBuffer, RGBA, type BoxOptions, type RenderContext } from "@cascadetui/core"
+import { extend } from "@cascadetui/solid"
 
 // Custom renderable that extends BoxRenderable
 class ConsoleButtonRenderable extends BoxRenderable {
@@ -37,7 +37,7 @@ class ConsoleButtonRenderable extends BoxRenderable {
 }
 
 // TypeScript module augmentation for proper typing
-declare module "@cascade/solid" {
+declare module "@cascadetui/solid" {
   interface CascadeComponents {
     consoleButton: typeof ConsoleButtonRenderable
   }
