@@ -55,8 +55,8 @@ Link your local Cascade to another project:
 
 **Options:**
 
-- `--react` - Also link `@cascade/react` and React dependencies
-- `--solid` - Also link `@cascade/solid` and SolidJS dependencies
+- `--react` - Also link `@cascadetui/react` and React dependencies
+- `--solid` - Also link `@cascadetui/solid` and SolidJS dependencies
 - `--dist` - Link built `dist` directories instead of source
 - `--copy` - Copy instead of symlink (requires `--dist`)
 - `--subdeps` - Find and link packages that depend on cascade (e.g., `cascade-spinner`)
@@ -79,7 +79,7 @@ Link your local Cascade to another project:
 
 The script automatically links:
 
-- Main packages: `@cascade/core`, `@cascade/solid`, `@cascade/react`
+- Main packages: `@cascadetui/core`, `@cascadetui/solid`, `@cascadetui/react`
 - Peer dependencies: `yoga-layout`, `solid-js`, `react`, `react-dom`, `react-reconciler`
 - Subdependencies (with `--subdeps`): Packages like `cascade-spinner` that depend on cascade
 
