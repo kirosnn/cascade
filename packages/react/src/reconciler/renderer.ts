@@ -48,7 +48,17 @@ export function createRoot(renderer: CliRenderer): Root {
         React.createElement(
           AppContext.Provider,
           { value: { keyHandler: renderer.keyInput, renderer } },
-          React.createElement(ErrorBoundary, null, node),
+          React.createElement(
+            ErrorBoundary,
+            {
+              onCrash: (error, info) => {
+                renderer.reportCrash(error, "react-error-boundary", {
+                  componentStack: info.componentStack,
+                })
+              },
+            },
+            node,
+          ),
         ),
         renderer.root,
       )
