@@ -42,8 +42,8 @@ export default function TextStyleScene() {
       <text>
         Hyperlinks:{" "}
         <u>
-          <a href="https://cascade.com" style={{ fg: "blue" }}>
-            cascade.com
+          <a href="https://cascadetui.vercel.app" style={{ fg: "blue" }}>
+            cascadetui.vercel.app
           </a>
         </u>{" "}
         - Click if your terminal supports OSC 8
