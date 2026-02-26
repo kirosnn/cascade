@@ -1,4 +1,4 @@
-import { TextNodeRenderable, TextRenderable, type Renderable } from "@cascadetui/core"
+import { ASCIIFont, TextNodeRenderable, TextRenderable, instantiate, type Renderable } from "@cascadetui/core"
 import pkgJson from "../../package.json"
 import { createContext } from "react"
 import type { HostConfig, ReactContext } from "react-reconciler"
@@ -39,6 +39,10 @@ export const hostConfig: HostConfig<
     }
 
     const id = getNextId(type)
+    if (type === "asciifont") {
+      return instantiate(rootContainerInstance.ctx, ASCIIFont({ id, ...props }))
+    }
+
     const components = getComponentCatalogue()
 
     if (!components[type]) {
