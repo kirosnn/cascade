@@ -8,6 +8,7 @@ import type { OptimizedBuffer } from "../buffer"
 import { MeasureMode } from "yoga-layout"
 import type { LineInfo } from "../zig"
 import { SyntaxStyle } from "../syntax-style"
+import { createTextAttributes } from "../utils"
 
 export interface TextBufferOptions extends RenderableOptions<TextBufferRenderable> {
   fg?: string | RGBA
@@ -16,6 +17,14 @@ export interface TextBufferOptions extends RenderableOptions<TextBufferRenderabl
   selectionFg?: string | RGBA
   selectable?: boolean
   attributes?: number
+  bold?: boolean
+  italic?: boolean
+  underline?: boolean
+  dim?: boolean
+  blink?: boolean
+  inverse?: boolean
+  hidden?: boolean
+  strikethrough?: boolean
   wrapMode?: "none" | "char" | "word"
   tabIndicator?: string | number
   tabIndicatorColor?: string | RGBA
@@ -60,7 +69,19 @@ export abstract class TextBufferRenderable extends Renderable implements LineInf
 
     this._defaultFg = parseColor(options.fg ?? this._defaultOptions.fg)
     this._defaultBg = parseColor(options.bg ?? this._defaultOptions.bg)
-    this._defaultAttributes = options.attributes ?? this._defaultOptions.attributes
+    this._defaultAttributes =
+      options.attributes ??
+      createTextAttributes({
+        bold: options.bold,
+        italic: options.italic,
+        underline: options.underline,
+        dim: options.dim,
+        blink: options.blink,
+        inverse: options.inverse,
+        hidden: options.hidden,
+        strikethrough: options.strikethrough,
+      }) ??
+      this._defaultOptions.attributes
     this._selectionBg = options.selectionBg ? parseColor(options.selectionBg) : this._defaultOptions.selectionBg
     this._selectionFg = options.selectionFg ? parseColor(options.selectionFg) : this._defaultOptions.selectionFg
     this.selectable = options.selectable ?? this._defaultOptions.selectable
