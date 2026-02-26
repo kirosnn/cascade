@@ -4,11 +4,20 @@ import { RGBA, parseColor } from "../lib/RGBA"
 import { isStyledText, StyledText } from "../lib/styled-text"
 import { type TextChunk } from "../text-buffer"
 import type { RenderContext } from "../types"
+import { createTextAttributes } from "../utils"
 
 export interface TextNodeOptions extends BaseRenderableOptions {
   fg?: string | RGBA
   bg?: string | RGBA
   attributes?: number
+  bold?: boolean
+  italic?: boolean
+  underline?: boolean
+  dim?: boolean
+  blink?: boolean
+  inverse?: boolean
+  hidden?: boolean
+  strikethrough?: boolean
   link?: { url: string }
 }
 
@@ -46,7 +55,19 @@ export class TextNodeRenderable extends BaseRenderable {
 
     this._fg = options.fg ? parseColor(options.fg) : undefined
     this._bg = options.bg ? parseColor(options.bg) : undefined
-    this._attributes = options.attributes ?? 0
+    this._attributes =
+      options.attributes ??
+      createTextAttributes({
+        bold: options.bold,
+        italic: options.italic,
+        underline: options.underline,
+        dim: options.dim,
+        blink: options.blink,
+        inverse: options.inverse,
+        hidden: options.hidden,
+        strikethrough: options.strikethrough,
+      }) ??
+      0
     this._link = options.link
   }
 
