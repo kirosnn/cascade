@@ -12,7 +12,7 @@ export interface TextNodeOptions extends BaseRenderableOptions {
   link?: { url: string }
 }
 
-const BrandedTextNodeRenderable: unique symbol = Symbol.for("@cascade/core/TextNodeRenderable")
+const BrandedTextNodeRenderable: unique symbol = Symbol.for("@cascadetui/core/TextNodeRenderable")
 
 export function isTextNodeRenderable(obj: any): obj is TextNodeRenderable {
   return !!obj?.[BrandedTextNodeRenderable]
