@@ -1,72 +1,59 @@
 # Cascade
 
-**Fork of OpenTUI of anomalyco : https://github.com/anomalyco/opentui**
+**Community fork of OpenTUI by anomalyco:** https://github.com/anomalyco/opentui
 
 <div align="center">
-    <a href="https://www.npmjs.com/package/@cascade/core"><img alt="npm" src="https://img.shields.io/npm/v/@cascade/core?style=flat-square" /></a>
+    <a href="https://www.npmjs.com/package/@cascadetui/core"><img alt="npm" src="https://img.shields.io/npm/v/@cascadetui/core?style=flat-square" /></a>
     <a href="https://github.com/kirosnn/cascade/actions/workflows/build-core.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/kirosnn/cascade/build-core.yml?style=flat-square&branch=main" /></a>
-    <a href="https://github.com/msmps/awesome-cascade"><img alt="awesome cascade list" src="https://awesome.re/badge-flat.svg" /></a>
 </div>
 
-Cascade is a native terminal UI core written in Zig with TypeScript bindings. The native core exposes a C ABI and can be used from any language. Cascade powers [OpenCode](https://opencode.ai) in production today and will also power [terminal.shop](https://terminal.shop). It is an extensible core with a focus on correctness, stability, and high performance. It provides a component-based architecture with flexible layout capabilities, allowing you to create complex terminal applications.
+Cascade is a native terminal UI foundation written in Zig with TypeScript bindings.
+The core exposes a C ABI, so it can be integrated from any language.
+It is designed for correctness, stability, extensibility, and performance, with a component-driven model and flexible layout primitives for building advanced terminal apps.
 
-Docs: https://cascade.com/docs/getting-started
+Documentation: https://cascade.com/docs/getting-started
 
-Quick start with [bun](https://bun.sh) and [create-tui](https://github.com/msmps/create-tui):
+Quick start (with [bun](https://bun.sh) and [create-tui](https://github.com/msmps/create-tui)):
 
 ```bash
 bun create tui
 ```
 
-This monorepo contains the following packages:
+## Packages
 
-- [`@cascade/core`](packages/core) - TypeScript bindings for Cascade's native Zig core, with an imperative API and all primitives.
-- [`@cascade/solid`](packages/solid) - The SolidJS reconciler for Cascade.
-- [`@cascade/react`](packages/react) - The React reconciler for Cascade.
+This monorepo currently includes:
 
-## Install
+- [`@cascadetui/core`](packages/core): TypeScript bindings for the Zig native core and low-level primitives.
+- [`@cascadetui/solid`](packages/solid): SolidJS reconciler for Cascade.
+- [`@cascadetui/react`](packages/react): React reconciler for Cascade.
 
-NOTE: You must have [Zig](https://ziglang.org/learn/getting-started/) installed on your system to build the packages.
+## Installation
 
-### TypeScript/JavaScript
+Prerequisite: install [Zig](https://ziglang.org/learn/getting-started/) on your machine before building packages.
 
-```bash
-bun install @cascade/core
-```
-
-## AI Agent Skill
-
-Teach your AI coding assistant Cascade's APIs and patterns.
-
-**For [OpenCode](https://opencode.ai) (includes `/cascade` command):**
+### TypeScript / JavaScript
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/msmps/cascade-skill/main/install.sh | bash
+bun install @cascadetui/core
 ```
 
-**For other AI coding assistants:**
+## Try the examples
 
-```bash
-npx skills add msmps/cascade-skill
-```
+You can run examples without cloning the repository.
 
-## Try Examples
-
-You can quickly try out Cascade examples without cloning the repository:
-
-**For macOS, Linux, WSL, Git Bash:**
+### macOS, Linux, WSL, Git Bash
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/kirosnn/cascade/main/packages/core/src/examples/install.sh | sh
 ```
 
-**For Windows (PowerShell/CMD):**
+### Windows (PowerShell / CMD)
 
-Download the latest release directly from [GitHub Releases](https://github.com/kirosnn/cascade/releases/latest)
+Download the latest binary bundle from [GitHub Releases](https://github.com/kirosnn/cascade/releases/latest).
 
-## Running Examples (from the repo root)
+## Run examples from source
 
-### TypeScript Examples
+From the repository root:
 
 ```bash
 bun install
@@ -76,15 +63,15 @@ bun run src/examples/index.ts
 
 ## Development
 
-See the [Development Guide](packages/core/docs/development.md) for building, testing, debugging, and local development linking.
+For build, test, debugging, and local linking workflows, see the [Development Guide](packages/core/docs/development.md).
 
-### Documentation
+## Documentation Index
 
-- [Website docs](https://cascade.com/docs/getting-started) - Guides and API references
-- [Development Guide](packages/core/docs/development.md) - Building, testing, and local dev linking
-- [Getting Started](packages/core/docs/getting-started.md) - API and usage guide
-- [Environment Variables](packages/core/docs/env-vars.md) - Configuration options
+- [Website docs](https://cascade.com/docs/getting-started): Guides and API references.
+- [Development Guide](packages/core/docs/development.md): Build, test, and local linking.
+- [Getting Started](packages/core/docs/getting-started.md): Setup and API usage.
+- [Environment Variables](packages/core/docs/env-vars.md): Runtime configuration.
 
 ## Showcase
 
-Consider showcasing your work on the [awesome-cascade](https://github.com/msmps/awesome-cascade) list. A curated list of awesome resources and terminal user interfaces built with Cascade.
+If you build something with Cascade, consider adding it to [awesome-cascade](https://github.com/msmps/awesome-cascade), a curated collection of Cascade resources and terminal UI projects.
