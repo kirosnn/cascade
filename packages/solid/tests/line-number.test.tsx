@@ -1,7 +1,7 @@
 import { describe, test, expect, beforeEach, afterEach } from "bun:test"
 import { testRender } from "../index"
-import { SyntaxStyle } from "@cascade/core"
-import { MockTreeSitterClient } from "@cascade/core/testing"
+import { SyntaxStyle } from "@cascadetui/core"
+import { MockTreeSitterClient } from "@cascadetui/core/testing"
 import { createSignal, Show } from "solid-js"
 
 let testSetup: Awaited<ReturnType<typeof testRender>>
