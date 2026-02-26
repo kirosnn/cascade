@@ -33,8 +33,8 @@ if [ -z "$TARGET_ROOT" ]; then
     echo "All workspace packages will automatically resolve through the cache."
     echo ""
     echo "Options:"
-    echo "  --react    Also link @cascade/react and React dependencies"
-    echo "  --solid    Also link @cascade/solid and solid-js"
+    echo "  --react    Also link @cascadetui/react and React dependencies"
+    echo "  --solid    Also link @cascadetui/solid and solid-js"
     exit 1
 fi
 
@@ -96,9 +96,9 @@ link_in_bun_cache() {
     done
 }
 
-# Always link @cascade/core
-echo "Linking @cascade/core..."
-link_in_bun_cache "@cascade+core@*" "@cascade/core" "$CASCADE_ROOT/packages/core"
+# Always link @cascadetui/core
+echo "Linking @cascadetui/core..."
+link_in_bun_cache "@cascadetui+core@*" "@cascadetui/core" "$CASCADE_ROOT/packages/core"
 
 # Link yoga-layout (required by core)
 echo "Linking yoga-layout..."
@@ -120,10 +120,10 @@ else
     echo "⚠ Warning: web-tree-sitter not found in Cascade node_modules"
 fi
 
-# Link @cascade/solid if requested
+# Link @cascadetui/solid if requested
 if [ "$LINK_SOLID" = true ]; then
-    echo "Linking @cascade/solid..."
-    link_in_bun_cache "@cascade+solid@*" "@cascade/solid" "$CASCADE_ROOT/packages/solid"
+    echo "Linking @cascadetui/solid..."
+    link_in_bun_cache "@cascadetui+solid@*" "@cascadetui/solid" "$CASCADE_ROOT/packages/solid"
     
     # Link solid-js
     echo "Linking solid-js..."
@@ -136,10 +136,10 @@ if [ "$LINK_SOLID" = true ]; then
     fi
 fi
 
-# Link @cascade/react if requested
+# Link @cascadetui/react if requested
 if [ "$LINK_REACT" = true ]; then
-    echo "Linking @cascade/react..."
-    link_in_bun_cache "@cascade+react@*" "@cascade/react" "$CASCADE_ROOT/packages/react"
+    echo "Linking @cascadetui/react..."
+    link_in_bun_cache "@cascadetui+react@*" "@cascadetui/react" "$CASCADE_ROOT/packages/react"
     
     # Link react dependencies
     echo "Linking react..."
