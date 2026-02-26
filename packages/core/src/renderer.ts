@@ -518,7 +518,7 @@ export class CliRenderer extends EventEmitter implements RenderContext {
 
     if (this._openConsoleOnError) {
       this.console.show()
-      this.console.log(`[crash:${report.source}] ${report.message}`)
+      console.log(`[crash:${report.source}] ${report.message}`)
     }
   }
 
