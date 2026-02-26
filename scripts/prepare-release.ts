@@ -62,7 +62,15 @@ if (!/^\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?$/.test(version)) {
 console.log(`\nPreparing release ${version} for core, react, and solid packages...\n`)
 
 const corePackageJsonPath = join(rootDir, "packages", "core", "package.json")
-console.log("Updating @cascade/core...")
+const nativePackageDirs = [
+  "core-darwin-arm64",
+  "core-darwin-x64",
+  "core-linux-arm64",
+  "core-linux-x64",
+  "core-win32-arm64",
+  "core-win32-x64",
+]
+console.log("Updating @cascadetui/core...")
 
 try {
   const corePackageJson: PackageJson = JSON.parse(readFileSync(corePackageJsonPath, "utf8"))
@@ -71,7 +79,7 @@ try {
 
   if (corePackageJson.optionalDependencies) {
     for (const depName in corePackageJson.optionalDependencies) {
-      if (depName.startsWith("@cascade/core-")) {
+      if (depName.startsWith("@cascadetui/core-")) {
         corePackageJson.optionalDependencies[depName] = version
         console.log(`  Updated ${depName} to ${version}`)
       }
@@ -79,14 +87,28 @@ try {
   }
 
   writeFileSync(corePackageJsonPath, JSON.stringify(corePackageJson, null, 2) + "\n")
-  console.log(`  @cascade/core updated to version ${version}`)
+  console.log(`  @cascadetui/core updated to version ${version}`)
 } catch (error) {
-  console.error(`  Failed to update @cascade/core: ${error}`)
+  console.error(`  Failed to update @cascadetui/core: ${error}`)
   process.exit(1)
 }
 
+console.log("\nUpdating @cascadetui/core-* native packages...")
+for (const dir of nativePackageDirs) {
+  const nativePackageJsonPath = join(rootDir, "packages", dir, "package.json")
+  try {
+    const nativePackageJson: PackageJson = JSON.parse(readFileSync(nativePackageJsonPath, "utf8"))
+    nativePackageJson.version = version
+    writeFileSync(nativePackageJsonPath, JSON.stringify(nativePackageJson, null, 2) + "\n")
+    console.log(`  @cascadetui/${dir} updated to version ${version}`)
+  } catch (error) {
+    console.error(`  Failed to update @cascadetui/${dir}: ${error}`)
+    process.exit(1)
+  }
+}
+
 const reactPackageJsonPath = join(rootDir, "packages", "react", "package.json")
-console.log("\nUpdating @cascade/react...")
+console.log("\nUpdating @cascadetui/react...")
 
 try {
   const reactPackageJson: PackageJson = JSON.parse(readFileSync(reactPackageJsonPath, "utf8"))
@@ -94,15 +116,15 @@ try {
   reactPackageJson.version = version
 
   writeFileSync(reactPackageJsonPath, JSON.stringify(reactPackageJson, null, 2) + "\n")
-  console.log(`  @cascade/react updated to version ${version}`)
-  console.log(`  Note: @cascade/core dependency will be set to ${version} during build`)
+  console.log(`  @cascadetui/react updated to version ${version}`)
+  console.log(`  Note: @cascadetui/core dependency will be set to ${version} during build`)
 } catch (error) {
-  console.error(`  Failed to update @cascade/react: ${error}`)
+  console.error(`  Failed to update @cascadetui/react: ${error}`)
   process.exit(1)
 }
 
 const solidPackageJsonPath = join(rootDir, "packages", "solid", "package.json")
-console.log("\nUpdating @cascade/solid...")
+console.log("\nUpdating @cascadetui/solid...")
 
 try {
   const solidPackageJson: PackageJson = JSON.parse(readFileSync(solidPackageJsonPath, "utf8"))
@@ -110,10 +132,10 @@ try {
   solidPackageJson.version = version
 
   writeFileSync(solidPackageJsonPath, JSON.stringify(solidPackageJson, null, 2) + "\n")
-  console.log(`  @cascade/solid updated to version ${version}`)
-  console.log(`  Note: @cascade/core dependency will be set to ${version} during build`)
+  console.log(`  @cascadetui/solid updated to version ${version}`)
+  console.log(`  Note: @cascadetui/core dependency will be set to ${version} during build`)
 } catch (error) {
-  console.error(`  Failed to update @cascade/solid: ${error}`)
+  console.error(`  Failed to update @cascadetui/solid: ${error}`)
   process.exit(1)
 }
 
