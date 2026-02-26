@@ -4,14 +4,13 @@
 
 <div align="center">
     <a href="https://www.npmjs.com/package/@cascadetui/core"><img alt="npm" src="https://img.shields.io/npm/v/@cascadetui/core?style=flat-square" /></a>
-    <a href="https://github.com/kirosnn/cascade/actions/workflows/build-core.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/kirosnn/cascade/build-core.yml?style=flat-square&branch=main" /></a>
 </div>
 
 Cascade is a native terminal UI foundation written in Zig with TypeScript bindings.
 The core exposes a C ABI, so it can be integrated from any language.
 It is designed for correctness, stability, extensibility, and performance, with a component-driven model and flexible layout primitives for building advanced terminal apps.
 
-Documentation: https://cascade.com/docs/getting-started
+Documentation: https://cascadetui.vercel.app/docs/overview
 
 Quick start (with [bun](https://bun.sh)):
 
@@ -68,11 +67,7 @@ For build, test, debugging, and local linking workflows, see the [Development Gu
 
 ## Documentation Index
 
-- [Website docs](https://cascade.com/docs/getting-started): Guides and API references.
+- [Website docs](https://cascadetui.vercel.app/docs/overview): Guides and API references.
 - [Development Guide](packages/core/docs/development.md): Build, test, and local linking.
 - [Getting Started](packages/core/docs/getting-started.md): Setup and API usage.
 - [Environment Variables](packages/core/docs/env-vars.md): Runtime configuration.
-
-## Showcase
-
-If you build something with Cascade, consider adding it to [awesome-cascade](https://github.com/msmps/awesome-cascade), a curated collection of Cascade resources and terminal UI projects.
