@@ -1,5 +1,5 @@
-import { RGBA, SyntaxStyle, TextAttributes } from "@cascade/core"
-import { useKeyboard } from "@cascade/solid"
+import { RGBA, SyntaxStyle, TextAttributes } from "@cascadetui/core"
+import { useKeyboard } from "@cascadetui/solid"
 import { createSignal, onMount } from "solid-js"
 
 export default function LineNumberDemo() {
