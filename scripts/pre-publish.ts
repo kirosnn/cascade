@@ -1,5 +1,6 @@
 import { spawnSync, type SpawnSyncReturns } from "node:child_process"
 import { existsSync, readFileSync, writeFileSync } from "node:fs"
+import { homedir } from "node:os"
 import { dirname, join, resolve } from "node:path"
 import process from "node:process"
 import { fileURLToPath } from "node:url"
@@ -32,18 +33,18 @@ const rootDir = resolve(__dirname, "..")
 // Package configurations
 const ALL_PACKAGES: PackageConfig[] = [
   {
-    name: "@cascade/core",
+    name: "@cascadetui/core",
     rootDir: join(rootDir, "packages", "core"),
     distDir: join(rootDir, "packages", "core", "dist"),
   },
   {
-    name: "@cascade/react",
+    name: "@cascadetui/react",
     rootDir: join(rootDir, "packages", "react"),
     distDir: join(rootDir, "packages", "react", "dist"),
     requiresCore: true,
   },
   {
-    name: "@cascade/solid",
+    name: "@cascadetui/solid",
     rootDir: join(rootDir, "packages", "solid"),
     distDir: join(rootDir, "packages", "solid", "dist"),
     requiresCore: true,
@@ -58,7 +59,12 @@ function setupNpmAuth(): void {
     return
   }
 
-  const npmrcPath = join(process.env.HOME as string, ".npmrc")
+  const homeFromDrive = `${process.env.HOMEDRIVE ?? ""}${process.env.HOMEPATH ?? ""}`
+  const homePath = process.env.HOME ?? process.env.USERPROFILE ?? (homeFromDrive || homedir())
+  if (!homePath) {
+    throw new Error("Unable to resolve user home directory for .npmrc")
+  }
+  const npmrcPath = join(homePath, ".npmrc")
   const npmrcContent = `//registry.npmjs.org/:_authToken=${process.env.NPM_AUTH_TOKEN}\n`
 
   if (existsSync(npmrcPath)) {
@@ -145,17 +151,17 @@ function validatePackage(config: PackageConfig): void {
   console.log(`SUCCESS: Source and dist versions match`)
 
   // For core package, check optional dependencies versions
-  if (config.name === "@cascade/core") {
+  if (config.name === "@cascadetui/core") {
     const mismatches: VersionMismatch[] = []
 
     if (distPackageJson.optionalDependencies) {
       for (const depName of Object.keys(distPackageJson.optionalDependencies).filter((x) =>
-        x.startsWith("@cascade/core"),
+        x.startsWith("@cascadetui/core"),
       )) {
-        const nativeDir = join(config.rootDir, "node_modules", depName)
+        const nativeDir = join(rootDir, "packages", depName.replace("@cascadetui/", ""))
         if (!existsSync(nativeDir)) {
           console.error(`ERROR: Native package directory not found: ${nativeDir}`)
-          console.error("Please run 'bun run build:native' first")
+          console.error("Please ensure native package directories exist in /packages")
           process.exit(1)
         }
 
@@ -189,17 +195,17 @@ function validatePackage(config: PackageConfig): void {
     console.log(`SUCCESS: All optional dependencies versions match`)
   }
 
-  // For react/solid packages, check @cascade/core dependency version
+  // For react/solid packages, check @cascadetui/core dependency version
   if (config.requiresCore) {
-    const coreDependencyVersion = distPackageJson.dependencies?.["@cascade/core"]
+    const coreDependencyVersion = distPackageJson.dependencies?.["@cascadetui/core"]
     if (coreDependencyVersion !== packageJson.version) {
-      console.error(`ERROR: @cascade/core dependency version mismatch in dist`)
+      console.error(`ERROR: @cascadetui/core dependency version mismatch in dist`)
       console.error(`  Expected: ${packageJson.version}`)
       console.error(`  Found: ${coreDependencyVersion}`)
       console.error("Please rebuild the package with 'bun run build'")
       process.exit(1)
     }
-    console.log(`SUCCESS: @cascade/core dependency version matches`)
+    console.log(`SUCCESS: @cascadetui/core dependency version matches`)
   }
 
   console.log(`SUCCESS: ${config.name} validation complete`)
