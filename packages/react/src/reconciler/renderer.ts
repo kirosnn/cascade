@@ -52,7 +52,7 @@ export function createRoot(renderer: CliRenderer): Root {
             ErrorBoundary,
             {
               onCrash: (error, info) => {
-                renderer.reportCrash(error, "react-error-boundary", {
+                ;(renderer as any).reportCrash(error, "react-error-boundary", {
                   componentStack: info.componentStack,
                 })
               },
