@@ -1,5 +1,5 @@
-import { createCliRenderer, type ASCIIFontName } from "@cascade/core"
-import { createRoot } from "@cascade/react"
+import { createCliRenderer, type ASCIIFontName } from "@cascadetui/core"
+import { createRoot } from "@cascadetui/react"
 import { useState } from "react"
 
 export const App = () => {
