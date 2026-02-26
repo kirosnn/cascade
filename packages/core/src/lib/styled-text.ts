@@ -3,7 +3,7 @@ import type { TextBuffer, TextChunk } from "../text-buffer"
 import { createTextAttributes } from "../utils"
 import { parseColor, type ColorInput } from "./RGBA"
 
-const BrandedStyledText: unique symbol = Symbol.for("@cascade/core/StyledText")
+const BrandedStyledText: unique symbol = Symbol.for("@cascadetui/core/StyledText")
 
 export type Color = ColorInput
 
