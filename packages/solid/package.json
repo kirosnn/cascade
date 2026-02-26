@@ -1,6 +1,6 @@
 {
-  "name": "@cascade/solid",
-  "version": "0.1.82",
+  "name": "@cascadetui/solid",
+  "version": "0.1.2",
   "description": "SolidJS renderer for Cascade",
   "repository": {
     "type": "git",
@@ -40,7 +40,7 @@
   "dependencies": {
     "@babel/core": "7.28.0",
     "@babel/preset-typescript": "7.27.1",
-    "@cascade/core": "workspace:*",
+    "@cascadetui/core": "workspace:*",
     "babel-plugin-module-resolver": "5.0.2",
     "babel-preset-solid": "1.9.9",
     "s-js": "^0.4.9"
