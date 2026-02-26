@@ -1,5 +1,5 @@
-import { createCliRenderer, parseColor, SyntaxStyle } from "@cascade/core"
-import { createRoot, useKeyboard } from "@cascade/react"
+import { createCliRenderer, parseColor, SyntaxStyle } from "@cascadetui/core"
+import { createRoot, useKeyboard } from "@cascadetui/react"
 import { useState, useMemo } from "react"
 
 interface DiffTheme {
