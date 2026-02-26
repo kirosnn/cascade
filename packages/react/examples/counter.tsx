@@ -1,5 +1,5 @@
-import { createCliRenderer } from "@cascade/core"
-import { createRoot } from "@cascade/react"
+import { createCliRenderer } from "@cascadetui/core"
+import { createRoot } from "@cascadetui/react"
 import { useEffect, useState } from "react"
 
 export const App = () => {
