@@ -8,7 +8,7 @@ import {
   underline,
   fg,
   type RenderContext,
-} from "@cascade/core"
+} from "@cascadetui/core"
 import { useContext } from "solid-js"
 import { RendererContext } from "../../src/elements/hooks"
 
