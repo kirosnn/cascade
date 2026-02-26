@@ -499,6 +499,55 @@ test("Buffer input via keyInput events", async () => {
   })
 })
 
+test("Uint8Array input via keyInput events", async () => {
+  const result = await new Promise<KeyEvent>((resolve) => {
+    const onKeypress = (parsedKey: KeyEvent) => {
+      currentRenderer.keyInput.removeListener("keypress", onKeypress)
+      resolve(parsedKey)
+    }
+
+    currentRenderer.keyInput.on("keypress", onKeypress)
+    currentRenderer.stdin.emit("data", new Uint8Array([0x61]))
+  })
+
+  expect(result).toMatchObject({
+    eventType: "press",
+    name: "a",
+    ctrl: false,
+    meta: false,
+    shift: false,
+    option: false,
+    number: false,
+    sequence: "a",
+    raw: "a",
+  })
+})
+
+test("Uint8Array arrow input via keyInput events", async () => {
+  const result = await new Promise<KeyEvent>((resolve) => {
+    const onKeypress = (parsedKey: KeyEvent) => {
+      currentRenderer.keyInput.removeListener("keypress", onKeypress)
+      resolve(parsedKey)
+    }
+
+    currentRenderer.keyInput.on("keypress", onKeypress)
+    currentRenderer.stdin.emit("data", new Uint8Array([0x1b, 0x5b, 0x41])) // ESC [ A
+  })
+
+  expect(result).toMatchObject({
+    eventType: "press",
+    name: "up",
+    ctrl: false,
+    meta: false,
+    shift: false,
+    option: false,
+    number: false,
+    sequence: "\x1b[A",
+    raw: "\x1b[A",
+    code: "[A",
+  })
+})
+
 test("special characters via keyInput events", async () => {
   const resultExclamation = await triggerInput("!")
   expect(resultExclamation).toMatchObject({
