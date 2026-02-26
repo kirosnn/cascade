@@ -34,7 +34,7 @@ import {
   isOverflowType,
 } from "./lib/renderable.validations"
 
-const BrandedRenderable: unique symbol = Symbol.for("@cascade/core/Renderable")
+const BrandedRenderable: unique symbol = Symbol.for("@cascadetui/core/Renderable")
 
 export enum LayoutEvents {
   LAYOUT_CHANGED = "layout-changed",
