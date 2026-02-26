@@ -1,4 +1,4 @@
-import { Renderable } from "@cascade/core"
+import { Renderable } from "@cascadetui/core"
 import type {
   AsciiFontProps,
   BoxProps,
