@@ -6,7 +6,7 @@
     "module": "ESNext",
     "moduleDetection": "force",
     "jsx": "react-jsx",
-    "jsxImportSource": "@cascade/react",
+    "jsxImportSource": "@cascadetui/react",
     "allowJs": true,
 
     // Bundler mode
