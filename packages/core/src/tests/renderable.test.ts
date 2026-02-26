@@ -167,6 +167,23 @@ describe("Renderable", () => {
 })
 
 describe("Renderable - Child Management", () => {
+  test("prevents adding self as child", () => {
+    const parent = new TestRenderable(testRenderer, { id: "parent" })
+    expect(() => parent.add(parent)).toThrow("cannot contain itself")
+  })
+
+  test("prevents creating cycles by adding ancestor as child", () => {
+    const parent = new TestRenderable(testRenderer, { id: "parent" })
+    const child = new TestRenderable(testRenderer, { id: "child" })
+    const grandchild = new TestRenderable(testRenderer, { id: "grandchild" })
+
+    parent.add(child)
+    child.add(grandchild)
+
+    expect(() => grandchild.add(parent)).toThrow("would create a cycle")
+    expect(() => grandchild.insertBefore(parent, undefined)).toThrow("would create a cycle")
+  })
+
   test("can add and remove children", () => {
     const parent = new TestRenderable(testRenderer, { id: "parent" })
     const child1 = new TestRenderable(testRenderer, { id: "child1" })
