@@ -18,6 +18,11 @@
   src: url("./fonts/gt-standard-s-black-regular.woff2") format("woff2");
 }
 
+@font-face {
+  font-family: "GT Standard S Regular";
+  src: url("./fonts/gt-standard-s-regular.woff") format("woff");
+}
+
 :root {
   --bg: #f4f7f6;
   --surface: #ffffff;
@@ -27,16 +32,10 @@
   --text-lead: #2f4245;
   --line: #d0dfdc;
   --brand: #0a8e6f;
-  --brand-strong: #086e56;
   --white: #ffffff;
-  --brand-accent: #19b58f;
   --search-item-hover: #ebf9f4;
   --side-link: #233f41;
   --side-link-active: #0a3f35;
-  --side-active-start: #d8f9ed;
-  --side-active-end: #e4fff7;
-  --hint-bg: #edf7f4;
-  --hint-text: #23504f;
   --doc-text: #214245;
   --code-bg: #f0f7f5;
   --code-strong-bg: #f8fbfa;
@@ -56,10 +55,7 @@
   --code-token-arg: #273b40;
   --focus-ring: color-mix(in oklab, var(--brand) 24%, transparent);
   --focus-border: color-mix(in oklab, var(--brand) 35%, var(--line));
-  --navbar-bg: var(--bg);
-  --brand-grad: linear-gradient(130deg, var(--brand), var(--brand-accent));
   --shadow: 0 16px 42px rgba(12, 34, 35, 0.08);
-  --radius: 16px;
 }
 
 * {
@@ -115,40 +111,189 @@ body {
   color: var(--doc-text);
 }
 
-.home-actions {
-  margin-top: 24px;
+.home-hero-example {
+  margin-top: 1.2rem;
+  width: 100%;
+}
+
+.doc-link {
+  text-decoration: underline;
+  font-style: italic;
+}
+
+.home-quickstart {
+  margin: 1.2rem;
+}
+
+.quickstart-head h2 {
+  font-family: "GT Canon M Extanded Black Regular", sans-serif;
+  font-size: 1.5rem;
+  margin-bottom: 0;
+}
+
+.quickstart-head p {
+  margin: 0.35rem 0 1.5rem;
+  font-size: 0.92rem;
+  color: var(--text-soft);
+}
+
+.quickstart-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-muted);
+  overflow: hidden;
+}
+
+.quickstart-header {
   display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.quickstart-tab {
+  background: transparent;
+  border: none;
+  color: var(--text-soft);
+  padding: 16px 0;
+  cursor: pointer;
+  font-family: monospace;
+  font-size: 0.95rem;
+  position: relative;
+  transition: color 0.2s ease;
+}
+
+.quickstart-tab:hover {
+  color: var(--text);
+}
+
+.quickstart-tab[aria-selected="true"] {
+  color: var(--text);
+}
+
+.quickstart-tab[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--text);
+}
+
+.quickstart-content {
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: transparent;
+  min-height: 50px;
+}
+
+.quickstart-content code {
+  color: var(--code-text);
+  font-family: monospace;
+  font-size: 0.95rem;
+}
+
+.quickstart-content .copy-btn {
+  position: static;
+  top: auto;
+  right: auto;
+  flex-shrink: 0;
+}
+
+.home-footer {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 40px 34px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border-top: 1px solid var(--line);
+  background: var(--bg);
+}
+
+.home-footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.home-footer-flower {
+  color: var(--text);
+  opacity: 0.6;
+  animation: rotate 10s linear infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.home-footer-name {
+  font-family: "GT Standard S Expanded Heavy Regular";
+  font-size: 0.9rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text);
+  opacity: 0.8;
+}
+
+.home-footer-links {
+  display: flex;
+  align-items: center;
   gap: 12px;
   flex-wrap: wrap;
 }
 
-.home-btn {
+.home-footer-btn {
+  height: 40px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 42px;
+  gap: 8px;
   padding: 0 16px;
-  border-radius: 11px;
+  border-radius: 8px;
   border: 1px solid transparent;
-  font-weight: 700;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
 }
 
-.home-btn-primary {
-  color: var(--white);
-  background: var(--brand-grad);
+.home-footer-btn svg {
+  flex-shrink: 0;
 }
 
-.home-btn-secondary {
+.home-footer-btn-docs {
+  background: var(--text);
+  color: var(--bg);
+}
+
+.home-footer-btn-github {
+  background: var(--surface-muted);
   color: var(--text);
   border-color: var(--line);
-  background: var(--surface-muted);
 }
 
-.home-grid {
-  margin-top: 18px;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+@media (max-width: 640px) {
+  .home-footer {
+    flex-direction: column;
+    text-align: center;
+    padding: 30px 20px;
+  }
+
+  .home-footer-links {
+    justify-content: center;
+  }
 }
 
 a {
@@ -404,7 +549,6 @@ h1,
 h2,
 .search-title,
 .search-meta,
-.hint,
 .side-link {
   overflow-wrap: anywhere;
   word-break: break-word;
@@ -512,17 +656,17 @@ h2,
 }
 
 @media (max-width: 980px) {
-  .home-shell {
-    width: min(1080px, calc(100% - 20px));
-    padding-top: 12px;
-  }
-
   .home-hero {
     padding: 20px;
   }
 
-  .home-grid {
-    grid-template-columns: 1fr;
+  .home-footer {
+    padding: 12px 20px 18px;
+    height: 65vh;
+  }
+
+  .home-footer-links {
+    justify-content: flex-start;
   }
 
   .site-shell {
