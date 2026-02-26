@@ -1,4 +1,4 @@
-import { render, useTerminalDimensions, useTimeline } from "@cascade/solid"
+import { render, useTerminalDimensions, useTimeline } from "@cascadetui/solid"
 import { createSignal, For } from "solid-js"
 
 export const SplitModeDemo = () => {
