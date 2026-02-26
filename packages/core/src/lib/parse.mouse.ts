@@ -37,17 +37,26 @@ export class MouseParser {
   // decoding happens before parsing. That can corrupt old X10 bytes >= 0x80
   // (for example x/y >= 95), because utf8 does not preserve arbitrary bytes.
   // SGR sequences are ASCII digits + separators and are unaffected.
-  private decodeInput(data: Buffer): string {
-    return data.toString()
+  private decodeInput(data: Buffer | string | Uint8Array | ArrayBuffer): string {
+    if (typeof data === "string") {
+      return data
+    }
+    if (Buffer.isBuffer(data)) {
+      return data.toString()
+    }
+    if (data instanceof Uint8Array) {
+      return Buffer.from(data.buffer, data.byteOffset, data.byteLength).toString()
+    }
+    return Buffer.from(data).toString()
   }
 
-  public parseMouseEvent(data: Buffer): RawMouseEvent | null {
+  public parseMouseEvent(data: Buffer | string | Uint8Array | ArrayBuffer): RawMouseEvent | null {
     const str = this.decodeInput(data)
     const parsed = this.parseMouseSequenceAt(str, 0)
     return parsed?.event ?? null
   }
 
-  public parseAllMouseEvents(data: Buffer): RawMouseEvent[] {
+  public parseAllMouseEvents(data: Buffer | string | Uint8Array | ArrayBuffer): RawMouseEvent[] {
     const str = this.decodeInput(data)
     const events: RawMouseEvent[] = []
     let offset = 0
