@@ -1,7 +1,7 @@
-import { type InputRenderable, type BoxRenderable, type KeyEvent, TextAttributes } from "@cascade/core"
+import { type InputRenderable, type BoxRenderable, type KeyEvent, TextAttributes } from "@cascadetui/core"
 import { createSignal, createMemo, For, Show, onMount } from "solid-js"
 import { createStore } from "solid-js/store"
-import { useRenderer } from "@cascade/solid"
+import { useRenderer } from "@cascadetui/solid"
 
 type AutocompleteOption = {
   display: string
