@@ -1,5 +1,5 @@
-import { measureText } from "@cascade/core"
-import { useKeyboard, useRenderer, useTerminalDimensions } from "@cascade/solid"
+import { measureText } from "@cascadetui/core"
+import { useKeyboard, useRenderer, useTerminalDimensions } from "@cascadetui/solid"
 import { createSignal, Match, onMount, Switch } from "solid-js"
 import { Session } from "../session.tsx"
 import { SplitModeDemo } from "./animation-demo.tsx"
