@@ -26,6 +26,7 @@ This monorepo currently includes:
 - [`@cascadetui/core`](packages/core): TypeScript bindings for the Zig native core and low-level primitives.
 - [`@cascadetui/solid`](packages/solid): SolidJS reconciler for Cascade.
 - [`@cascadetui/react`](packages/react): React reconciler for Cascade.
+- [`create-cascade`](packages/create-cascade): Project scaffolding CLI with framework and starter selection.
 
 ## Installation
 
