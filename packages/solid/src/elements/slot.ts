@@ -1,4 +1,4 @@
-import { BaseRenderable, isTextNodeRenderable, TextNodeRenderable, TextRenderable, Yoga } from "@cascade/core"
+import { BaseRenderable, isTextNodeRenderable, TextNodeRenderable, TextRenderable, Yoga } from "@cascadetui/core"
 
 class SlotBaseRenderable extends BaseRenderable {
   constructor(id: string) {
