@@ -1,6 +1,6 @@
 {
   "name": "@cascadetui/core-darwin-x64",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "description": "Prebuilt darwin-x64 binaries for @cascadetui/core",
   "main": "index.ts",
   "types": "index.ts",
