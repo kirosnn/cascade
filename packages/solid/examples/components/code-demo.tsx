@@ -1,4 +1,4 @@
-import { SyntaxStyle, RGBA } from "@cascade/core"
+import { SyntaxStyle, RGBA } from "@cascadetui/core"
 
 export function CodeDemo() {
   const syntaxStyle = SyntaxStyle.fromStyles({
