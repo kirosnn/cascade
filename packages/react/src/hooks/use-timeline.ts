@@ -1,4 +1,4 @@
-import { engine, Timeline, type TimelineOptions } from "@cascade/core"
+import { engine, Timeline, type TimelineOptions } from "@cascadetui/core"
 import { useEffect } from "react"
 
 export const useTimeline = (options: TimelineOptions = {}) => {
