@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "fs"
+import { mkdirSync, readFileSync, statSync, writeFileSync } from "fs"
 import { join, resolve, dirname } from "path"
 import { fileURLToPath } from "url"
 import { execSync } from "child_process"
@@ -28,63 +28,62 @@ function getTimestampForFileName(): string {
   return `${year}${month}${day}-${hours}${minutes}${seconds}`
 }
 
-function collectMarkdownFiles(directory: string): string[] {
-  const entries = readdirSync(directory, { withFileTypes: true })
-  const files: string[] = []
+function collectWorkspaceFiles(): string[] {
+  const output = execSync("git ls-files --cached --others --exclude-standard", { cwd: rootDir, encoding: "utf8" })
+  return output
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0)
+}
 
-  for (const entry of entries) {
-    const fullPath = join(directory, entry.name)
-    const relativePath = fullPath.slice(rootDir.length + 1).replaceAll("\\", "/")
-
-    if (entry.isDirectory()) {
-      if (entry.name === "node_modules" || entry.name === ".git" || entry.name === ".labs") {
-        continue
-      }
-      files.push(...collectMarkdownFiles(fullPath))
-      continue
+function detectTextFile(buffer: Buffer): boolean {
+  const sampleSize = Math.min(buffer.length, 2048)
+  for (let i = 0; i < sampleSize; i += 1) {
+    if (buffer[i] === 0) {
+      return false
     }
-
-    if (!entry.isFile()) {
-      continue
-    }
-
-    if (!entry.name.toLowerCase().endsWith(".md")) {
-      continue
-    }
-
-    files.push(relativePath)
   }
-
-  return files
+  return true
 }
 
 function createMarkdownAggregationFile(version: string): string {
   mkdirSync(labsDir, { recursive: true })
 
   const timestamp = getTimestampForFileName()
-  const outputFileName = `release-md-index-${version}-${timestamp}.md`
+  const outputFileName = `release-workspace-index-${version}-${timestamp}.md`
   const outputPath = join(labsDir, outputFileName)
 
-  const markdownFiles = collectMarkdownFiles(rootDir).sort((a, b) => a.localeCompare(b))
+  const workspaceFiles = collectWorkspaceFiles()
+    .filter((relativePath) => !relativePath.startsWith(".labs/"))
+    .sort((a, b) => a.localeCompare(b))
 
   const sections: string[] = []
-  sections.push(`# Markdown aggregation for release ${version}`)
+  sections.push(`# Workspace aggregation for release ${version}`)
   sections.push("")
   sections.push(`Generated at: ${new Date().toISOString()}`)
-  sections.push(`Total files: ${markdownFiles.length}`)
+  sections.push(`Total files: ${workspaceFiles.length}`)
 
-  for (const relativePath of markdownFiles) {
+  for (const relativePath of workspaceFiles) {
     const fullPath = join(rootDir, relativePath)
     const stats = statSync(fullPath)
-    const content = readFileSync(fullPath, "utf8")
+    const fileBuffer = readFileSync(fullPath)
+    const isText = detectTextFile(fileBuffer)
     sections.push("")
     sections.push(`## ${relativePath}`)
     sections.push("")
     sections.push(`- Size: ${stats.size} bytes`)
+    sections.push(`- Type: ${isText ? "text" : "binary"}`)
     sections.push("")
-    sections.push("```md")
-    sections.push(content)
-    sections.push("```")
+    if (isText) {
+      const content = fileBuffer.toString("utf8")
+      sections.push("```text")
+      sections.push(content)
+      sections.push("```")
+    } else {
+      sections.push("```base64")
+      sections.push(fileBuffer.toString("base64"))
+      sections.push("```")
+    }
   }
 
   writeFileSync(outputPath, sections.join("\n"))
