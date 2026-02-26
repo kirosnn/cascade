@@ -1,0 +1,22 @@
+{
+  "name": "create-cascade",
+  "version": "0.1.2",
+  "description": "Create a new Cascade TUI project",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kirosnn/cascade",
+    "directory": "packages/create-cascade"
+  },
+  "bin": {
+    "create-cascade": "./index.js"
+  },
+  "files": [
+    "index.js",
+    "template"
+  ],
+  "scripts": {
+    "publish": "bun scripts/publish.ts"
+  }
+}
