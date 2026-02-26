@@ -11,7 +11,7 @@ import {
   TabSelectRenderable,
   TextareaRenderable,
   TextRenderable,
-} from "@cascade/core"
+} from "@cascadetui/core"
 import type { RenderableConstructor } from "../types/components"
 import {
   BoldSpanRenderable,
