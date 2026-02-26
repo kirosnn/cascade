@@ -1,6 +1,6 @@
 import { createMemo, For, createSignal } from "solid-js"
-import { LinearScrollAccel, MacOSScrollAccel } from "@cascade/core"
-import { useKeyboard } from "@cascade/solid"
+import { LinearScrollAccel, MacOSScrollAccel } from "@cascadetui/core"
+import { useKeyboard } from "@cascadetui/solid"
 
 /**
  * Custom scroll acceleration that applies a simple quadratic curve
