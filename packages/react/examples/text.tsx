@@ -1,4 +1,4 @@
-import { createCliRenderer } from "@cascade/core"
+import { createCliRenderer } from "@cascadetui/core"
 import { createRoot } from "../src"
 
 function App() {
