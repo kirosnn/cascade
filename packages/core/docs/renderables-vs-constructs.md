@@ -8,7 +8,7 @@ Assume we want to create a simple "login" form with a username and password inpu
 Creates concrete `Renderable` instances with a `RenderContext` and composes via `add()`. State/behavior are mutated directly on instances (setters/methods), with mouse/key events bubbling upward through `processMouseEvent` for example.
 
 ```typescript
-import { BoxRenderable, TextRenderable, InputRenderable, createCliRenderer, type RenderContext } from "@cascade/core"
+import { BoxRenderable, TextRenderable, InputRenderable, createCliRenderer, type RenderContext } from "@cascadetui/core"
 
 const renderer = await createCliRenderer()
 
@@ -105,7 +105,7 @@ renderer.root.add(loginForm)
 Builds an allegedly lightweight VNode graph using functional constructs that return VNodes; no instances exist until `instantiate(ctx, vnode)` is called. During instantiation, children are flattened, renderables are created and added, and any chained method/property calls made on VNodes are replayed on the created instance. `delegate(mapping, vnode)` can annotate the VNode so selected APIs (e.g., `focus`, `add`) are later routed to a specific descendant when the instance is created.
 
 ```typescript
-import { Text, Input, Box, createCliRenderer, delegate, instantiate } from "@cascade/core"
+import { Text, Input, Box, createCliRenderer, delegate, instantiate } from "@cascadetui/core"
 
 const renderer = await createCliRenderer()
 
