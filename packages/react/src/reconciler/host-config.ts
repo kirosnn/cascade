@@ -1,4 +1,4 @@
-import { TextNodeRenderable, TextRenderable, type Renderable } from "@cascade/core"
+import { TextNodeRenderable, TextRenderable, type Renderable } from "@cascadetui/core"
 import pkgJson from "../../package.json"
 import { createContext } from "react"
 import type { HostConfig, ReactContext } from "react-reconciler"
@@ -273,6 +273,6 @@ export const hostConfig: HostConfig<
   },
 
   // @ts-expect-error DefinitelyTyped is not up to date
-  rendererPackageName: "@cascade/react",
+  rendererPackageName: "@cascadetui/react",
   rendererVersion: pkgJson.version,
 }
