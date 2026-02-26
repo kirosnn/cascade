@@ -1,5 +1,5 @@
 import { createSignal, Match, Show, Switch } from "solid-js"
-import { render, useKeyboard, useRenderer } from "@cascade/solid"
+import { render, useKeyboard, useRenderer } from "@cascadetui/solid"
 
 process.env.DEBUG = "true"
 
