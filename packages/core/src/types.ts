@@ -57,6 +57,7 @@ export interface RendererEvents {
   selection: (selection: Selection) => void
   "debugOverlay:toggle": (enabled: boolean) => void
   theme_mode: (mode: ThemeMode) => void
+  crash: (report: { timestamp: string; source: string; message: string; stack?: string }) => void
 }
 
 export interface RenderContext extends EventEmitter {
