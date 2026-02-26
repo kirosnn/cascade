@@ -30,7 +30,7 @@ import type {
   TextNodeRenderable,
   TextOptions,
   TextRenderable,
-} from "@cascade/core"
+} from "@cascadetui/core"
 import type React from "react"
 
 // ============================================================================
