@@ -1,4 +1,4 @@
-import type { KeyEvent } from "@cascade/core"
+import type { KeyEvent } from "@cascadetui/core"
 import { useEffect } from "react"
 import { useAppContext } from "../components/app"
 import { useEffectEvent } from "./use-event"
