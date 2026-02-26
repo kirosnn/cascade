@@ -1,0 +1,565 @@
+@font-face {
+  font-family: "GT Canon S Light Regular";
+  src: url("./fonts/gt-canon-s-light-regular.woff") format("woff");
+}
+
+@font-face {
+  font-family: "GT Canon M Extanded Black Regular";
+  src: url("./fonts/gt-canon-m-extended-black-regular.woff") format("woff");
+}
+
+@font-face {
+  font-family: "GT Standard S Expanded Heavy Regular";
+  src: url("./fonts/gt-standard-s-expanded-heavy-regular.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "GT Standard S Black Regular";
+  src: url("./fonts/gt-standard-s-black-regular.woff2") format("woff2");
+}
+
+:root {
+  --bg: #f4f7f6;
+  --surface: #ffffff;
+  --surface-muted: #f0f4f3;
+  --text: #102124;
+  --text-soft: #4f6365;
+  --text-lead: #2f4245;
+  --line: #d0dfdc;
+  --brand: #0a8e6f;
+  --brand-strong: #086e56;
+  --white: #ffffff;
+  --brand-accent: #19b58f;
+  --search-item-hover: #ebf9f4;
+  --side-link: #233f41;
+  --side-link-active: #0a3f35;
+  --side-active-start: #d8f9ed;
+  --side-active-end: #e4fff7;
+  --hint-bg: #edf7f4;
+  --hint-text: #23504f;
+  --doc-text: #214245;
+  --code-bg: #f0f7f5;
+  --code-strong-bg: #f8fbfa;
+  --code-text: #1f3136;
+  --code-button-bg: #ffffff;
+  --code-button-border: #b8ccc6;
+  --code-button-text: #47605f;
+  --code-button-hover: #eef6f4;
+  --code-token-keyword: #a03b82;
+  --code-token-string: #1e7a46;
+  --code-token-number: #9a5f12;
+  --code-token-comment: #6f8484;
+  --code-token-identifier: #1f4a8a;
+  --code-token-operator: #5a616b;
+  --code-token-command: #6945b4;
+  --code-token-flag: #116a8b;
+  --code-token-arg: #273b40;
+  --focus-ring: color-mix(in oklab, var(--brand) 24%, transparent);
+  --focus-border: color-mix(in oklab, var(--brand) 35%, var(--line));
+  --navbar-bg: var(--bg);
+  --brand-grad: linear-gradient(130deg, var(--brand), var(--brand-accent));
+  --shadow: 0 16px 42px rgba(12, 34, 35, 0.08);
+  --radius: 16px;
+}
+
+* {
+  box-sizing: border-box;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  font-family: "Manrope", system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.home-hero {
+  margin-top: 2.5rem;
+  border-bottom: 1px solid var(--line);
+  padding: 34px;
+}
+
+.home-hero h1 {
+  font-family: "GT Canon S Light Regular";
+  margin: 16px auto 12px;
+  max-width: 760px;
+  font-size: 2.2rem;
+  line-height: 1.02;
+  text-align: left;
+}
+
+.home-hero h1 .hero-accent {
+  font-family: "GT Standard S Expanded Heavy Regular";
+}
+
+.home-hero h1 .hero-u {
+  text-decoration: underline;
+  font-style: italic;
+}
+
+.home-hero p {
+  margin-top: 1.2rem;
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--doc-text);
+}
+
+.home-actions {
+  margin-top: 24px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.home-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 42px;
+  padding: 0 16px;
+  border-radius: 11px;
+  border: 1px solid transparent;
+  font-weight: 700;
+}
+
+.home-btn-primary {
+  color: var(--white);
+  background: var(--brand-grad);
+}
+
+.home-btn-secondary {
+  color: var(--text);
+  border-color: var(--line);
+  background: var(--surface-muted);
+}
+
+.home-grid {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+p.lead {
+  margin-right: 1rem;
+  color: var(--text-lead);
+}
+
+.site-shell {
+  width: 70%;
+  margin: 0 auto;
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: 78px minmax(0, 1fr);
+  border-left: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+}
+
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: grid;
+  grid-template-columns: 1fr minmax(320px, 520px) 1fr;
+  align-items: center;
+  gap: 18px;
+  padding: 14px 24px;
+  background: transparent;
+  backdrop-filter: blur(10px);
+}
+
+.navbar-home {
+  grid-template-columns: 1fr auto;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 800;
+  justify-self: start;
+  font-family: "GT Standard S Expanded Heavy Regular";
+  text-transform: uppercase;
+  user-select: none;
+  -ms-user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+}
+
+.brand-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  color: var(--white);
+}
+
+.nav-links {
+  display: flex;
+  gap: 12px;
+  justify-self: end;
+}
+
+.nav-link {
+  padding: 8px 10px;
+  border-radius: 10px;
+  color: var(--text-soft);
+  font-size: 14px;
+}
+
+.nav-link:hover {
+  color: var(--text);
+  background: var(--surface-muted);
+}
+
+.search-wrap {
+  position: relative;
+  width: min(320px, 100%);
+  justify-self: center;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px 11px;
+  font: inherit;
+  font-size: 13px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-muted);
+  color: var(--text-soft);
+}
+
+.search-input:focus {
+  outline: 1px solid var(--focus-ring);
+  border-color: var(--focus-border);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.search-results {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  max-height: 48vh;
+  overflow: auto;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.search-item {
+  width: 100%;
+  border: 0;
+  background: var(--surface);
+  text-align: left;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+.search-item:last-child {
+  border-bottom: 0;
+}
+
+.search-item:hover,
+.search-item.active {
+  background: var(--search-item-hover);
+}
+
+.search-title {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.search-meta {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-soft);
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: 270px minmax(0, 1fr);
+  min-height: 0;
+  padding-inline: 2rem;
+}
+
+.sidebar {
+  position: sticky;
+  top: 78px;
+  align-self: start;
+  height: calc(100vh - 78px);
+  overflow: auto;
+  padding: 20px 0;
+  background: var(--bg);
+}
+
+.side-group {
+  margin-bottom: 18px;
+}
+
+.side-title {
+  margin: 0 0 8px;
+  padding: 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-soft);
+  font-size: 11px;
+}
+
+.side-link {
+  display: block;
+  padding: 10px;
+  margin-bottom: 4px;
+  border-radius: 10px;
+  font-size: 14px;
+  color: var(--side-link);
+}
+
+.side-link:hover {
+  background: var(--surface-muted);
+}
+
+.side-link.active {
+  color: var(--side-link-active);
+  font-weight: bold;
+}
+
+.main-content {
+  overflow: auto;
+  padding-left: 2rem;
+}
+
+.article-card {
+  max-width: 920px;
+  margin: 0 auto;
+  background: var(--bg);
+  min-width: 0;
+  width: 100%;
+  padding-right: 2rem;
+}
+
+h1 {
+  font-family: "GT Canon M Extanded Black Regular";
+  margin: 10px 0;
+  line-height: 1.1;
+  font-size: 2rem;
+}
+
+.doc-section {
+  margin-top: 24px;
+}
+
+.doc-section h2 {
+  margin: 0 0 10px;
+  font-size: 24px;
+}
+
+.doc-section p {
+  margin: 0 0 12px;
+  line-height: 1.64;
+  color: var(--doc-text);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+pre {
+  margin: 12px 0;
+  overflow: hidden;
+  border-radius: 11px;
+  padding: 14px;
+  background: var(--code-bg);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+code {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 13px;
+  white-space: inherit;
+  overflow-wrap: inherit;
+  word-break: inherit;
+}
+
+h1,
+h2,
+.search-title,
+.search-meta,
+.hint,
+.side-link {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.code-block {
+  position: relative;
+  margin: 14px 0;
+  border-radius: 12px;
+  background: var(--code-strong-bg);
+  overflow: hidden;
+}
+
+.copy-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--code-button-border);
+  background: var(--code-button-bg);
+  color: var(--code-button-text);
+  border-radius: 8px;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  transition: background 0.16s ease;
+}
+
+.copy-btn:hover {
+  background: var(--code-button-hover);
+}
+
+.copy-btn svg {
+  width: 13px;
+  height: 13px;
+}
+
+.copy-btn .check-icon {
+  display: none;
+}
+
+.copy-btn.copied .copy-icon {
+  display: none;
+}
+
+.copy-btn.copied .check-icon {
+  display: block;
+}
+
+.code-block pre {
+  margin: 0;
+  padding: 14px 48px 14px 14px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.code-block code {
+  color: var(--code-text);
+  white-space: pre-wrap;
+}
+
+.token-keyword {
+  color: var(--code-token-keyword);
+}
+
+.token-string {
+  color: var(--code-token-string);
+}
+
+.token-number {
+  color: var(--code-token-number);
+}
+
+.token-comment {
+  color: var(--code-token-comment);
+}
+
+.token-identifier {
+  color: var(--code-token-identifier);
+}
+
+.token-operator {
+  color: var(--code-token-operator);
+}
+
+.token-command {
+  color: var(--code-token-command);
+}
+
+.token-flag {
+  color: var(--code-token-flag);
+}
+
+.token-arg {
+  color: var(--code-token-arg);
+}
+
+@media (max-width: 1280px) {
+  .site-shell {
+    width: 86%;
+  }
+}
+
+@media (max-width: 980px) {
+  .home-shell {
+    width: min(1080px, calc(100% - 20px));
+    padding-top: 12px;
+  }
+
+  .home-hero {
+    padding: 20px;
+  }
+
+  .home-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .site-shell {
+    width: 96%;
+    grid-template-rows: auto 1fr;
+  }
+
+  .navbar {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .nav-links {
+    display: none;
+  }
+
+  .search-wrap {
+    width: 100%;
+  }
+
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: static;
+    top: auto;
+    height: auto;
+    border-right: 0;
+    max-height: 40vh;
+  }
+
+  .main-content {
+    padding: 16px 0;
+  }
+
+  .article-card {
+    padding: 20px 2rem 20px 0;
+  }
+}
