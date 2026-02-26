@@ -288,7 +288,7 @@ export class StdinBuffer extends EventEmitter<StdinBufferEventMap> {
     this.timeoutMs = options.timeout ?? 10
   }
 
-  public process(data: string | Buffer): void {
+  public process(data: string | Buffer | Uint8Array | ArrayBuffer): void {
     // Clear any pending timeout
     if (this.timeout) {
       clearTimeout(this.timeout)
@@ -299,15 +299,16 @@ export class StdinBuffer extends EventEmitter<StdinBufferEventMap> {
     // If buffer has single byte > 127, convert to ESC + (byte - 128)
     // TODO: This seems redundant as parseKeypress should handle this.
     let str: string
-    if (Buffer.isBuffer(data)) {
-      if (data.length === 1 && data[0]! > 127) {
-        const byte = data[0]! - 128
+    if (typeof data === "string") {
+      str = data
+    } else {
+      const chunk = this.toBuffer(data)
+      if (chunk.length === 1 && chunk[0]! > 127) {
+        const byte = chunk[0]! - 128
         str = "\x1b" + String.fromCharCode(byte)
       } else {
-        str = data.toString()
+        str = chunk.toString()
       }
-    } else {
-      str = data
     }
 
     if (str.length === 0 && this.buffer.length === 0) {
@@ -419,5 +420,15 @@ export class StdinBuffer extends EventEmitter<StdinBufferEventMap> {
 
   destroy(): void {
     this.clear()
+  }
+
+  private toBuffer(data: Buffer | Uint8Array | ArrayBuffer): Buffer {
+    if (Buffer.isBuffer(data)) {
+      return data
+    }
+    if (data instanceof Uint8Array) {
+      return Buffer.from(data.buffer, data.byteOffset, data.byteLength)
+    }
+    return Buffer.from(data)
   }
 }
