@@ -1,4 +1,4 @@
-# @cascade/react
+# @cascadetui/react
 
 A React renderer for building terminal user interfaces using [Cascade core](https://github.com/kirosnn/cascade). Create rich, interactive console applications with familiar React patterns and components.
 
@@ -13,14 +13,14 @@ bun create tui --template react
 Manual installation:
 
 ```bash
-bun install @cascade/react @cascade/core react
+bun install @cascadetui/react @cascadetui/core react
 ```
 
 ## Quick Start
 
 ```tsx
-import { createCliRenderer } from "@cascade/core"
-import { createRoot } from "@cascade/react"
+import { createCliRenderer } from "@cascadetui/core"
+import { createRoot } from "@cascadetui/react"
 
 function App() {
   return <text>Hello, world!</text>
@@ -42,7 +42,7 @@ For optimal TypeScript support, configure your `tsconfig.json`:
     "module": "ESNext",
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
-    "jsxImportSource": "@cascade/react",
+    "jsxImportSource": "@cascadetui/react",
     "strict": true,
     "skipLibCheck": true
   }
@@ -138,8 +138,8 @@ Components can be styled using props or the `style` prop:
 Creates a root for rendering a React tree with the given CLI renderer.
 
 ```tsx
-import { createCliRenderer } from "@cascade/core"
-import { createRoot } from "@cascade/react"
+import { createCliRenderer } from "@cascadetui/core"
+import { createRoot } from "@cascadetui/react"
 
 const renderer = await createCliRenderer({
   // Optional renderer configuration
@@ -167,7 +167,7 @@ Renders a React element to the terminal. This function is deprecated in favor of
 Access the Cascade renderer instance.
 
 ```tsx
-import { useRenderer } from "@cascade/react"
+import { useRenderer } from "@cascadetui/react"
 
 function App() {
   const renderer = useRenderer()
@@ -186,7 +186,7 @@ function App() {
 Handle keyboard events.
 
 ```tsx
-import { useKeyboard } from "@cascade/react"
+import { useKeyboard } from "@cascadetui/react"
 
 function App() {
   useKeyboard((key) => {
@@ -210,7 +210,7 @@ By default, only receives press events (including key repeats with `repeated: tr
 **Example with release events:**
 
 ```tsx
-import { useKeyboard } from "@cascade/react"
+import { useKeyboard } from "@cascadetui/react"
 import { useState } from "react"
 
 function App() {
@@ -244,7 +244,7 @@ function App() {
 Handle terminal resize events.
 
 ```tsx
-import { useOnResize, useRenderer } from "@cascade/react"
+import { useOnResize, useRenderer } from "@cascadetui/react"
 import { useEffect } from "react"
 
 function App() {
@@ -267,7 +267,7 @@ function App() {
 Get current terminal dimensions and automatically update when the terminal is resized.
 
 ```tsx
-import { useTerminalDimensions } from "@cascade/react"
+import { useTerminalDimensions } from "@cascadetui/react"
 
 function App() {
   const { width, height } = useTerminalDimensions()
@@ -292,7 +292,7 @@ function App() {
 Create and manage animations using Cascade's timeline system. This hook automatically registers and unregisters the timeline with the animation engine.
 
 ```tsx
-import { useTimeline } from "@cascade/react"
+import { useTimeline } from "@cascadetui/react"
 import { useEffect, useState } from "react"
 
 function App() {
@@ -532,8 +532,8 @@ function App() {
 #### Textarea Component
 
 ```tsx
-import type { TextareaRenderable } from "@cascade/core"
-import { useKeyboard, useRenderer } from "@cascade/react"
+import type { TextareaRenderable } from "@cascadetui/core"
+import { useKeyboard, useRenderer } from "@cascadetui/react"
 import { useEffect, useRef } from "react"
 
 function App() {
@@ -563,7 +563,7 @@ function App() {
 Dropdown selection component.
 
 ```tsx
-import type { SelectOption } from "@cascade/core"
+import type { SelectOption } from "@cascadetui/core"
 import { useState } from "react"
 
 function App() {
@@ -596,7 +596,7 @@ function App() {
 #### Code Component
 
 ```tsx
-import { RGBA, SyntaxStyle } from "@cascade/core"
+import { RGBA, SyntaxStyle } from "@cascadetui/core"
 
 const syntaxStyle = SyntaxStyle.fromStyles({
   keyword: { fg: RGBA.fromHex("#ff6b6b"), bold: true }, // red, bold
@@ -629,8 +629,8 @@ function App() {
 Display code with line numbers, and optionally add diff highlights or diagnostic indicators.
 
 ```tsx
-import type { LineNumberRenderable } from "@cascade/core"
-import { RGBA, SyntaxStyle } from "@cascade/core"
+import type { LineNumberRenderable } from "@cascadetui/core"
+import { RGBA, SyntaxStyle } from "@cascadetui/core"
 import { useEffect, useRef } from "react"
 
 function App() {
@@ -691,8 +691,8 @@ For a complete interactive example with theme switching and keybindings, see [`e
 ### Login Form
 
 ```tsx
-import { createCliRenderer } from "@cascade/core"
-import { createRoot, useKeyboard } from "@cascade/react"
+import { createCliRenderer } from "@cascadetui/core"
+import { createRoot, useKeyboard } from "@cascadetui/react"
 import { useCallback, useState } from "react"
 
 function App() {
@@ -755,8 +755,8 @@ createRoot(renderer).render(<App />)
 ### Counter with Timer
 
 ```tsx
-import { createCliRenderer } from "@cascade/core"
-import { createRoot } from "@cascade/react"
+import { createCliRenderer } from "@cascadetui/core"
+import { createRoot } from "@cascadetui/react"
 import { useEffect, useState } from "react"
 
 function App() {
@@ -784,8 +784,8 @@ createRoot(renderer).render(<App />)
 ### System Monitor Animation
 
 ```tsx
-import { createCliRenderer, TextAttributes } from "@cascade/core"
-import { createRoot, useTimeline } from "@cascade/react"
+import { createCliRenderer, TextAttributes } from "@cascadetui/core"
+import { createRoot, useTimeline } from "@cascadetui/react"
 import { useEffect, useState } from "react"
 
 type Stats = {
@@ -868,8 +868,8 @@ createRoot(renderer).render(<App />)
 ### Styled Text Showcase
 
 ```tsx
-import { createCliRenderer } from "@cascade/core"
-import { createRoot } from "@cascade/react"
+import { createCliRenderer } from "@cascadetui/core"
+import { createRoot } from "@cascadetui/react"
 
 function App() {
   return (
@@ -913,8 +913,8 @@ import {
   RGBA,
   type BoxOptions,
   type RenderContext,
-} from "@cascade/core"
-import { createRoot, extend } from "@cascade/react"
+} from "@cascadetui/core"
+import { createRoot, extend } from "@cascadetui/react"
 
 // Create custom component class
 class ButtonRenderable extends BoxRenderable {
@@ -949,7 +949,7 @@ class ButtonRenderable extends BoxRenderable {
 }
 
 // Add TypeScript support
-declare module "@cascade/react" {
+declare module "@cascadetui/react" {
   interface CascadeComponents {
     consoleButton: typeof ButtonRenderable
   }
