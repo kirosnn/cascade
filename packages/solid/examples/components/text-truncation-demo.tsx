@@ -1,5 +1,5 @@
-import { bold, cyan, green, magenta, t, yellow } from "@cascade/core"
-import { useKeyboard, useRenderer, useSelectionHandler } from "@cascade/solid"
+import { bold, cyan, green, magenta, t, yellow } from "@cascadetui/core"
+import { useKeyboard, useRenderer, useSelectionHandler } from "@cascadetui/solid"
 import { createMemo, createSignal, onMount, onCleanup } from "solid-js"
 
 const singleLineText1 =
