@@ -14,6 +14,11 @@
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@cascadetui/core": ["../core/dist"],
+      "@cascadetui/core/*": ["../core/dist/*"]
+    },
 
     // Best practices
     "strict": true,
