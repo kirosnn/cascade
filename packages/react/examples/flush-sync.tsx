@@ -1,5 +1,5 @@
-import { createCliRenderer } from "@cascade/core"
-import { createRoot, flushSync, useKeyboard } from "@cascade/react"
+import { createCliRenderer } from "@cascadetui/core"
+import { createRoot, flushSync, useKeyboard } from "@cascadetui/react"
 import { useRef, useState } from "react"
 
 /**
