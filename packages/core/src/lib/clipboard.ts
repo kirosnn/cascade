@@ -25,9 +25,10 @@ export function encodeOsc52Payload(text: string, encoder: TextEncoder = new Text
 
 function runClipboardCommand(command: string[], input?: string): ClipboardCommandResult {
   try {
+    const stdin = input === undefined ? undefined : new TextEncoder().encode(input)
     const subprocess = Bun.spawnSync({
       cmd: command,
-      stdin: input ?? undefined,
+      stdin,
       stdout: "pipe",
       stderr: "pipe",
     })
