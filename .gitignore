@@ -30,3 +30,6 @@ Thumbs.db
 
 # bun
 .bun/
+
+# for private test only
+.labs/
