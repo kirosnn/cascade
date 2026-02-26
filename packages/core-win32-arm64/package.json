@@ -1,6 +1,6 @@
 {
   "name": "@cascadetui/core-win32-arm64",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "description": "Prebuilt win32-arm64 binaries for @cascadetui/core",
   "main": "index.ts",
   "types": "index.ts",
