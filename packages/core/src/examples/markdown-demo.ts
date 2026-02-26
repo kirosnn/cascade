@@ -37,7 +37,7 @@ Welcome to the **MarkdownRenderable** showcase! This demonstrates automatic tabl
 Here's how to use it:
 
 \`\`\`typescript
-import { MarkdownRenderable } from "@cascade/core"
+import { MarkdownRenderable } from "@cascadetui/core"
 
 const md = new MarkdownRenderable(renderer, {
   content: "# Hello World",
