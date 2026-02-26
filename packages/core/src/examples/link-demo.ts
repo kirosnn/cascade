@@ -135,7 +135,7 @@ export function run(renderer: CliRenderer): void {
     t`${bold(fg("#f472b6")("♥ Project Info"))}
 
 ${fg("#e2e8f0")("Source:")} ${link("https://github.com/kirosnn/cascade")(underline(fg("#38bdf8")("GitHub Repository")))}
-${fg("#e2e8f0")("Web:")}    ${link("https://cascade.com")(underline(fg("#34d399")("Official Website")))}
+${fg("#e2e8f0")("Web:")}    ${link("https://cascadetui.vercel.app")(underline(fg("#34d399")("Official Website")))}
 ${fg("#e2e8f0")("License:")} ${link("https://github.com/kirosnn/cascade/blob/main/LICENSE")(underline(fg("#fbbf24")("MIT")))}`,
   )
 
