@@ -51,7 +51,7 @@ if (missingRequired.length > 0) {
   process.exit(1)
 }
 
-console.log(`Building @cascade/react library${isDev ? " (dev mode)" : ""}...`)
+console.log(`Building @cascadetui/react library${isDev ? " (dev mode)" : ""}...`)
 
 const distDir = join(rootDir, "dist")
 rmSync(distDir, { recursive: true, force: true })
@@ -154,8 +154,8 @@ const exports = {
 }
 
 const processedDependencies = { ...packageJson.dependencies }
-if (processedDependencies["@cascade/core"] === "workspace:*") {
-  processedDependencies["@cascade/core"] = packageJson.version
+if (processedDependencies["@cascadetui/core"] === "workspace:*") {
+  processedDependencies["@cascadetui/core"] = packageJson.version
 }
 
 writeFileSync(
