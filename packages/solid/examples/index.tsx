@@ -1,5 +1,5 @@
-import { render } from "@cascade/solid"
-import { ConsolePosition } from "@cascade/core"
+import { render } from "@cascadetui/solid"
+import { ConsolePosition } from "@cascadetui/core"
 import ExampleSelector from "./components/ExampleSelector"
 
 // Uncomment to debug solidjs reconciler
