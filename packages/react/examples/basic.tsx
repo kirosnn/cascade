@@ -1,5 +1,5 @@
-import { bold, createCliRenderer, fg, italic, t, TextAttributes } from "@cascade/core"
-import { createRoot, useKeyboard, useRenderer } from "@cascade/react"
+import { bold, createCliRenderer, fg, italic, t, TextAttributes } from "@cascadetui/core"
+import { createRoot, useKeyboard, useRenderer } from "@cascadetui/react"
 import { useCallback, useState } from "react"
 
 export const App = () => {
