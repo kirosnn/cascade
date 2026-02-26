@@ -3,7 +3,7 @@ import { testRender } from "../index"
 import { For, Show, createSignal } from "solid-js"
 import type { ScrollBoxRenderable } from "../../core/src/renderables"
 import { SyntaxStyle } from "../../core/src/syntax-style"
-import { MockTreeSitterClient } from "@cascade/core/testing"
+import { MockTreeSitterClient } from "@cascadetui/core/testing"
 
 let testSetup: Awaited<ReturnType<typeof testRender>>
 let mockTreeSitterClient: MockTreeSitterClient
