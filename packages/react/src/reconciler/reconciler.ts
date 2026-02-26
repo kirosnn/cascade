@@ -1,4 +1,4 @@
-import type { RootRenderable } from "@cascade/core"
+import type { RootRenderable } from "@cascadetui/core"
 import React from "react"
 import ReactReconciler from "react-reconciler"
 import { ConcurrentRoot } from "react-reconciler/constants"
