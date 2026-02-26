@@ -1,10 +1,10 @@
 import React from "react"
 
 export class ErrorBoundary extends React.Component<
-  { children: React.ReactNode },
+  { children: React.ReactNode; onCrash?: (error: Error, info: React.ErrorInfo) => void },
   { hasError: boolean; error: Error | null }
 > {
-  constructor(props: { children: React.ReactNode }) {
+  constructor(props: { children: React.ReactNode; onCrash?: (error: Error, info: React.ErrorInfo) => void }) {
     super(props)
     this.state = { hasError: false, error: null }
   }
@@ -14,6 +14,10 @@ export class ErrorBoundary extends React.Component<
     error: Error
   } {
     return { hasError: true, error }
+  }
+
+  override componentDidCatch(error: Error, info: React.ErrorInfo): void {
+    this.props.onCrash?.(error, info)
   }
 
   override render(): any {
