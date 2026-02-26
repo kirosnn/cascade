@@ -22,7 +22,7 @@ This guide publishes the required npm packages from the `Cascade` monorepo.
 Pick a semver version and apply it to `core/react/solid/create-cascade`:
 
 ```powershell
-bun scripts/prepare-release.ts 0.1.1
+bun scripts/prepare-release.ts 0.1.2
 ```
 
 Or auto-increment patch:
