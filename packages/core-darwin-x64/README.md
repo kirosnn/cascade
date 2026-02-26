@@ -1,3 +1,3 @@
-# @cascade/core-darwin-x64
+# @cascadetui/core-darwin-x64
 
-Prebuilt native package for @cascade/core on darwin-x64.
+Prebuilt native package for @cascadetui/core on darwin-x64.
