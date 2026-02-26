@@ -5,8 +5,8 @@ import {
   RGBA,
   type BoxOptions,
   type RenderContext,
-} from "@cascade/core"
-import { createRoot, extend } from "@cascade/react"
+} from "@cascadetui/core"
+import { createRoot, extend } from "@cascadetui/react"
 
 // Custom renderable that extends BoxRenderable
 class ConsoleButtonRenderable extends BoxRenderable {
@@ -44,7 +44,7 @@ class ConsoleButtonRenderable extends BoxRenderable {
 }
 
 // TypeScript module augmentation for proper typing
-declare module "@cascade/react" {
+declare module "@cascadetui/react" {
   interface CascadeComponents {
     consoleButton: typeof ConsoleButtonRenderable
   }
