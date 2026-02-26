@@ -19,7 +19,7 @@ describe("Link Rendering Tests", () => {
   test("should render link with href correctly", async () => {
     testSetup = await testRender(
       <text>
-        Visit <a href="https://cascade.com">cascade.com</a> for more info
+        Visit <a href="https://cascadetui.vercel.app">cascadetui.vercel.app</a> for more info
       </text>,
       {
         width: 50,
@@ -30,15 +30,15 @@ describe("Link Rendering Tests", () => {
     await testSetup.renderOnce()
     const frame = testSetup.captureCharFrame()
 
-    expect(frame).toContain("Visit cascade.com for more info")
+    expect(frame).toContain("Visit cascadetui.vercel.app for more info")
   })
 
   test("should render styled link with underline", async () => {
     testSetup = await testRender(
       <text>
         <u>
-          <a href="https://cascade.com" fg="blue">
-            cascade.com
+          <a href="https://cascadetui.vercel.app" fg="blue">
+            cascadetui.vercel.app
           </a>
         </u>
       </text>,
@@ -51,14 +51,14 @@ describe("Link Rendering Tests", () => {
     await testSetup.renderOnce()
     const frame = testSetup.captureCharFrame()
 
-    expect(frame).toContain("cascade.com")
+    expect(frame).toContain("cascadetui.vercel.app")
   })
 
   test("should render link inside text with other elements", async () => {
     testSetup = await testRender(
       <text>
         Check out <a href="https://github.com/kirosnn/cascade">GitHub</a> and{" "}
-        <a href="https://cascade.com">our website</a>
+        <a href="https://cascadetui.vercel.app">our website</a>
       </text>,
       {
         width: 60,
