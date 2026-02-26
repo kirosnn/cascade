@@ -1,5 +1,5 @@
-import { createCliRenderer, LineNumberRenderable, RGBA, SyntaxStyle } from "@cascade/core"
-import { createRoot, useKeyboard } from "@cascade/react"
+import { createCliRenderer, LineNumberRenderable, RGBA, SyntaxStyle } from "@cascadetui/core"
+import { createRoot, useKeyboard } from "@cascadetui/react"
 import { useEffect, useRef, useState } from "react"
 
 export default function App() {
