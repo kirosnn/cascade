@@ -13,10 +13,10 @@ It is designed for correctness, stability, extensibility, and performance, with 
 
 Documentation: https://cascade.com/docs/getting-started
 
-Quick start (with [bun](https://bun.sh) and [create-tui](https://github.com/msmps/create-tui)):
+Quick start (with [bun](https://bun.sh)):
 
 ```bash
-bun create tui
+bun create cascade
 ```
 
 ## Packages
