@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from "fs"
+import { mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "fs"
 import { join, resolve, dirname } from "path"
 import { fileURLToPath } from "url"
 import { execSync } from "child_process"
@@ -15,6 +15,81 @@ interface PackageJson {
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 const rootDir = resolve(__dirname, "..")
+const labsDir = join(rootDir, ".labs")
+
+function getTimestampForFileName(): string {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, "0")
+  const day = String(now.getDate()).padStart(2, "0")
+  const hours = String(now.getHours()).padStart(2, "0")
+  const minutes = String(now.getMinutes()).padStart(2, "0")
+  const seconds = String(now.getSeconds()).padStart(2, "0")
+  return `${year}${month}${day}-${hours}${minutes}${seconds}`
+}
+
+function collectMarkdownFiles(directory: string): string[] {
+  const entries = readdirSync(directory, { withFileTypes: true })
+  const files: string[] = []
+
+  for (const entry of entries) {
+    const fullPath = join(directory, entry.name)
+    const relativePath = fullPath.slice(rootDir.length + 1).replaceAll("\\", "/")
+
+    if (entry.isDirectory()) {
+      if (entry.name === "node_modules" || entry.name === ".git" || entry.name === ".labs") {
+        continue
+      }
+      files.push(...collectMarkdownFiles(fullPath))
+      continue
+    }
+
+    if (!entry.isFile()) {
+      continue
+    }
+
+    if (!entry.name.toLowerCase().endsWith(".md")) {
+      continue
+    }
+
+    files.push(relativePath)
+  }
+
+  return files
+}
+
+function createMarkdownAggregationFile(version: string): string {
+  mkdirSync(labsDir, { recursive: true })
+
+  const timestamp = getTimestampForFileName()
+  const outputFileName = `release-md-index-${version}-${timestamp}.md`
+  const outputPath = join(labsDir, outputFileName)
+
+  const markdownFiles = collectMarkdownFiles(rootDir).sort((a, b) => a.localeCompare(b))
+
+  const sections: string[] = []
+  sections.push(`# Markdown aggregation for release ${version}`)
+  sections.push("")
+  sections.push(`Generated at: ${new Date().toISOString()}`)
+  sections.push(`Total files: ${markdownFiles.length}`)
+
+  for (const relativePath of markdownFiles) {
+    const fullPath = join(rootDir, relativePath)
+    const stats = statSync(fullPath)
+    const content = readFileSync(fullPath, "utf8")
+    sections.push("")
+    sections.push(`## ${relativePath}`)
+    sections.push("")
+    sections.push(`- Size: ${stats.size} bytes`)
+    sections.push("")
+    sections.push("```md")
+    sections.push(content)
+    sections.push("```")
+  }
+
+  writeFileSync(outputPath, sections.join("\n"))
+  return outputPath
+}
 
 const args = process.argv.slice(2)
 let version = args.find((arg) => !arg.startsWith("--"))
@@ -60,6 +135,14 @@ if (!/^\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?$/.test(version)) {
 }
 
 console.log(`\nPreparing release ${version} for core, react, solid, and create-cascade packages...\n`)
+try {
+  const aggregationPath = createMarkdownAggregationFile(version)
+  const relativeAggregationPath = aggregationPath.slice(rootDir.length + 1).replaceAll("\\", "/")
+  console.log(`Created markdown aggregation file: ${relativeAggregationPath}`)
+} catch (error) {
+  console.error(`Failed to create markdown aggregation file: ${error}`)
+  process.exit(1)
+}
 
 const corePackageJsonPath = join(rootDir, "packages", "core", "package.json")
 const nativePackageDirs = [
