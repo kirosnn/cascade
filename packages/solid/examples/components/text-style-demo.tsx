@@ -1,4 +1,4 @@
-import { TextAttributes } from "@cascade/core"
+import { TextAttributes } from "@cascadetui/core"
 import { createSignal, onCleanup, onMount, Show } from "solid-js"
 
 export default function TextStyleScene() {
