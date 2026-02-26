@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test"
 import React, { useEffect, useState } from "react"
-import { createTestRenderer } from "@cascade/core/testing"
+import { createTestRenderer } from "@cascadetui/core/testing"
 import { createRoot } from "../src/reconciler/renderer"
 
 /**
