@@ -20,7 +20,7 @@ describe("Link Rendering Tests", () => {
     testSetup = await testRender(
       () => (
         <text>
-          Visit <a href="https://cascade.com">cascade.com</a> for more info
+          Visit <a href="https://cascadetui.vercel.app">cascadetui.vercel.app</a> for more info
         </text>
       ),
       {
@@ -32,7 +32,7 @@ describe("Link Rendering Tests", () => {
     await testSetup.renderOnce()
     const frame = testSetup.captureCharFrame()
 
-    expect(frame).toContain("Visit cascade.com for more info")
+    expect(frame).toContain("Visit cascadetui.vercel.app for more info")
   })
 
   it("should render styled link with underline", async () => {
@@ -40,8 +40,8 @@ describe("Link Rendering Tests", () => {
       () => (
         <text>
           <u>
-            <a href="https://cascade.com" style={{ fg: "blue" }}>
-              cascade.com
+            <a href="https://cascadetui.vercel.app" style={{ fg: "blue" }}>
+              cascadetui.vercel.app
             </a>
           </u>
         </text>
@@ -55,7 +55,7 @@ describe("Link Rendering Tests", () => {
     await testSetup.renderOnce()
     const frame = testSetup.captureCharFrame()
 
-    expect(frame).toContain("cascade.com")
+    expect(frame).toContain("cascadetui.vercel.app")
   })
 
   it("should render link inside text with other elements", async () => {
@@ -63,7 +63,7 @@ describe("Link Rendering Tests", () => {
       () => (
         <text>
           Check out <a href="https://github.com/kirosnn/cascade">GitHub</a> and{" "}
-          <a href="https://cascade.com">our website</a>
+          <a href="https://cascadetui.vercel.app">our website</a>
         </text>
       ),
       {
@@ -83,7 +83,7 @@ describe("Link Rendering Tests", () => {
     testSetup = await testRender(
       () => (
         <text>
-          <a href="https://cascade.com">
+          <a href="https://cascadetui.vercel.app">
             <span style={{ fg: "blue", bold: true }}>styled text</span> default style
           </a>
         </text>
@@ -106,7 +106,7 @@ describe("Link Rendering Tests", () => {
       () => (
         <text>
           Visit{" "}
-          <a href="https://cascade.com">
+          <a href="https://cascadetui.vercel.app">
             <b>our</b> <i>awesome</i> <u>website</u>
           </a>{" "}
           today
@@ -170,7 +170,7 @@ describe("Link Rendering Tests", () => {
     testSetup = await testRender(
       () => (
         <text>
-          <a href="https://cascade.com">
+          <a href="https://cascadetui.vercel.app">
             <b>Bold</b> <i>Italic</i> <u>Underline</u> Normal
           </a>
         </text>
@@ -232,7 +232,7 @@ describe("Link Rendering Tests", () => {
       testSetup = await testRender(
         () => (
           <text>
-            <a href="https://cascade.com">
+            <a href="https://cascadetui.vercel.app">
               <span style={{ fg: "blue" }}>styled</span> plain
             </a>
           </text>
@@ -252,7 +252,7 @@ describe("Link Rendering Tests", () => {
         if (chunk.text.trim()) {
           // Skip empty chunks
           expect(chunk.link).toBeDefined()
-          expect(chunk.link?.url).toBe("https://cascade.com")
+          expect(chunk.link?.url).toBe("https://cascadetui.vercel.app")
         }
       }
     })
@@ -323,7 +323,7 @@ describe("Link Rendering Tests", () => {
       testSetup = await testRender(
         () => (
           <text>
-            <a href="https://cascade.com">
+            <a href="https://cascadetui.vercel.app">
               <b>Bold</b> <i>Italic</i> Plain
             </a>
           </text>
@@ -343,7 +343,7 @@ describe("Link Rendering Tests", () => {
       expect(textChunks.length).toBeGreaterThan(0)
 
       for (const chunk of textChunks) {
-        expect(chunk.link?.url).toBe("https://cascade.com")
+        expect(chunk.link?.url).toBe("https://cascadetui.vercel.app")
       }
     })
 
