@@ -1,5 +1,5 @@
 import { createSignal, For } from "solid-js"
-import { render, useRenderer } from "@cascade/solid"
+import { render, useRenderer } from "@cascadetui/solid"
 
 process.env.DEBUG = "true"
 
