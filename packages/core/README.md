@@ -1,6 +1,6 @@
 # Cascade Core
 
-Cascade is a native terminal UI core written in Zig with TypeScript bindings. The native core exposes a C ABI and can be used from any language. Cascade powers OpenCode in production today and will also power terminal.shop. It is an extensible core with a focus on correctness, stability, and high performance. It provides a component-based architecture with flexible layout capabilities, allowing you to create complex terminal applications.
+Cascade is a native terminal UI core written in Zig with TypeScript bindings. The native core exposes a C ABI and can be used from any language. It is an extensible core with a focus on correctness, stability, and high performance. It provides a component-based architecture with flexible layout capabilities, allowing you to create complex terminal applications.
 
 ## Documentation
 
@@ -13,7 +13,7 @@ Cascade is a native terminal UI core written in Zig with TypeScript bindings. Th
 ## Install
 
 ```bash
-bun install @cascade/core
+bun install @cascadetui/core
 ```
 
 ## Build
@@ -52,7 +52,7 @@ NativeSpanFeed TypeScript benchmarks:
 Renderables are hierarchical objects that can be positioned, nested, styled and rendered to the terminal:
 
 ```typescript
-import { createCliRenderer, TextRenderable } from "@cascade/core"
+import { createCliRenderer, TextRenderable } from "@cascadetui/core"
 
 const renderer = await createCliRenderer()
 
