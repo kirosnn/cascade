@@ -24,3 +24,7 @@ bun run build
 5. Install command: `bun install`.
 
 The app uses App Router and deploys directly with Next.js runtime on Vercel.
+
+# Contributing
+
+If you want to contribute to the docs, you can do so by editing `lib/docs-data.tsx`. Make sure to follow the existing style and formatting.
