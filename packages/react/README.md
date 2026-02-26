@@ -4,10 +4,10 @@ A React renderer for building terminal user interfaces using [Cascade core](http
 
 ## Installation
 
-Quick start with [bun](https://bun.sh) and [create-tui](https://github.com/msmps/create-tui):
+Quick start with [bun](https://bun.sh):
 
 ```bash
-bun create tui --template react
+bun create cascade
 ```
 
 Manual installation:
