@@ -1,7 +1,7 @@
 import { createSignal, For, Match, onMount, Switch } from "solid-js"
 import { EventEmitter } from "events"
-import { render, useKeyboard, useRenderer } from "@cascade/solid"
-import { ConsolePosition } from "@cascade/core"
+import { render, useKeyboard, useRenderer } from "@cascadetui/solid"
+import { ConsolePosition } from "@cascadetui/core"
 
 const Tab = (props: { title: string; active: boolean; index: number }) => {
   return (
