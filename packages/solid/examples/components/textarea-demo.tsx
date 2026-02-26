@@ -1,6 +1,6 @@
-import { useKeyboard, useRenderer } from "@cascade/solid"
+import { useKeyboard, useRenderer } from "@cascadetui/solid"
 import { createSignal, onMount } from "solid-js"
-import { bold, cyan, fg, t, type TextareaRenderable, type CursorStyleOptions } from "@cascade/core"
+import { bold, cyan, fg, t, type TextareaRenderable, type CursorStyleOptions } from "@cascadetui/core"
 
 const initialContent = `Welcome to the TextareaRenderable Demo!
 
