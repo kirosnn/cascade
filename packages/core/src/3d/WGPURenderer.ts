@@ -1,4 +1,15 @@
-import { PerspectiveCamera, OrthographicCamera, Color, NoToneMapping, LinearSRGBColorSpace, Scene } from "three"
+import {
+  PerspectiveCamera,
+  OrthographicCamera,
+  Color,
+  NoToneMapping,
+  LinearSRGBColorSpace,
+  Scene,
+  PCFSoftShadowMap,
+  type ColorSpace,
+  type ToneMapping,
+  type ShadowMapType,
+} from "three"
 import { WebGPURenderer } from "three/webgpu"
 import type { OptimizedBuffer } from "../buffer"
 import { RGBA } from "../lib/RGBA"
@@ -21,6 +32,12 @@ export interface ThreeCliRendererOptions {
   alpha?: boolean
   autoResize?: boolean
   libPath?: string
+  toneMapping?: ToneMapping
+  toneMappingExposure?: number
+  outputColorSpace?: ColorSpace
+  shadows?: boolean
+  shadowMapType?: ShadowMapType
+  sortObjects?: boolean
 }
 
 export class ThreeCliRenderer {
@@ -31,6 +48,12 @@ export class ThreeCliRenderer {
   private superSample: SuperSampleType
   private backgroundColor: RGBA = RGBA.fromValues(0, 0, 0, 1)
   private alpha: boolean = false
+  private toneMapping: ToneMapping = NoToneMapping
+  private toneMappingExposure: number = 1
+  private outputColorSpace: ColorSpace = LinearSRGBColorSpace
+  private shadows: boolean = false
+  private shadowMapType: ShadowMapType = PCFSoftShadowMap
+  private sortObjects: boolean = true
   private threeRenderer?: WebGPURenderer
   private canvas?: CLICanvas
   private device: GPUDevice | null = null
@@ -79,6 +102,12 @@ export class ThreeCliRenderer {
 
     this.backgroundColor = options.backgroundColor ?? RGBA.fromValues(0, 0, 0, 1)
     this.alpha = options.alpha ?? false
+    this.toneMapping = options.toneMapping ?? NoToneMapping
+    this.toneMappingExposure = options.toneMappingExposure ?? 1
+    this.outputColorSpace = options.outputColorSpace ?? LinearSRGBColorSpace
+    this.shadows = options.shadows ?? false
+    this.shadowMapType = options.shadowMapType ?? PCFSoftShadowMap
+    this.sortObjects = options.sortObjects ?? true
 
     if (process.env.CELL_ASPECT_RATIO) {
       this._aspectRatio = parseFloat(process.env.CELL_ASPECT_RATIO)
@@ -116,7 +145,7 @@ export class ThreeCliRenderer {
     this.cliRenderer.on(CliRenderEvents.DEBUG_OVERLAY_TOGGLE, this.debugToggleHandler)
     this.cliRenderer.on(CliRenderEvents.DESTROY, this.destroyHandler)
 
-    setupGlobals({ libPath: options.libPath })
+    setupGlobals({ libPath: options.libPath ?? process.env.BUN_WEBGPU_LIB_PATH })
   }
 
   public toggleDebugStats(): void {
@@ -136,8 +165,12 @@ export class ThreeCliRenderer {
 
       this.setBackgroundColor(this.backgroundColor)
 
-      this.threeRenderer.toneMapping = NoToneMapping
-      this.threeRenderer.outputColorSpace = LinearSRGBColorSpace
+      this.threeRenderer.toneMapping = this.toneMapping
+      this.threeRenderer.toneMappingExposure = this.toneMappingExposure
+      this.threeRenderer.outputColorSpace = this.outputColorSpace
+      this.threeRenderer.shadowMap.enabled = this.shadows
+      this.threeRenderer.shadowMap.type = this.shadowMapType
+      this.threeRenderer.sortObjects = this.sortObjects
 
       this.threeRenderer.setSize(this.renderWidth, this.renderHeight, false)
     } catch (error) {
