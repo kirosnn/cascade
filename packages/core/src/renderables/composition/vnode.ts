@@ -10,7 +10,7 @@ export interface PendingCall {
   isProperty?: boolean
 }
 
-const BrandedVNode: unique symbol = Symbol.for("@cascade/core/VNode")
+const BrandedVNode: unique symbol = Symbol.for("@cascadetui/core/VNode")
 
 export interface VNode<P = any, C = VChild[]> {
   [BrandedVNode]: true
