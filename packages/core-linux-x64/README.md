@@ -1,3 +1,3 @@
-# @cascade/core-linux-x64
+# @cascadetui/core-linux-x64
 
-Prebuilt native package for @cascade/core on linux-x64.
+Prebuilt native package for @cascadetui/core on linux-x64.
