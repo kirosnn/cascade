@@ -1,5 +1,5 @@
-import type { InputRenderable } from "@cascade/core"
-import { usePaste, useRenderer } from "@cascade/solid"
+import type { InputRenderable } from "@cascadetui/core"
+import { usePaste, useRenderer } from "@cascadetui/solid"
 import { createSignal, onMount } from "solid-js"
 
 const InputScene = () => {
