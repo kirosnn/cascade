@@ -1,5 +1,5 @@
 import { createMemo } from "solid-js"
-import type { KeyBinding } from "@cascade/core"
+import type { KeyBinding } from "@cascadetui/core"
 
 const TEXTAREA_ACTIONS = [
   "submit",
