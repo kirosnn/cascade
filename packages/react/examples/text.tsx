@@ -33,8 +33,8 @@ function App() {
       {"\n"}
       Hyperlinks:{"\n"}
       <u>
-        <a href="https://cascade.com" fg="blue">
-          cascade.com
+        <a href="https://cascadetui.vercel.app" fg="blue">
+          cascadetui.vercel.app
         </a>
       </u>{" "}
       - Click if your terminal supports OSC 8{"\n"}
