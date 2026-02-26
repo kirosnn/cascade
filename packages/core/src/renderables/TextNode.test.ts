@@ -797,7 +797,7 @@ describe("TextNodeRenderable", () => {
   describe("Link Inheritance", () => {
     it("should inherit link from parent to child", () => {
       const parent = new TextNodeRenderable({
-        link: { url: "https://cascade.com" },
+        link: { url: "https://cascadetui.vercel.app" },
       })
 
       const child = new TextNodeRenderable({})
@@ -810,10 +810,10 @@ describe("TextNodeRenderable", () => {
 
       expect(chunks).toHaveLength(2)
       expect(chunks[0].text).toBe("Parent text")
-      expect(chunks[0].link?.url).toBe("https://cascade.com")
+      expect(chunks[0].link?.url).toBe("https://cascadetui.vercel.app")
 
       expect(chunks[1].text).toBe("Child text")
-      expect(chunks[1].link?.url).toBe("https://cascade.com")
+      expect(chunks[1].link?.url).toBe("https://cascadetui.vercel.app")
     })
 
     it("should allow child to override parent link", () => {
@@ -859,7 +859,7 @@ describe("TextNodeRenderable", () => {
       const parent = new TextNodeRenderable({
         fg: RGBA.fromInts(255, 0, 0, 255),
         attributes: 1,
-        link: { url: "https://cascade.com" },
+        link: { url: "https://cascadetui.vercel.app" },
       })
 
       const child = new TextNodeRenderable({
@@ -877,7 +877,7 @@ describe("TextNodeRenderable", () => {
       expect(chunks[0].fg).toEqual(RGBA.fromInts(255, 0, 0, 255))
       expect(chunks[0].bg).toEqual(RGBA.fromInts(0, 0, 255, 255))
       expect(chunks[0].attributes).toBe(3) // 1 | 2
-      expect(chunks[0].link?.url).toBe("https://cascade.com")
+      expect(chunks[0].link?.url).toBe("https://cascadetui.vercel.app")
     })
 
     it("should handle undefined link in parent", () => {
