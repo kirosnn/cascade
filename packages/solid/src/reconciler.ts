@@ -16,7 +16,7 @@ import {
   TextNodeRenderable,
   TextRenderable,
   type TextNodeOptions,
-} from "@cascade/core"
+} from "@cascadetui/core"
 import { useContext } from "solid-js"
 import { createRenderer } from "./renderer"
 import { getComponentCatalogue, RendererContext, SlotRenderable } from "./elements"
