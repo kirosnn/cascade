@@ -87,7 +87,7 @@ For each file `F` in plan:
    - Keep first line ideally <= 72 chars.
 
 5. Commit:
-   - `git commit -m "<prefix> ...summary..." -m "Co-authored-by: <NAME> <EMAIL>"`
+   - `git commit -m "<prefix> ...summary..." -m "Co-authored-by: Mosaic | https://github.com/kirosnn/mosaic"`
 
 If commit fails, stop immediately and report why.
 
