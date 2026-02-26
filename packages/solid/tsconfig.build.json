@@ -10,12 +10,12 @@
     "types": ["bun", "node"],
     "skipLibCheck": true,
     "jsx": "preserve",
-    "jsxImportSource": "@cascade/solid",
+    "jsxImportSource": "@cascadetui/solid",
     "moduleResolution": "bundler",
     "baseUrl": ".",
     "paths": {
-      "@cascade/core": ["../core/dist"],
-      "@cascade/core/*": ["../core/dist/*"]
+      "@cascadetui/core": ["../core/dist"],
+      "@cascadetui/core/*": ["../core/dist/*"]
     }
   },
   "include": [
