@@ -1,0 +1,22 @@
+{
+  "name": "create-cascade-skill",
+  "version": "0.1.5",
+  "description": "Install CascadeTUI skills for external coding agents",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kirosnn/cascade.git",
+    "directory": "packages/skill"
+  },
+  "bin": {
+    "create-cascade-skill": "index.js"
+  },
+  "files": [
+    "index.js",
+    "README.md"
+  ],
+  "scripts": {
+    "publish:pkg": "bun scripts/publish.ts"
+  }
+}
