@@ -5,7 +5,7 @@ import { Analytics } from "@vercel/analytics/react"
 
 export const metadata: Metadata = {
   title: "Cascade",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://cascade-docs.vercel.app"),
+  metadataBase: new URL("https://cascadetui.vercel.app/"),
   description:
     "Build fast, production-ready terminal apps with Cascade: core renderer APIs, React and Solid integrations, crash diagnostics, selection workflows, and deployment guides.",
   icons: {
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/bg.png",
+        url: "https://cascadetui.vercel.app/bg.png",
         width: 1200,
         height: 630,
         alt: "Cascade Documentation",
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     title: "Cascade Documentation",
     description:
       "Build fast, production-ready terminal apps with Cascade: core renderer APIs, React and Solid integrations, crash diagnostics, selection workflows, and deployment guides.",
-    images: ["/bg.png"],
+    images: ["https://cascadetui.vercel.app/bg.png"],
   },
 }
 
@@ -40,6 +40,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
   return (
     <html lang="en">
       <body>{children}</body>
+      <Analytics />
     </html>
   )
 }

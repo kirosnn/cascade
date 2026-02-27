@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, type ReactNode } from "react"
 
 type CodeLanguage = "bash" | "ts" | "tsx" | "js" | "jsx" | "json" | "text"
 
@@ -38,56 +38,49 @@ const JS_KEYWORDS = new Set([
   "interface",
 ])
 
-function escapeHtml(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;")
-}
-
-function highlightBash(code: string): string {
+function highlightBash(code: string): ReactNode {
   const lines = code.split("\n")
+  return lines.flatMap((line, lineIndex) => {
+    const result: ReactNode[] = []
+    const trimmed = line.trimStart()
 
-  return lines
-    .map((line) => {
-      const trimmed = line.trimStart()
-      if (!trimmed) return ""
-
+    if (trimmed) {
       const leadingSpaces = line.slice(0, line.length - trimmed.length)
       const parts = trimmed.split(/\s+/)
-      if (parts.length === 0) return escapeHtml(line)
 
-      const rendered = parts
-        .map((part, index) => {
-          if (index === 0) {
-            return `<span class=\"token-command\">${escapeHtml(part)}</span>`
-          }
-          if (part.startsWith("-") || part.startsWith("--")) {
-            return `<span class=\"token-flag\">${escapeHtml(part)}</span>`
-          }
-          return `<span class=\"token-arg\">${escapeHtml(part)}</span>`
-        })
-        .join(" ")
+      if (leadingSpaces) result.push(leadingSpaces)
 
-      return `${escapeHtml(leadingSpaces)}${rendered}`
-    })
-    .join("\n")
+      parts.forEach((part, partIndex) => {
+        if (partIndex > 0) result.push(" ")
+        if (partIndex === 0) {
+          result.push(<span key={`${lineIndex}-${partIndex}`} className="token-command">{part}</span>)
+        } else if (part.startsWith("-") || part.startsWith("--")) {
+          result.push(<span key={`${lineIndex}-${partIndex}`} className="token-flag">{part}</span>)
+        } else {
+          result.push(<span key={`${lineIndex}-${partIndex}`} className="token-arg">{part}</span>)
+        }
+      })
+    }
+
+    if (lineIndex < lines.length - 1) result.push("\n")
+    return result
+  })
 }
 
-function highlightScript(code: string): string {
-  const pattern = /\/\/.*$|"(?:\\.|[^"])*"|'(?:\\.|[^'])*'|`(?:\\.|[^`])*`|\b\d+(?:\.\d+)?\b|\b[a-zA-Z_$][\w$]*\b|=>|===|!==|==|!=|<=|>=|[+\-*/=(){}[\].,:;]/gm
+function highlightScript(code: string): ReactNode {
+  const pattern =
+    /\/\/.*$|"(?:\\.|[^"])*"|'(?:\\.|[^'])*'|`(?:\\.|[^`])*`|\b\d+(?:\.\d+)?\b|\b[a-zA-Z_$][\w$]*\b|=>|===|!==|==|!=|<=|>=|[+\-*/=(){}[\].,:;]/gm
 
+  const nodes: ReactNode[] = []
   let cursor = 0
-  let output = ""
+  let keyIndex = 0
 
   for (const match of code.matchAll(pattern)) {
     if (match.index === undefined) continue
 
     const index = match.index
     if (index > cursor) {
-      output += escapeHtml(code.slice(cursor, index))
+      nodes.push(code.slice(cursor, index))
     }
 
     const token = match[0]
@@ -107,23 +100,23 @@ function highlightScript(code: string): string {
       className = "token-operator"
     }
 
-    output += `<span class=\"${className}\">${escapeHtml(token)}</span>`
+    nodes.push(<span key={keyIndex++} className={className}>{token}</span>)
     cursor = index + token.length
   }
 
   if (cursor < code.length) {
-    output += escapeHtml(code.slice(cursor))
+    nodes.push(code.slice(cursor))
   }
 
-  return output
+  return nodes
 }
 
-function highlightCode(code: string, language: CodeLanguage): string {
+function highlightCode(code: string, language: CodeLanguage): ReactNode {
   if (language === "bash") return highlightBash(code)
   if (language === "ts" || language === "tsx" || language === "js" || language === "jsx") {
     return highlightScript(code)
   }
-  return escapeHtml(code)
+  return code
 }
 
 export function CodeBlock({ code, language = "text" }: CodeBlockProps) {
@@ -149,7 +142,7 @@ export function CodeBlock({ code, language = "text" }: CodeBlockProps) {
         </svg>
       </button>
       <pre>
-        <code className={`language-${language}`} dangerouslySetInnerHTML={{ __html: highlighted }} />
+        <code className={`language-${language}`}>{highlighted}</code>
       </pre>
     </div>
   )

@@ -50,7 +50,7 @@ export const App = () => {
       />
       <box title="Log" style={{ border: true, marginTop: 1, flexDirection: "column", width: 55 }}>
         {log.map((l, i) => (
-          <text key={i} content={l} style={{ fg: l.startsWith("flush") ? "#00FFFF" : "#FF8800" }} />
+          <text key={l} content={l} style={{ fg: l.startsWith("flush") ? "#00FFFF" : "#FF8800" }} />
         ))}
       </box>
     </box>

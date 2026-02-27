@@ -57,7 +57,7 @@ export class LineBreakRenderable extends SpanRenderable {
   }
 }
 
-export interface LinkOptions extends TextNodeOptions {
+interface LinkOptions extends TextNodeOptions {
   href: string
 }
 

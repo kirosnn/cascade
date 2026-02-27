@@ -1,6 +1,6 @@
 import { createCliRenderer, parseColor, SyntaxStyle } from "@cascadetui/core"
 import { createRoot, useKeyboard } from "@cascadetui/react"
-import { useState, useMemo } from "react"
+import { useReducer, useMemo } from "react"
 
 interface DiffTheme {
   name: string
@@ -195,32 +195,65 @@ Other:
   )
 }
 
-export function App() {
-  const [themeIndex, setThemeIndex] = useState(0)
-  const [view, setView] = useState<"unified" | "split">("unified")
-  const [showLineNumbers, setShowLineNumbers] = useState(true)
-  const [wrapMode, setWrapMode] = useState<"none" | "word">("none")
-  const [showHelp, setShowHelp] = useState(false)
+type AppState = {
+  themeIndex: number
+  view: "unified" | "split"
+  showLineNumbers: boolean
+  wrapMode: "none" | "word"
+  showHelp: boolean
+}
 
+type AppAction =
+  | { type: "TOGGLE_HELP" }
+  | { type: "TOGGLE_VIEW" }
+  | { type: "TOGGLE_LINE_NUMBERS" }
+  | { type: "TOGGLE_WRAP_MODE" }
+  | { type: "NEXT_THEME" }
+
+function reducer(state: AppState, action: AppAction): AppState {
+  switch (action.type) {
+    case "TOGGLE_HELP":
+      return { ...state, showHelp: !state.showHelp }
+    case "TOGGLE_VIEW":
+      return { ...state, view: state.view === "unified" ? "split" : "unified" }
+    case "TOGGLE_LINE_NUMBERS":
+      return { ...state, showLineNumbers: !state.showLineNumbers }
+    case "TOGGLE_WRAP_MODE":
+      return { ...state, wrapMode: state.wrapMode === "none" ? "word" : "none" }
+    case "NEXT_THEME":
+      return { ...state, themeIndex: (state.themeIndex + 1) % themes.length }
+  }
+}
+
+export function App() {
+  const [state, dispatch] = useReducer(reducer, {
+    themeIndex: 0,
+    view: "unified",
+    showLineNumbers: true,
+    wrapMode: "none",
+    showHelp: false,
+  })
+
+  const { themeIndex, view, showLineNumbers, wrapMode, showHelp } = state
   const theme = themes[themeIndex]
   const syntaxStyle = useMemo(() => SyntaxStyle.fromStyles(theme.syntaxStyle), [theme])
 
   useKeyboard((key) => {
     if (key.raw === "?") {
-      setShowHelp((prev) => !prev)
+      dispatch({ type: "TOGGLE_HELP" })
       return
     }
 
     if (showHelp) return
 
     if (key.name === "v" && !key.ctrl && !key.meta) {
-      setView((prev) => (prev === "unified" ? "split" : "unified"))
+      dispatch({ type: "TOGGLE_VIEW" })
     } else if (key.name === "l" && !key.ctrl && !key.meta) {
-      setShowLineNumbers((prev) => !prev)
+      dispatch({ type: "TOGGLE_LINE_NUMBERS" })
     } else if (key.name === "w" && !key.ctrl && !key.meta) {
-      setWrapMode((prev) => (prev === "none" ? "word" : "none"))
+      dispatch({ type: "TOGGLE_WRAP_MODE" })
     } else if (key.name === "t" && !key.ctrl && !key.meta) {
-      setThemeIndex((prev) => (prev + 1) % themes.length)
+      dispatch({ type: "NEXT_THEME" })
     }
   })
 

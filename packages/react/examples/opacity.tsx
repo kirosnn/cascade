@@ -2,22 +2,33 @@ import { createCliRenderer } from "@cascadetui/core"
 import { createRoot, useKeyboard } from "@cascadetui/react"
 import { useState, useEffect } from "react"
 
+const colors = ["#e94560", "#0f3460", "#533483", "#16a085"]
+
 export default function App() {
   const [animating, setAnimating] = useState(false)
-  const [opacities, setOpacities] = useState([1.0, 0.8, 0.5, 0.3])
+  const [manualOpacities, setManualOpacities] = useState([1.0, 0.8, 0.5, 0.3])
   const [phase, setPhase] = useState(0)
+
+  const opacities = animating
+    ? [
+        0.3 + 0.7 * Math.abs(Math.sin(phase)),
+        0.3 + 0.7 * Math.abs(Math.sin(phase + 0.5)),
+        0.3 + 0.7 * Math.abs(Math.sin(phase + 1.0)),
+        0.3 + 0.7 * Math.abs(Math.sin(phase + 1.5)),
+      ]
+    : manualOpacities
 
   useKeyboard((key) => {
     if (key.name === "a" && !key.ctrl && !key.meta) {
-      setAnimating(!animating)
+      setAnimating((prev) => !prev)
     } else if (key.name === "1") {
-      setOpacities((prev) => [prev[0] === 1.0 ? 0.3 : 1.0, prev[1], prev[2], prev[3]])
+      setManualOpacities((prev) => [prev[0] === 1.0 ? 0.3 : 1.0, prev[1], prev[2], prev[3]])
     } else if (key.name === "2") {
-      setOpacities((prev) => [prev[0], prev[1] === 1.0 ? 0.3 : 1.0, prev[2], prev[3]])
+      setManualOpacities((prev) => [prev[0], prev[1] === 1.0 ? 0.3 : 1.0, prev[2], prev[3]])
     } else if (key.name === "3") {
-      setOpacities((prev) => [prev[0], prev[1], prev[2] === 1.0 ? 0.3 : 1.0, prev[3]])
+      setManualOpacities((prev) => [prev[0], prev[1], prev[2] === 1.0 ? 0.3 : 1.0, prev[3]])
     } else if (key.name === "4") {
-      setOpacities((prev) => [prev[0], prev[1], prev[2], prev[3] === 1.0 ? 0.3 : 1.0])
+      setManualOpacities((prev) => [prev[0], prev[1], prev[2], prev[3] === 1.0 ? 0.3 : 1.0])
     }
   })
 
@@ -30,19 +41,6 @@ export default function App() {
 
     return () => clearInterval(interval)
   }, [animating])
-
-  useEffect(() => {
-    if (animating) {
-      setOpacities([
-        0.3 + 0.7 * Math.abs(Math.sin(phase)),
-        0.3 + 0.7 * Math.abs(Math.sin(phase + 0.5)),
-        0.3 + 0.7 * Math.abs(Math.sin(phase + 1.0)),
-        0.3 + 0.7 * Math.abs(Math.sin(phase + 1.5)),
-      ])
-    }
-  }, [phase, animating])
-
-  const colors = ["#e94560", "#0f3460", "#533483", "#16a085"]
 
   return (
     <box flexDirection="column" width="100%" height="100%">
@@ -59,7 +57,7 @@ export default function App() {
         <box flexGrow={1} position="relative">
           {[0, 1, 2, 3].map((i) => (
             <box
-              key={i}
+              key={colors[i]}
               position="absolute"
               left={10 + i * 8}
               top={2 + i * 2}

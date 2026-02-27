@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 import { CodeBlock } from "@/components/code-block"
 import { HomeQuickstart } from "@/components/home-quickstart"
 
@@ -31,7 +32,7 @@ export default async function HomePage() {
       <header className="navbar navbar-home">
         <Link href="/" className="brand">
           <span className="brand-mark">
-            <img src="/icon.svg" alt="Cascade logo" width={34} height={34} />
+            <Image src="/icon.svg" alt="Cascade logo" width={34} height={34} />
           </span>
           <span>Cascade</span>
         </Link>

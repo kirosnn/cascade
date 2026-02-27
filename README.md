@@ -4,6 +4,7 @@
 
 <div align="center">
     <a href="https://www.npmjs.com/package/@cascadetui/core"><img alt="npm" src="https://img.shields.io/npm/v/@cascadetui/core?style=flat-square" /></a>
+    <a href="https://www.react.doctor/share/badge?p=%40cascadetui%2Freact&s=99&w=180&f=28"><img alt="React Doctor" src="https://www.react.doctor/share/badge?p=%40cascadetui%2Freact&s=99a&w=180&f=28" /></a>
 </div>
 
 Cascade is a native terminal UI foundation written in Zig with TypeScript bindings.
@@ -65,6 +66,9 @@ bun run src/examples/index.ts
 ## Development
 
 For build, test, debugging, and local linking workflows, see the [Development Guide](packages/core/docs/development.md).
+
+# For your information
+We use a basic AI agent to assist with the website's documentation. We use `Groq` as a provider with the model `meta-llama/llama-4-scout-17b-16e-instruct`. We do not collect any data from this and we ask that you refrain from any unnecessary misuse of this AI, which is solely intended to assist you or generate code related to Cascade. Thank you.
 
 ## Documentation Index
 

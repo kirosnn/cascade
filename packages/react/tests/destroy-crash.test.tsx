@@ -63,7 +63,7 @@ describe("Renderer Destroy Crash with Pending React Updates", () => {
         <box flexDirection="column" border borderStyle="single">
           <text bold>Cascade Crash Repro</text>
           {lines.slice(-10).map((line, i) => (
-            <text key={`line-${i}-${line}`}>{line}</text>
+            <text key={line}>{line}</text>
           ))}
         </box>
       )
