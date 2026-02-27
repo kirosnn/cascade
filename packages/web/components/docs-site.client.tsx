@@ -5,6 +5,8 @@ import Image from "next/image"
 import { useMemo, useEffect, useReducer, useRef, useCallback, useState, type KeyboardEvent as ReactKeyboardEvent } from "react"
 import { createPortal } from "react-dom"
 import { usePathname, useRouter } from "next/navigation"
+import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
 import type { DocPage } from "@/lib/docs"
 import { createSearchEngine, type SearchEntry } from "@/lib/search"
 
@@ -40,6 +42,8 @@ function searchReducer(state: SearchState, action: SearchAction): SearchState {
         case "MOVE_UP":
             return { ...state, highlightedIndex: (state.highlightedIndex - 1 + action.total) % action.total }
     }
+
+    return state
 }
 
 type LayoutState = {
@@ -188,8 +192,12 @@ type DocsBottomBarProps = {
 }
 
 type ChatMessage = {
-    role: "system" | "user" | "assistant"
+    role: "system" | "user" | "assistant" | "tool"
     content: string
+    id?: string
+    toolId?: string
+    toolName?: string
+    toolArgs?: string
 }
 
 function DocsBottomBar({ isFooterVisible, docsBarStyle }: DocsBottomBarProps) {
@@ -200,13 +208,66 @@ function DocsBottomBar({ isFooterVisible, docsBarStyle }: DocsBottomBarProps) {
     const canSend = value.trim().length > 0 && !isSending
     const formRef = useRef<HTMLFormElement | null>(null)
     const textareaRef = useRef<HTMLTextAreaElement | null>(null)
+    const popoverRef = useRef<HTMLDivElement | null>(null)
+    const cardRef = useRef<HTMLFormElement | null>(null)
+
+    const onTextareaFocus = () => {
+        const shouldOpen = value.trim().length > 0 || messages.length > 0
+        if (shouldOpen) setIsPopoverOpen(true)
+    }
+
+    const clearConversation = () => {
+        setMessages([])
+        setIsPopoverOpen(false)
+    }
+
+    const parseSseLine = (line: string) => {
+        const trimmed = line.trimEnd()
+        if (!trimmed) return null
+        if (trimmed.startsWith("event:")) return { kind: "event", value: trimmed.slice("event:".length).trim() }
+        if (trimmed.startsWith("data:")) return { kind: "data", value: trimmed.slice("data:".length).trim() }
+        return null
+    }
+
+    const formatToolArgs = (raw: string) => {
+        try {
+            const parsed = JSON.parse(raw) as unknown
+            return JSON.stringify(parsed, null, 2)
+        } catch {
+            return raw
+        }
+    }
+
+    const formatToolCall = (name: string, rawArgs: string) => {
+        const parsed = (() => {
+            try {
+                return JSON.parse(rawArgs) as { query?: unknown }
+            } catch {
+                return null
+            }
+        })()
+
+        const query = typeof parsed?.query === "string" ? parsed.query : ""
+        const prettyName = name === "search_docs" ? "Search in Documentation" : name === "search_github" ? "Search on GitHub" : name
+        const safeQuery = query ? JSON.stringify(query) : "\"\""
+        return `${prettyName}(${safeQuery})`
+    }
+
+    useEffect(() => {
+        setMessages([])
+    }, [])
 
     useEffect(() => {
         const onKeyDown = (e: KeyboardEvent) => {
             if (e.key.toLowerCase() === "i" && (e.ctrlKey || e.metaKey)) {
                 e.preventDefault()
-                setIsPopoverOpen(true)
-                setTimeout(() => textareaRef.current?.focus(), 0)
+                setIsPopoverOpen((prev) => {
+                    const next = !prev
+                    if (next) {
+                        setTimeout(() => textareaRef.current?.focus(), 0)
+                    }
+                    return next
+                })
             }
 
             if (e.key === "Escape") {
@@ -217,6 +278,29 @@ function DocsBottomBar({ isFooterVisible, docsBarStyle }: DocsBottomBarProps) {
         window.addEventListener("keydown", onKeyDown)
         return () => window.removeEventListener("keydown", onKeyDown)
     }, [])
+
+    useEffect(() => {
+        const onPointerDown = (e: PointerEvent) => {
+            if (!isPopoverOpen) return
+            const target = e.target as Node | null
+            if (!target) return
+            if (popoverRef.current?.contains(target)) return
+            if (cardRef.current?.contains(target)) return
+            setIsPopoverOpen(false)
+        }
+
+        window.addEventListener("pointerdown", onPointerDown)
+        return () => window.removeEventListener("pointerdown", onPointerDown)
+    }, [isPopoverOpen])
+
+    useEffect(() => {
+        if (!isPopoverOpen) return
+        const prev = document.body.style.overflow
+        document.body.style.overflow = "hidden"
+        return () => {
+            document.body.style.overflow = prev
+        }
+    }, [isPopoverOpen])
 
     const onTextareaKeyDown = (e: ReactKeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key !== "Enter") return
@@ -236,33 +320,155 @@ function DocsBottomBar({ isFooterVisible, docsBarStyle }: DocsBottomBarProps) {
         const userText = value.trim()
         setValue("")
 
+        const userId = `${Date.now()}-${Math.random().toString(16).slice(2)}`
+
         const nextMessages: ChatMessage[] = [
             ...messages.filter((m) => m.role !== "system"),
-            { role: "user", content: userText },
+            { id: userId, role: "user", content: userText },
         ]
 
         setMessages(nextMessages)
         try {
+            const outboundMessages = nextMessages
+                .filter((m) => m.role === "user" || m.role === "assistant")
+                .map((m) => ({ role: m.role, content: m.content }))
+
             const response = await fetch("/api/chat", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ messages: nextMessages }),
+                body: JSON.stringify({ messages: outboundMessages }),
             })
 
-            const raw = await response.text()
-            let data: { content?: string; error?: string }
-            try {
-                data = raw ? (JSON.parse(raw) as { content?: string; error?: string }) : {}
-            } catch {
-                data = { error: raw || "Request failed" }
-            }
             if (!response.ok) {
+                const raw = await response.text().catch(() => "")
+                let data: { error?: string }
+                try {
+                    data = raw ? (JSON.parse(raw) as { error?: string }) : {}
+                } catch {
+                    data = { error: raw || "Request failed" }
+                }
                 setMessages((prev) => [...prev, { role: "assistant", content: data.error ?? "Request failed" }])
                 return
             }
 
-            const assistantText = typeof data.content === "string" ? data.content : "Invalid response"
-            setMessages((prev) => [...prev, { role: "assistant", content: assistantText }])
+            if (!response.body) {
+                setMessages((prev) => [...prev, { role: "assistant", content: "Invalid response" }])
+                return
+            }
+
+            const assistantId = `${Date.now()}-${Math.random().toString(16).slice(2)}`
+            setMessages((prev) => [...prev, { id: assistantId, role: "assistant", content: "" }])
+
+            const reader = response.body.getReader()
+            const decoder = new TextDecoder()
+            let buffer = ""
+            let currentEvent: string | null = null
+            while (true) {
+                const { value, done } = await reader.read()
+                if (done) break
+                buffer += decoder.decode(value, { stream: true })
+
+                const parts = buffer.split("\n")
+                buffer = parts.pop() ?? ""
+
+                for (const raw of parts) {
+                    const parsed = parseSseLine(raw)
+                    if (!parsed) continue
+
+                    if (parsed.kind === "event") {
+                        currentEvent = parsed.value
+                        continue
+                    }
+
+                    if (parsed.kind === "data") {
+                        const evt = currentEvent ?? "message"
+                        currentEvent = null
+
+                        if (evt === "content") {
+                            let text: unknown
+                            try {
+                                text = JSON.parse(parsed.value)
+                            } catch {
+                                text = parsed.value
+                            }
+                            if (typeof text === "string" && text.length > 0) {
+                                setMessages((prev) => {
+                                    const idx = prev.findIndex((m) => m.id === assistantId)
+                                    if (idx === -1) return prev
+                                    const next = [...prev]
+                                    const current = next[idx]
+                                    if (!current || current.role !== "assistant") return prev
+                                    next[idx] = { ...current, role: "assistant", content: current.content + text }
+                                    return next
+                                })
+                            }
+                            continue
+                        }
+
+                        if (evt === "tool_call") {
+                            const payload = (() => {
+                                try {
+                                    return JSON.parse(parsed.value) as { id?: string; name?: string; arguments?: string }
+                                } catch {
+                                    return null
+                                }
+                            })()
+                            const id = payload?.id
+                            const name = payload?.name
+                            const args = payload?.arguments
+                            if (typeof id === "string" && typeof name === "string" && typeof args === "string") {
+                                setMessages((prev) => {
+                                    if (prev.some((m) => m.role === "tool" && m.toolId === id)) return prev
+
+                                    const toolMsg: ChatMessage = {
+                                        id: `${assistantId}:${id}`,
+                                        role: "tool",
+                                        content: "",
+                                        toolId: id,
+                                        toolName: formatToolCall(name, args),
+                                    }
+
+                                    const insertAt = prev.findIndex((m) => m.id === assistantId)
+                                    if (insertAt === -1) return [...prev, toolMsg]
+                                    const next = [...prev]
+                                    next.splice(insertAt, 0, toolMsg)
+                                    return next
+                                })
+                            }
+                            continue
+                        }
+
+                        if (evt === "tool_result") {
+                            continue
+                        }
+
+                        if (evt === "error") {
+                            const payload = (() => {
+                                try {
+                                    return JSON.parse(parsed.value) as { error?: string; details?: string }
+                                } catch {
+                                    return null
+                                }
+                            })()
+
+                            const msg = payload?.details ? `${payload.error ?? "Error"}\n${payload.details}` : payload?.error ?? "Error"
+                            setMessages((prev) => {
+                                const idx = prev.findIndex((m) => m.id === assistantId)
+                                if (idx === -1) return [...prev, { id: assistantId, role: "assistant", content: msg }]
+                                const next = [...prev]
+                                const current = next[idx]
+                                next[idx] = { ...current, role: "assistant", content: msg }
+                                return next
+                            })
+                            continue
+                        }
+
+                        if (evt === "done") {
+                            continue
+                        }
+                    }
+                }
+            }
         } catch (err) {
             setMessages((prev) => [...prev, { role: "assistant", content: err instanceof Error ? err.message : "Request failed" }])
         } finally {
@@ -273,29 +479,67 @@ function DocsBottomBar({ isFooterVisible, docsBarStyle }: DocsBottomBarProps) {
     return (
         <div className={`docs-bottom-bar ${isFooterVisible ? "is-hidden" : ""}`} style={docsBarStyle}>
             <div className="chat-assistant-shell">
+                <div className="chat-assistant-bar-actions">
+                    <button type="button" className="copy-btn" aria-label="Clear conversation" onClick={clearConversation}>
+                        <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M3 6h18" />
+                            <path d="M8 6V4h8v2" />
+                            <path d="M6 6l1 16h10l1-16" />
+                            <path d="M10 11v6" />
+                            <path d="M14 11v6" />
+                        </svg>
+                    </button>
+                </div>
                 <div className="chat-assistant-floating-input">
                     <div className="chat-assistant-overlay">
                         {isPopoverOpen ? (
-                            <div className="chat-assistant-popover" role="dialog" aria-label="Chat assistant">
+                            <div ref={popoverRef} className="chat-assistant-popover" role="dialog" aria-label="Chat assistant">
                                 <div className="chat-assistant-popover-inner">
                                     <div className="chat-assistant-conversation">
                                         {messages.map((m, idx) => (
-                                            <div key={idx} className={`chat-assistant-msg ${m.role === "user" ? "chat-assistant-msg-user" : "chat-assistant-msg-assistant"}`}>
-                                                <div className={`chat-assistant-bubble ${m.role === "user" ? "chat-assistant-bubble-user" : "chat-assistant-bubble-assistant"}`}>
-                                                    {m.content}
+                                            <div
+                                                key={m.id ?? idx}
+                                                className={`chat-assistant-msg ${m.role === "user"
+                                                        ? "chat-assistant-msg-user"
+                                                        : m.role === "tool"
+                                                            ? "chat-assistant-msg-tool"
+                                                            : "chat-assistant-msg-assistant"
+                                                    }`}
+                                            >
+                                                <div
+                                                    className={`chat-assistant-bubble ${m.role === "user"
+                                                            ? "chat-assistant-bubble-user"
+                                                            : m.role === "tool"
+                                                                ? "chat-assistant-bubble-tool"
+                                                                : "chat-assistant-bubble-assistant"
+                                                        }`}
+                                                >
+                                                    {m.role === "assistant" ? (
+                                                        <div className="chat-assistant-markdown">
+                                                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>
+                                                        </div>
+                                                    ) : m.role === "tool" ? (
+                                                        <div className="chat-assistant-tool-inline">
+                                                            <div className="chat-assistant-tool-inline-name">  • {m.toolName}</div>
+                                                        </div>
+                                                    ) : (
+                                                        m.content
+                                                    )}
                                                 </div>
                                             </div>
                                         ))}
                                         {isSending ? (
                                             <div className="chat-assistant-msg chat-assistant-msg-assistant">
-                                                <div className="chat-assistant-bubble chat-assistant-bubble-assistant">Sending...</div>
+                                                <div className="chat-assistant-bubble chat-assistant-bubble-assistant">
+                                                    <span className="shimmer-text">Thinking</span>
+                                                </div>
                                             </div>
                                         ) : null}
                                     </div>
                                 </div>
                             </div>
                         ) : null}
-                        <form ref={formRef} className={`chat-assistant-card ${isPopoverOpen ? "chat-assistant-card--popover-open" : ""}`} onSubmit={onSubmit}>
+                        <form ref={(n) => { formRef.current = n; cardRef.current = n }} className={`chat-assistant-card ${isPopoverOpen ? "chat-assistant-card--popover-open" : ""}`} onSubmit={onSubmit}>
                             <div className="chat-assistant-row">
                                 <textarea
                                     id="chat-assistant-textarea"
@@ -307,6 +551,7 @@ function DocsBottomBar({ isFooterVisible, docsBarStyle }: DocsBottomBarProps) {
                                     value={value}
                                     onChange={(e) => setValue(e.target.value)}
                                     onKeyDown={onTextareaKeyDown}
+                                    onFocus={onTextareaFocus}
                                     ref={textareaRef}
                                 />
                                 <span className="chat-assistant-hint">Ctrl+I</span>
