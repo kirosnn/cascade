@@ -771,6 +771,11 @@ panel.destroyRecursively()`}
                     <td>Detaches a child by id (does not necessarily destroy it).</td>
                   </tr>
                   <tr>
+                    <td><code className="doc-pill" title="clear()">clear()</code></td>
+                    <td><code>BoxRenderable</code></td>
+                    <td>Removes all children and destroys their subtrees (useful for screen swaps and benchmarks).</td>
+                  </tr>
+                  <tr>
                     <td><code className="doc-pill" title="destroyRecursively()">destroyRecursively()</code></td>
                     <td>Any renderable</td>
                     <td>Destroys a subtree; use when switching screens to avoid leaks.</td>
