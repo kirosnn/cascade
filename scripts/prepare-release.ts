@@ -133,7 +133,7 @@ if (!/^\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?$/.test(version)) {
   process.exit(1)
 }
 
-console.log(`\nPreparing release ${version} for core, react, solid, and create-cascade packages...\n`)
+console.log(`\nPreparing release ${version} for core, react, solid, create-cascade, and create-cascade-skill packages...\n`)
 try {
   const aggregationPath = createMarkdownAggregationFile(version)
   const relativeAggregationPath = aggregationPath.slice(rootDir.length + 1).replaceAll("\\", "/")
@@ -234,6 +234,19 @@ try {
   process.exit(1)
 }
 
+const createCascadeSkillPackageJsonPath = join(rootDir, "packages", "skill", "package.json")
+console.log("\nUpdating create-cascade-skill...")
+
+try {
+  const createCascadeSkillPackageJson: PackageJson = JSON.parse(readFileSync(createCascadeSkillPackageJsonPath, "utf8"))
+  createCascadeSkillPackageJson.version = version
+  writeFileSync(createCascadeSkillPackageJsonPath, JSON.stringify(createCascadeSkillPackageJson, null, 2) + "\n")
+  console.log(`  create-cascade-skill updated to version ${version}`)
+} catch (error) {
+  console.error(`  Failed to update create-cascade-skill: ${error}`)
+  process.exit(1)
+}
+
 console.log("\nUpdating bun.lock...")
 try {
   execSync("bun install", { cwd: rootDir, stdio: "inherit" })
@@ -244,7 +257,7 @@ try {
 }
 
 console.log(`
-Successfully prepared release ${version} for core, react, solid, and create-cascade packages!
+Successfully prepared release ${version} for core, react, solid, create-cascade, and create-cascade-skill packages!
 
 Next steps:
 1. Review the changes: git diff
