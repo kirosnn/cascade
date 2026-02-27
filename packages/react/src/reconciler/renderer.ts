@@ -1,15 +1,15 @@
 import { CliRenderer, CliRenderEvents, engine } from "@cascadetui/core"
 import React, { type ReactNode } from "react"
 import type { OpaqueRoot } from "react-reconciler"
+import { ConcurrentRoot } from "react-reconciler/constants"
 import { AppContext } from "../components/app"
 import { ErrorBoundary } from "../components/error-boundary"
-import { _render, reconciler } from "./reconciler"
+import { reconciler } from "./reconciler"
 
 // flushSync was renamed to flushSyncFromReconciler in react-reconciler 0.32.0
 // the types for react-reconciler are not up to date with the library
 const _r = reconciler as typeof reconciler & { flushSyncFromReconciler?: typeof reconciler.flushSync }
 const flushSync = _r.flushSyncFromReconciler ?? _r.flushSync
-const { createPortal } = reconciler
 
 export type Root = {
   render: (node: ReactNode) => void
@@ -44,28 +44,43 @@ export function createRoot(renderer: CliRenderer): Root {
     render: (node: ReactNode) => {
       engine.attach(renderer)
 
-      container = _render(
+      const element = React.createElement(
+        AppContext.Provider,
+        { value: { keyHandler: renderer.keyInput, renderer } },
         React.createElement(
-          AppContext.Provider,
-          { value: { keyHandler: renderer.keyInput, renderer } },
-          React.createElement(
-            ErrorBoundary,
-            {
-              onCrash: (error, info) => {
-                ;(renderer as any).reportCrash(error, "react-error-boundary", {
-                  componentStack: info.componentStack,
-                })
-              },
+          ErrorBoundary,
+          {
+            onCrash: (error, info) => {
+              ;(renderer as any).reportCrash(error, "react-error-boundary", {
+                componentStack: info.componentStack,
+              })
             },
-            node,
-          ),
+          },
+          node,
         ),
-        renderer.root,
       )
+
+      if (!container) {
+        container = reconciler.createContainer(
+          renderer.root,
+          ConcurrentRoot,
+          null,
+          false,
+          null,
+          "",
+          console.error,
+          console.error,
+          console.error,
+          console.error,
+          null,
+        )
+      }
+
+      reconciler.updateContainer(element, container, null, () => {})
     },
 
     unmount: cleanup,
   }
 }
 
-export { createPortal, flushSync }
+export { flushSync }
