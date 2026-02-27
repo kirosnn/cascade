@@ -60,6 +60,12 @@ export interface RendererEvents {
   crash: (report: { timestamp: string; source: string; message: string; stack?: string }) => void
 }
 
+export interface RenderTrace {
+  enabled: boolean
+  now: () => number
+  write: (line: string) => void
+}
+
 export interface RenderContext extends EventEmitter {
   addToHitGrid: (x: number, y: number, width: number, height: number, id: number) => void
   pushHitGridScissorRect: (x: number, y: number, width: number, height: number) => void
@@ -67,6 +73,7 @@ export interface RenderContext extends EventEmitter {
   clearHitGridScissorRects: () => void
   width: number
   height: number
+  layoutVersion: number
   requestRender: () => void
   setCursorPosition: (x: number, y: number, visible: boolean) => void
   setCursorStyle: (options: CursorStyleOptions) => void
@@ -94,6 +101,7 @@ export interface RenderContext extends EventEmitter {
     y: number,
     options?: { finishDragging?: boolean },
   ) => void
+  trace?: RenderTrace
 }
 
 export type Timeout = ReturnType<typeof setTimeout> | undefined
