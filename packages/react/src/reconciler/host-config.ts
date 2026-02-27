@@ -244,13 +244,9 @@ export const hostConfig: HostConfig<
 
   suspendInstance() {},
 
-  waitForCommitToBeReady() {
-    return null
-  },
-
   detachDeletedInstance(instance: Instance) {
     if (!instance.parent) {
-      instance.destroyRecursively()
+      instance.destroy()
     }
   },
 
