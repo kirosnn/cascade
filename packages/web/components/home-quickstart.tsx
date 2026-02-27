@@ -5,7 +5,7 @@ import { useMemo, useState } from "react"
 type QuickstartMode = "skill" | "manual" | "create"
 
 const QUICKSTART_COMMANDS: Record<QuickstartMode, string> = {
-  skill: "soon",
+  skill: "npx create-cascade-skill --help",
   manual: "bun add @cascadetui/core",
   create: "bun create cascade",
 }
@@ -27,6 +27,7 @@ export function HomeQuickstart() {
       <div className="quickstart-head">
         <h2>Quickstart</h2>
         <p>Create powerful, interactive terminal user interfaces using TypeScript bindings, seamless support for React and Solid, and a C-compatible ABI that enables integration with virtually any programming language.</p>
+        <p>Use the commands below to get started. Support for Node and Deno is in progress.</p>
       </div>
 
       <div className="quickstart-card">
