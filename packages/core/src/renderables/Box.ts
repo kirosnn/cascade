@@ -292,4 +292,27 @@ export class BoxRenderable extends Renderable {
       this.requestRender()
     }
   }
+
+  public clear(): void {
+    const trace = this.ctx.trace
+    const traceEnabled = trace?.enabled === true
+    const traceStart = traceEnabled ? trace.now() : 0
+    const children = this.getChildren()
+
+    this.beginRenderBatch()
+    try {
+      for (const child of children) {
+        this.remove(child.id)
+        child.destroyRecursively()
+      }
+    } finally {
+      this.endRenderBatch()
+    }
+
+    if (traceEnabled) {
+      trace.write(
+        `trace.container.clear id=${this.id} count=${children.length} ms=${(trace.now() - traceStart).toFixed(3)}`,
+      )
+    }
+  }
 }
