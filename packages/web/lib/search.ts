@@ -25,6 +25,7 @@ function tokenize(value: string): string[] {
   return normalizeText(value)
     .split(/[^a-z0-9]+/)
     .filter(Boolean)
+    .filter((token) => token.length >= 2)
 }
 
 function isSubsequence(needle: string, haystack: string): boolean {
@@ -119,6 +120,7 @@ function scoreEntry(entry: IndexEntry, parsed: ReturnType<typeof parseQuery>): n
 
   const target = parsed.inTitle ? entry.titleOnly : entry.searchable
   let score = 0
+  let matchedTokens = 0
 
   if (parsed.freeTokens.length === 0 && (parsed.page || parsed.section || parsed.inTitle)) {
     score += 15
@@ -128,20 +130,28 @@ function scoreEntry(entry: IndexEntry, parsed: ReturnType<typeof parseQuery>): n
   if (entry.titleOnly.includes(parsed.query)) score += 35
 
   for (const token of parsed.freeTokens) {
+    if (token.length < 2) {
+      continue
+    }
     if (target.includes(` ${token} `) || target.startsWith(`${token} `) || target.endsWith(` ${token}`)) {
       score += 24
+      matchedTokens += 1
       continue
     }
     if (target.includes(token)) {
       score += 14
+      matchedTokens += 1
       continue
     }
-    if (isSubsequence(token, target)) {
-      score += 6
+    if (token.length >= 4 && isSubsequence(token, target)) {
+      score += 4
+      matchedTokens += 1
       continue
     }
     score -= 10
   }
+
+  if (parsed.freeTokens.length > 0 && matchedTokens === 0) return -1
 
   return score
 }
@@ -154,9 +164,13 @@ export function createSearchEngine(pages: DocPage[]) {
       const parsed = parseQuery(input)
       if (!parsed.query) return []
 
+      if (parsed.freeTokens.length > 0 && parsed.freeTokens.every((token) => token.length < 2)) {
+        return []
+      }
+
       return index
         .map((entry) => ({ ...entry, score: scoreEntry(entry, parsed) }))
-        .filter((entry) => entry.score > 0)
+        .filter((entry) => entry.score >= 20)
         .sort((a, b) => b.score - a.score)
         .slice(0, limit)
     },
