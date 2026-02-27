@@ -1,6 +1,6 @@
 {
   "name": "@cascadetui/core-linux-arm64",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Prebuilt linux-arm64 binaries for @cascadetui/core",
   "main": "index.ts",
   "types": "index.ts",
