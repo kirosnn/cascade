@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev --port 4173 --turbopack",
+    "dev:stable": "next dev --port 4173",
     "build": "next build",
     "start": "next start --port 4173",
     "test": "bun test"
@@ -13,7 +14,9 @@
     "@vercel/analytics": "^1.6.1",
     "next": "^15.0.0",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "react-markdown": "^9.0.3",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
