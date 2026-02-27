@@ -60,6 +60,54 @@ CASCADE_LOG_CRASH_REPORTS=1 bun run dev`}
           </>
         ),
       },
+      {
+        id: "overview-cheat-sheet",
+        title: "Cheat sheet",
+        searchText: "overview cheat sheet packages entrypoints core react solid create-cascade constructs renderables",
+        content: (
+          <>
+            <div className="doc-table-wrap">
+              <table className="doc-table">
+                <thead>
+                  <tr>
+                    <th>Goal</th>
+                    <th>Use</th>
+                    <th>Minimal snippet</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Start a new app</td>
+                    <td><code className="doc-pill" title="create-cascade">create-cascade</code></td>
+                    <td><code className="doc-pill" title="bun create cascade">bun create cascade</code></td>
+                  </tr>
+                  <tr>
+                    <td>Imperative UI</td>
+                    <td><code className="doc-pill" title="@cascadetui/core">@cascadetui/core</code> renderables</td>
+                    <td><code className="doc-pill" title="new BoxRenderable">new BoxRenderable(renderer, ...)</code></td>
+                  </tr>
+                  <tr>
+                    <td>Declarative (no framework)</td>
+                    <td><code className="doc-pill" title="constructs">constructs</code> + <code className="doc-pill" title="instantiate">instantiate</code></td>
+                    <td><code className="doc-pill" title="instantiate(renderer, vnode)">instantiate(renderer, vnode)</code></td>
+                  </tr>
+                  <tr>
+                    <td>React UI</td>
+                    <td><code className="doc-pill" title="@cascadetui/react">@cascadetui/react</code></td>
+                    <td><code className="doc-pill" title="createRoot(renderer).render">createRoot(renderer).render(...)</code></td>
+                  </tr>
+                  <tr>
+                    <td>Solid UI</td>
+                    <td><code className="doc-pill" title="@cascadetui/solid">@cascadetui/solid</code></td>
+                    <td><code className="doc-pill" title="render(() => <App />)">render(() =&gt; &lt;App /&gt;)</code></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p>Tip: if you’re unsure which approach to pick, start with React or Solid for app-like UIs (state + composition). Use renderables for low-level control or when you want to mutate objects in-place.</p>
+          </>
+        ),
+      },
     ],
   },
   {
@@ -98,6 +146,60 @@ bun install
 bun run dev`}
             />
             <p>Keep the built-in console enabled in development so you can see logs while the UI is running.</p>
+          </>
+        ),
+      },
+      {
+        id: "tutorial-config-cheats",
+        title: "Renderer config cheats",
+        searchText: "tutorial renderer config cheats exitOnCtrlC useMouse useAlternateScreen useConsole targetFps",
+        content: (
+          <>
+            <p>These are the most common <code>createCliRenderer</code> knobs used in real apps:</p>
+            <div className="doc-table-wrap">
+              <table className="doc-table">
+                <thead>
+                  <tr>
+                    <th>Option</th>
+                    <th>Type</th>
+                    <th>Typical</th>
+                    <th>Why it matters</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code className="doc-pill" title="exitOnCtrlC">exitOnCtrlC</code></td>
+                    <td><code className="doc-pill" title="boolean">boolean</code></td>
+                    <td><code className="doc-pill" title="true">true</code></td>
+                    <td>Quits cleanly on Ctrl+C and restores terminal state.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="useAlternateScreen">useAlternateScreen</code></td>
+                    <td><code className="doc-pill" title="boolean">boolean</code></td>
+                    <td><code className="doc-pill" title="true">true</code></td>
+                    <td>Keeps UI isolated (no log spam in your shell history).</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="useMouse">useMouse</code></td>
+                    <td><code className="doc-pill" title="boolean">boolean</code></td>
+                    <td><code className="doc-pill" title="true">true</code></td>
+                    <td>Enables click/drag/scroll interactions and selection.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="useConsole">useConsole</code></td>
+                    <td><code className="doc-pill" title="boolean">boolean</code></td>
+                    <td><code className="doc-pill" title="true">true</code></td>
+                    <td>Makes logs visible even in alternate screen mode.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="targetFps">targetFps</code></td>
+                    <td><code className="doc-pill" title="number">number</code></td>
+                    <td><code className="doc-pill" title="30">30</code></td>
+                    <td>Sets animation/render loop target (use only if you need continuous rendering).</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </>
         ),
       },
@@ -229,6 +331,48 @@ renderer.destroy()`}
             <p>- global shortcuts handled at the renderer level
             <br />- editing/navigation handled by the focused widget (input, list, editor)
             <br />- a predictable way to move focus between widgets (Tab / Shift+Tab)</p>
+          </>
+        ),
+      },
+      {
+        id: "focus-apis",
+        title: "Focus APIs",
+        searchText: "focus apis focus blur focused autoFocus id getRenderable focus manager",
+        content: (
+          <>
+            <div className="doc-table-wrap">
+              <table className="doc-table">
+                <thead>
+                  <tr>
+                    <th>Concept</th>
+                    <th>Where</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code className="doc-pill" title="focus()">focus()</code></td>
+                    <td>Renderable instance</td>
+                    <td>Routes keyboard input to this node (common for inputs/selects/textareas).</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="focused">focused</code></td>
+                    <td>React/Solid prop</td>
+                    <td>Convenient way to request focus on mount (use sparingly; prefer explicit focus manager for complex apps).</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="id">id</code></td>
+                    <td>All nodes</td>
+                    <td>Use stable ids to implement predictable tab order and focus restore.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="renderer.root.getRenderable">renderer.root.getRenderable(id)</code></td>
+                    <td>Renderer root</td>
+                    <td>Lookup helper for imperative focus routing.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </>
         ),
       },
@@ -398,6 +542,59 @@ const renderer = await createCliRenderer({
         ),
       },
       {
+        id: "renderer-config-reference",
+        title: "Config reference (common options)",
+        searchText: "renderer config reference useConsole consoleOptions openConsoleOnError logCrashReportsToConsole useKittyKeyboard",
+        content: (
+          <>
+            <div className="doc-table-wrap">
+              <table className="doc-table">
+                <thead>
+                  <tr>
+                    <th>Option</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code className="doc-pill" title="useConsole">useConsole</code></td>
+                    <td><code className="doc-pill" title="boolean">boolean</code></td>
+                    <td><code className="doc-pill" title="false">false</code></td>
+                    <td>Shows an in-UI console overlay that captures logs (recommended in development).</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="consoleOptions">consoleOptions</code></td>
+                    <td><code className="doc-pill" title="ConsoleOptions">ConsoleOptions</code></td>
+                    <td><code className="doc-pill" title="-">-</code></td>
+                    <td>Customizes position/height/title/debug mode of the console overlay.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="openConsoleOnError">openConsoleOnError</code></td>
+                    <td><code className="doc-pill" title="boolean">boolean</code></td>
+                    <td><code className="doc-pill" title="false">false</code></td>
+                    <td>Opens the console automatically when a crash report is captured.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="logCrashReportsToConsole">logCrashReportsToConsole</code></td>
+                    <td><code className="doc-pill" title="boolean">boolean</code></td>
+                    <td><code className="doc-pill" title="false">false</code></td>
+                    <td>Prints crash report details via <code>console.error</code> (useful in CI / debugging).</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="useKittyKeyboard">useKittyKeyboard</code></td>
+                    <td><code className="doc-pill" title="KittyKeyboardOptions | null">KittyKeyboardOptions | null</code></td>
+                    <td><code className="doc-pill" title="undefined">undefined</code></td>
+                    <td>Enables enhanced keyboard protocol features on terminals that support it.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </>
+        ),
+      },
+      {
         id: "root-renderable",
         title: "The root renderable",
         searchText: "renderer.root RootRenderable add remove fills terminal resize",
@@ -547,6 +744,48 @@ panel.destroyRecursively()`}
           </>
         ),
       },
+      {
+        id: "renderables-tree-apis",
+        title: "Tree APIs",
+        searchText: "renderables tree apis add remove destroyRecursively getRenderable children parent",
+        content: (
+          <>
+            <div className="doc-table-wrap">
+              <table className="doc-table">
+                <thead>
+                  <tr>
+                    <th>Operation</th>
+                    <th>Where</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code className="doc-pill" title="add(child)">add(child)</code></td>
+                    <td>Container renderables</td>
+                    <td>Appends a child node to the renderable tree.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="remove(id)">remove(id)</code></td>
+                    <td>Container renderables</td>
+                    <td>Detaches a child by id (does not necessarily destroy it).</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="destroyRecursively()">destroyRecursively()</code></td>
+                    <td>Any renderable</td>
+                    <td>Destroys a subtree; use when switching screens to avoid leaks.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="renderer.root.getRenderable">renderer.root.getRenderable(id)</code></td>
+                    <td>Root</td>
+                    <td>Lookup by stable id (useful for focus management and imperative updates).</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </>
+        ),
+      },
     ],
   },
   {
@@ -606,6 +845,43 @@ function EmptyState(message: string) {
 
 const vnode = items.length === 0 ? EmptyState("No results") : Box({}, Text({ content: "Results..." }))`}
             />
+          </>
+        ),
+      },
+      {
+        id: "constructs-reference",
+        title: "Reference (core helpers)",
+        searchText: "constructs reference instantiate h delegate fragments children props",
+        content: (
+          <>
+            <div className="doc-table-wrap">
+              <table className="doc-table">
+                <thead>
+                  <tr>
+                    <th>Helper</th>
+                    <th>Purpose</th>
+                    <th>When to use</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code className="doc-pill" title="instantiate">instantiate(renderer, vnode)</code></td>
+                    <td>Turns VNodes into runtime renderables.</td>
+                    <td>Mount construct trees into the renderer root.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="delegate">delegate(config, vnode)</code></td>
+                    <td>Forwards focus/events to a specific child.</td>
+                    <td>Forms: keep a container focused while delegating editing to a field.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="Box/Text/Input">Box / Text / Input</code></td>
+                    <td>Convenient VNode factories matching core renderables.</td>
+                    <td>Reusable composition with predictable structure.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </>
         ),
       },
@@ -1036,6 +1312,81 @@ setTimeout(() => renderer.destroy(), 1000)`}
           </>
         ),
       },
+      {
+        id: "text-props",
+        title: "Props",
+        searchText: "text props content color fg bg bold italic underline dim strike wrap",
+        content: (
+          <>
+            <div className="doc-table-wrap">
+              <table className="doc-table">
+                <thead>
+                  <tr>
+                    <th>Prop</th>
+                    <th>Type</th>
+                    <th>Common usage</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code className="doc-pill" title="content">content</code></td>
+                    <td><code className="doc-pill" title="string | segments">string | segments</code></td>
+                    <td>Plain string, or an array of styled segments for rich text.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="color">color</code></td>
+                    <td><code className="doc-pill" title="ColorInput">ColorInput</code></td>
+                    <td>Foreground/text color (hex, named color, RGBA, etc.).</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="bold">bold</code></td>
+                    <td><code className="doc-pill" title="boolean">boolean</code></td>
+                    <td>Use sparingly for labels and status tags.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="italic">italic</code></td>
+                    <td><code className="doc-pill" title="boolean">boolean</code></td>
+                    <td>Good for hints and secondary metadata.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="underline">underline</code></td>
+                    <td><code className="doc-pill" title="boolean">boolean</code></td>
+                    <td>Useful for links or active items (don’t overuse).</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p>Tip: when building “status lines”, prefer a fixed palette (e.g. gray timestamp + colored tag + message). This scales well for logs and diagnostics.</p>
+          </>
+        ),
+      },
+      {
+        id: "text-recipes",
+        title: "Recipes",
+        searchText: "text recipes truncation ellipsis status bar inline spans",
+        content: (
+          <>
+            <p>Recipe: status bar with left/right alignment (place text nodes inside a flex row container).</p>
+            <CodeBlock
+              language="tsx"
+              code={`<box flexDirection="row" justifyContent="space-between" height={1} width="100%">
+  <text content={"Connected"} color="#9ece6a" />
+  <text content={"Ctrl+C to quit"} color="#565f89" />
+</box>`}
+            />
+            <p>Recipe: inline emphasis using children (React/Solid bindings).</p>
+            <CodeBlock
+              language="tsx"
+              code={`<text>
+  <span fg="#7aa2f7">blue</span>
+  <span> and </span>
+  <strong>bold</strong>
+  <span> text</span>
+</text>`}
+            />
+          </>
+        ),
+      },
     ],
   },
   {
@@ -1076,6 +1427,82 @@ setTimeout(() => renderer.destroy(), 1000)`}
     backgroundColor="#24283b"
   >
     <text content="Press ? for help" />
+  </box>
+</box>`}
+            />
+          </>
+        ),
+      },
+      {
+        id: "box-props",
+        title: "Props",
+        searchText: "box props border padding margin flexDirection alignItems justifyContent position zIndex width height",
+        content: (
+          <>
+            <div className="doc-table-wrap">
+              <table className="doc-table">
+                <thead>
+                  <tr>
+                    <th>Prop</th>
+                    <th>Type</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code className="doc-pill" title="border">border</code></td>
+                    <td><code className="doc-pill" title="boolean">boolean</code></td>
+                    <td>Draw a border around the box. Great for panels and grouping.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="padding">padding</code></td>
+                    <td><code className="doc-pill" title="number">number</code></td>
+                    <td>Add inner space between the border and children.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="flexDirection">flexDirection</code></td>
+                    <td><code className="doc-pill" title="row | column">row | column</code></td>
+                    <td>Layout children horizontally or vertically.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="flexGrow">flexGrow</code></td>
+                    <td><code className="doc-pill" title="number">number</code></td>
+                    <td>Use <code>1</code> to fill remaining space (typical for main panels).</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="position">position</code></td>
+                    <td><code className="doc-pill" title="relative | absolute">relative | absolute</code></td>
+                    <td>Use absolute for overlays (toasts, modals, tooltips).</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p>Tip: keep a consistent “app shell” structure (header/body/footer) and only swap main content. This reduces layout churn and focus bugs.</p>
+          </>
+        ),
+      },
+      {
+        id: "box-recipes",
+        title: "Recipes",
+        searchText: "box recipes modal overlay zIndex centered",
+        content: (
+          <>
+            <p>Recipe: centered modal overlay (use absolute positioning + a dim backdrop).</p>
+            <CodeBlock
+              language="tsx"
+              code={`<box width="100%" height="100%">
+  <box position="absolute" width="100%" height="100%" backgroundColor="#000000" opacity={0.4} />
+  <box
+    position="absolute"
+    border
+    padding={1}
+    width={50}
+    height={8}
+    left={10}
+    top={5}
+    backgroundColor="#1f2335"
+  >
+    <text content="Confirm?" bold />
   </box>
 </box>`}
             />
@@ -1127,6 +1554,79 @@ setTimeout(() => renderer.destroy(), 1000)`}
           </>
         ),
       },
+      {
+        id: "input-props",
+        title: "Props",
+        searchText: "input props value placeholder focused disabled onInput onSubmit onKey",
+        content: (
+          <>
+            <div className="doc-table-wrap">
+              <table className="doc-table">
+                <thead>
+                  <tr>
+                    <th>Prop</th>
+                    <th>Type</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code className="doc-pill" title="value">value</code></td>
+                    <td><code className="doc-pill" title="string">string</code></td>
+                    <td>Controlled input value (recommended for predictable behavior).</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="placeholder">placeholder</code></td>
+                    <td><code className="doc-pill" title="string">string</code></td>
+                    <td>Hint text when empty.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="focused">focused</code></td>
+                    <td><code className="doc-pill" title="boolean">boolean</code></td>
+                    <td>Requests focus on mount (use carefully in multi-widget UIs).</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="onInput">onInput</code></td>
+                    <td><code className="doc-pill" title="(value) => void">(value) =&gt; void</code></td>
+                    <td>Called on each edit; update state/store here.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="onSubmit">onSubmit</code></td>
+                    <td><code className="doc-pill" title="(value) => void">(value) =&gt; void</code></td>
+                    <td>Called on Enter/Return; good for commands/search.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </>
+        ),
+      },
+      {
+        id: "input-recipes",
+        title: "Recipes",
+        searchText: "input recipes command prompt history esc",
+        content: (
+          <>
+            <p>Recipe: “command prompt” input with Esc to clear and Enter to submit.</p>
+            <CodeBlock
+              language="tsx"
+              code={`<input
+  value={draft()}
+  placeholder=":type a command"
+  focused
+  onInput={setDraft}
+  onKey={(e) => {
+    if (e.name === "escape") setDraft("")
+  }}
+  onSubmit={(value) => {
+    runCommand(value)
+    setDraft("")
+  }}
+/>`}
+            />
+          </>
+        ),
+      },
     ],
   },
   {
@@ -1161,6 +1661,53 @@ setTimeout(() => renderer.destroy(), 1000)`}
 />`}
             />
             <p>Textarea is also a good foundation for simple editors: pair it with a status bar, line numbers, and a help footer.  For complex use cases (syntax highlighting, diffs), combine it with Code and Tree‑sitter.</p>
+          </>
+        ),
+      },
+      {
+        id: "textarea-props",
+        title: "Props",
+        searchText: "textarea props value onInput width height highlights focused",
+        content: (
+          <>
+            <div className="doc-table-wrap">
+              <table className="doc-table">
+                <thead>
+                  <tr>
+                    <th>Prop</th>
+                    <th>Type</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code className="doc-pill" title="value">value</code></td>
+                    <td><code className="doc-pill" title="string">string</code></td>
+                    <td>Controlled content; keep it in state/store.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="onInput">onInput</code></td>
+                    <td><code className="doc-pill" title="(value) => void">(value) =&gt; void</code></td>
+                    <td>Called when the user edits the text.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="width">width</code></td>
+                    <td><code className="doc-pill" title="number | %">number | %</code></td>
+                    <td>Set to <code>"100%"</code> for editor-like panels.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="height">height</code></td>
+                    <td><code className="doc-pill" title="number">number</code></td>
+                    <td>Pick a fixed height or put it in a flex container.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="highlights">highlights</code></td>
+                    <td><code className="doc-pill" title="ranges">ranges</code></td>
+                    <td>Highlight ranges (e.g. errors, search matches).</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </>
         ),
       },
@@ -1204,6 +1751,87 @@ setTimeout(() => renderer.destroy(), 1000)`}
           </>
         ),
       },
+      {
+        id: "select-props",
+        title: "Props",
+        searchText: "select props options selectedIndex focused onChange onSelect showScrollIndicator disabled",
+        content: (
+          <>
+            <div className="doc-table-wrap">
+              <table className="doc-table">
+                <thead>
+                  <tr>
+                    <th>Prop</th>
+                    <th>Type</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code className="doc-pill" title="options">options</code></td>
+                    <td><code className="doc-pill" title="array">array</code></td>
+                    <td>List of options (strings or objects). Provide stable values/labels for predictable UX.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="selectedIndex">selectedIndex</code></td>
+                    <td><code className="doc-pill" title="number">number</code></td>
+                    <td>Controlled selection index. Keep it stable when filtering.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="focused">focused</code></td>
+                    <td><code className="doc-pill" title="boolean">boolean</code></td>
+                    <td>Requests focus on mount (React/Solid).</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="onChange">onChange</code></td>
+                    <td><code className="doc-pill" title="(index, option) => void">(index, option) =&gt; void</code></td>
+                    <td>Fires when highlight changes (useful for preview panes).</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="onSelect">onSelect</code></td>
+                    <td><code className="doc-pill" title="(index, option) => void">(index, option) =&gt; void</code></td>
+                    <td>Fires on confirmation (Enter/click).</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="showScrollIndicator">showScrollIndicator</code></td>
+                    <td><code className="doc-pill" title="boolean">boolean</code></td>
+                    <td>Show “more above/below” indicator for long lists.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </>
+        ),
+      },
+      {
+        id: "select-recipes",
+        title: "Recipes",
+        searchText: "select recipes master detail preview filter input",
+        content: (
+          <>
+            <p>Recipe: master/detail browser (Select + preview panel). Use <code>onChange</code> to preview and <code>onSelect</code> to confirm.</p>
+            <CodeBlock
+              language="tsx"
+              code={`<box flexDirection="row" height="100%">
+  <box width={26} border padding={1}>
+    <text content="Items" bold />
+    <select
+      focused
+      options={items()}
+      selectedIndex={active()}
+      onChange={(i) => setActive(i)}
+      onSelect={(i) => open(items()[i])}
+      showScrollIndicator
+    />
+  </box>
+  <box flexGrow={1} border padding={1} marginLeft={1}>
+    <text content={previewFor(items()[active()])} />
+  </box>
+</box>`}
+            />
+          </>
+        ),
+      },
     ],
   },
   {
@@ -1240,6 +1868,53 @@ setTimeout(() => renderer.destroy(), 1000)`}
 />`}
             />
             <p>Tabs work best when they represent persistent “areas” of the UI (not transient actions).  If you need transient actions, consider a menu or command palette instead.</p>
+          </>
+        ),
+      },
+      {
+        id: "tab-select-props",
+        title: "Props",
+        searchText: "tabselect props tabs selectedIndex focused onChange onSelect",
+        content: (
+          <>
+            <div className="doc-table-wrap">
+              <table className="doc-table">
+                <thead>
+                  <tr>
+                    <th>Prop</th>
+                    <th>Type</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code className="doc-pill" title="tabs">tabs</code></td>
+                    <td><code className="doc-pill" title="array">array</code></td>
+                    <td>Tab labels/options. Keep them short (terminal width).</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="selectedIndex">selectedIndex</code></td>
+                    <td><code className="doc-pill" title="number">number</code></td>
+                    <td>Controlled active tab index.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="focused">focused</code></td>
+                    <td><code className="doc-pill" title="boolean">boolean</code></td>
+                    <td>Requests focus on mount (React/Solid).</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="onChange">onChange</code></td>
+                    <td><code className="doc-pill" title="(index, tab) => void">(index, tab) =&gt; void</code></td>
+                    <td>Fires when active tab changes (arrow keys / click).</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="onSelect">onSelect</code></td>
+                    <td><code className="doc-pill" title="(index, tab) => void">(index, tab) =&gt; void</code></td>
+                    <td>Fires on confirmation (if supported by the binding).</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </>
         ),
       },
@@ -1288,6 +1963,67 @@ for (let i = 0; i < 100; i += 1) {
           </>
         ),
       },
+      {
+        id: "scroll-box-props",
+        title: "Props",
+        searchText: "scrollbox props id height width focused border scroll offsets",
+        content: (
+          <>
+            <div className="doc-table-wrap">
+              <table className="doc-table">
+                <thead>
+                  <tr>
+                    <th>Prop</th>
+                    <th>Type</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code className="doc-pill" title="id">id</code></td>
+                    <td><code className="doc-pill" title="string">string</code></td>
+                    <td>Needed if you attach a <code>ScrollBar</code> via <code>targetId</code>.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="focused">focused</code></td>
+                    <td><code className="doc-pill" title="boolean">boolean</code></td>
+                    <td>Routes wheel/keyboard interactions to the scrollbox.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="height">height</code></td>
+                    <td><code className="doc-pill" title="number">number</code></td>
+                    <td>Typical: fixed viewport height (logs, code view).</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="border">border</code></td>
+                    <td><code className="doc-pill" title="boolean">boolean</code></td>
+                    <td>Convenient for “pane” visuals.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </>
+        ),
+      },
+      {
+        id: "scroll-box-recipes",
+        title: "Recipes",
+        searchText: "scrollbox recipes log viewer follow tail auto scroll",
+        content: (
+          <>
+            <p>Recipe: log viewer pane. Put a long <code>Text</code> or <code>Markdown</code> node inside a ScrollBox and attach a ScrollBar for feedback.</p>
+            <CodeBlock
+              language="tsx"
+              code={`<box flexDirection="row" height={18}>
+  <scrollbox id="logs" flexGrow={1} border focused>
+    <text content={logs()} />
+  </scrollbox>
+  <scrollbar targetId="logs" />
+</box>`}
+            />
+          </>
+        ),
+      },
     ],
   },
   {
@@ -1312,6 +2048,38 @@ for (let i = 0; i < 100; i += 1) {
             />
             <p>You can place scrollbars vertically or horizontally and adjust their appearance via theme configuration.</p>
             <p>For large, high‑frequency content (like streaming logs), prefer keeping the ScrollBar visible and implement an “auto-follow” mode: when the user scrolls up manually, stop following; when they scroll back to the bottom, resume following.  This avoids fighting the user while still being great for tails.</p>
+          </>
+        ),
+      },
+      {
+        id: "scroll-bar-props",
+        title: "Props",
+        searchText: "scrollbar props targetId orientation showArrows track thumb",
+        content: (
+          <>
+            <div className="doc-table-wrap">
+              <table className="doc-table">
+                <thead>
+                  <tr>
+                    <th>Prop</th>
+                    <th>Type</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code className="doc-pill" title="targetId">targetId</code></td>
+                    <td><code className="doc-pill" title="string">string</code></td>
+                    <td>ID of the ScrollBox to track. Must match exactly.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="orientation">orientation</code></td>
+                    <td><code className="doc-pill" title="vertical | horizontal">vertical | horizontal</code></td>
+                    <td>Choose vertical for lists/logs, horizontal for long lines/tables.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </>
         ),
       },
@@ -1340,6 +2108,53 @@ for (let i = 0; i < 100; i += 1) {
               code={`<slider min={0} max={1} value={gain()} step={0.1} orientation="vertical" onChange={(n) => setGain(n)} />`}
             />
             <p>Sliders work well as “live controls” in dashboards.  Pair them with a readout and keep the slider focused so arrow keys adjust it in small increments, while PageUp/PageDown can apply larger jumps.</p>
+          </>
+        ),
+      },
+      {
+        id: "slider-props",
+        title: "Props",
+        searchText: "slider props min max value step orientation focused onChange",
+        content: (
+          <>
+            <div className="doc-table-wrap">
+              <table className="doc-table">
+                <thead>
+                  <tr>
+                    <th>Prop</th>
+                    <th>Type</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code className="doc-pill" title="min">min</code></td>
+                    <td><code className="doc-pill" title="number">number</code></td>
+                    <td>Lower bound (inclusive).</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="max">max</code></td>
+                    <td><code className="doc-pill" title="number">number</code></td>
+                    <td>Upper bound (inclusive).</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="value">value</code></td>
+                    <td><code className="doc-pill" title="number">number</code></td>
+                    <td>Controlled value. Keep it in state/store.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="step">step</code></td>
+                    <td><code className="doc-pill" title="number">number</code></td>
+                    <td>Snaps to increments (useful for gain/volume, percentages).</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="onChange">onChange</code></td>
+                    <td><code className="doc-pill" title="(value) => void">(value) =&gt; void</code></td>
+                    <td>Called on drag/keyboard updates.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </>
         ),
       },
@@ -1377,6 +2192,43 @@ for (let i = 0; i < 100; i += 1) {
   <scrollbar targetId="code" />
 </box>`}
             />
+          </>
+        ),
+      },
+      {
+        id: "code-props",
+        title: "Props",
+        searchText: "code props language content lineNumbers wrapMode theme tree-sitter",
+        content: (
+          <>
+            <div className="doc-table-wrap">
+              <table className="doc-table">
+                <thead>
+                  <tr>
+                    <th>Prop</th>
+                    <th>Type</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code className="doc-pill" title="language">language</code></td>
+                    <td><code className="doc-pill" title="string">string</code></td>
+                    <td>Used for highlighting rules and (when enabled) Tree‑sitter parsing.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="content">content</code></td>
+                    <td><code className="doc-pill" title="string">string</code></td>
+                    <td>Source text to render.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="lineNumbers">lineNumbers</code></td>
+                    <td><code className="doc-pill" title="boolean">boolean</code></td>
+                    <td>Enable a gutter. Prefer this for editor/diff UIs.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </>
         ),
       },
@@ -1423,6 +2275,33 @@ for (let i = 0; i < 100; i += 1) {
           </>
         ),
       },
+      {
+        id: "markdown-props",
+        title: "Props",
+        searchText: "markdown props content enableTables code fences tree-sitter",
+        content: (
+          <>
+            <div className="doc-table-wrap">
+              <table className="doc-table">
+                <thead>
+                  <tr>
+                    <th>Prop</th>
+                    <th>Type</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code className="doc-pill" title="content">content</code></td>
+                    <td><code className="doc-pill" title="string">string</code></td>
+                    <td>Markdown source.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </>
+        ),
+      },
     ],
   },
   {
@@ -1447,6 +2326,43 @@ for (let i = 0; i < 100; i += 1) {
 />`}
             />
             <p>Highlight specific lines by passing an array of line indices.  You can combine this with diff or diagnostic renderables for rich editors.</p>
+          </>
+        ),
+      },
+      {
+        id: "line-numbers-props",
+        title: "Props",
+        searchText: "line numbers props content lineNumbers highlightedLines diagnostics",
+        content: (
+          <>
+            <div className="doc-table-wrap">
+              <table className="doc-table">
+                <thead>
+                  <tr>
+                    <th>Prop</th>
+                    <th>Type</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code className="doc-pill" title="content">content</code></td>
+                    <td><code className="doc-pill" title="string">string</code></td>
+                    <td>Text/code whose lines are numbered.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="lineNumbers">lineNumbers</code></td>
+                    <td><code className="doc-pill" title="boolean">boolean</code></td>
+                    <td>Enable the gutter itself.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="highlightedLines">highlightedLines</code></td>
+                    <td><code className="doc-pill" title="number[]">number[]</code></td>
+                    <td>Line indexes to highlight (breakpoints/errors/active line).</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </>
         ),
       },
@@ -1475,6 +2391,38 @@ renderer.root.add(fb)`}
           </>
         ),
       },
+      {
+        id: "frame-buffer-props",
+        title: "Props",
+        searchText: "framebuffer props width height reuse snapshot respectAlpha",
+        content: (
+          <>
+            <div className="doc-table-wrap">
+              <table className="doc-table">
+                <thead>
+                  <tr>
+                    <th>Prop</th>
+                    <th>Type</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code className="doc-pill" title="width">width</code></td>
+                    <td><code className="doc-pill" title="number">number</code></td>
+                    <td>Buffer width in cells.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="height">height</code></td>
+                    <td><code className="doc-pill" title="number">number</code></td>
+                    <td>Buffer height in cells.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </>
+        ),
+      },
     ],
   },
   {
@@ -1489,7 +2437,8 @@ renderer.root.add(fb)`}
         searchText: "ascii font renderable large text headings banners style title header decorative",
         content: (
           <>
-            <p>Display text using ASCII art fonts with multiple font styles available. Great for titles, headers, and decorative text.</p>
+            <p>Render large decorative text using ASCII art fonts. ASCIIFont is implemented as a FrameBuffer-backed renderable: the text is rendered into an offscreen buffer and then composed into the main tree.</p>
+            <p>Use it for splash screens, section headers, welcome banners, and compact “branding” elements in a terminal UI. For dense UIs, prefer plain <code>Text</code> and reserve ASCIIFont for high-impact moments.</p>
           </>
         ),
       },
@@ -1502,13 +2451,13 @@ renderer.root.add(fb)`}
             <p>Renderable API</p>
             <CodeBlock
               language="ts"
-              code={`import { ASCIIFontRenderable, RGBA, createCliRenderer } from "@opentui/core"
+              code={`import { ASCIIFontRenderable, RGBA, createCliRenderer } from "@cascadetui/core"
 
 const renderer = await createCliRenderer()
 
 const title = new ASCIIFontRenderable(renderer, {
   id: "title",
-  text: "OPENTUI",
+  text: "CASCADE",
   font: "tiny",
   color: RGBA.fromInts(255, 255, 255, 255),
 })
@@ -1519,7 +2468,7 @@ renderer.root.add(title)`}
             <p>Construct API</p>
             <CodeBlock
               language="ts"
-              code={`import { ASCIIFont, createCliRenderer } from "@opentui/core"
+              code={`import { ASCIIFont, createCliRenderer } from "@cascadetui/core"
 
 const renderer = await createCliRenderer()
 
@@ -1531,6 +2480,39 @@ renderer.root.add(
   }),
 )`}
             />
+            <p>React binding</p>
+            <CodeBlock
+              language="tsx"
+              code={`import { createCliRenderer, type ASCIIFontName } from "@cascadetui/core"
+import { createRoot } from "@cascadetui/react"
+import { useState } from "react"
+
+function App() {
+  const [font, setFont] = useState<ASCIIFontName>("tiny")
+  return (
+    <box style={{ paddingLeft: 1, paddingRight: 1 }}>
+      <select
+        focused
+        onChange={(_, option) => setFont(option?.value)}
+        options={[
+          { name: "Tiny", value: "tiny" },
+          { name: "Block", value: "block" },
+          { name: "Shade", value: "shade" },
+          { name: "Slick", value: "slick" },
+          { name: "Huge", value: "huge" },
+          { name: "Grid", value: "grid" },
+          { name: "Pallet", value: "pallet" },
+        ]}
+      />
+
+      <ascii-font text="ASCII" font={font} color="#7aa2f7" />
+    </box>
+  )
+}
+
+const renderer = await createCliRenderer()
+createRoot(renderer).render(<App />)`}
+            />
           </>
         ),
       },
@@ -1540,7 +2522,7 @@ renderer.root.add(
         searchText: "ascii font available fonts tiny block shade slick huge grid pallet",
         content: (
           <>
-            <p>OpenTUI includes several ASCII art font styles:</p>
+            <p>Cascade includes several ASCII art font styles:</p>
             <CodeBlock
               language="ts"
               code={`// Small, compact font
@@ -1583,6 +2565,40 @@ renderer.root.add(
         ),
       },
       {
+        id: "schema",
+        title: "Schema (ASCIIFontOptions)",
+        searchText: "ascii font schema ASCIIFontOptions defaults width height frame buffer selection",
+        content: (
+          <>
+            <p>ASCIIFont is backed by <code>ASCIIFontRenderable</code> and accepts <code>ASCIIFontOptions</code>. Width/height are computed from the rendered text and font and are not configurable directly.</p>
+            <CodeBlock
+              language="ts"
+              code={`export interface ASCIIFontOptions extends Omit<RenderableOptions<ASCIIFontRenderable>, "width" | "height"> {
+  text?: string
+  font?: ASCIIFontName
+  color?: ColorInput | ColorInput[]
+  backgroundColor?: ColorInput
+  selectionBg?: ColorInput
+  selectionFg?: ColorInput
+  selectable?: boolean
+}
+
+// Defaults
+{
+  text: "",
+  font: "tiny",
+  color: "#FFFFFF",
+  backgroundColor: "transparent",
+  selectionBg: undefined,
+  selectionFg: undefined,
+  selectable: true,
+}`}
+            />
+            <p>Because dimensions depend on <code>text</code> and <code>font</code>, changing either triggers a re-measure and a re-render. If you rely on layout constraints (flex), treat ASCIIFont as a fixed-size child (it sets <code>flexShrink: 0</code> internally).</p>
+          </>
+        ),
+      },
+      {
         id: "positioning",
         title: "Positioning",
         searchText: "ascii font positioning x y offset",
@@ -1601,6 +2617,66 @@ renderer.root.add(
 })`}
             />
             <p>If you are using flex layouts heavily, consider wrapping the ASCIIFont inside a container (Box) and let layout place it. Reserve explicit x/y positioning for overlays and splash screens.</p>
+          </>
+        ),
+      },
+      {
+        id: "colors",
+        title: "Colors and multi-color fonts",
+        searchText: "ascii font colors ColorInput array multi-color font palette cfonts",
+        content: (
+          <>
+            <p><code>color</code> accepts either a single <code>ColorInput</code> or an array of colors. The array form is used by multi-color font definitions (some fonts embed color segments). If the font uses multiple colors, the renderer will pick from the provided color array by index.</p>
+            <CodeBlock
+              language="ts"
+              code={`import { ASCIIFont, createCliRenderer } from "@cascadetui/core"
+
+const renderer = await createCliRenderer()
+
+renderer.root.add(
+  ASCIIFont({
+    text: "GRAD",
+    font: "block",
+    // Each segment in the font can refer to a different color index
+    color: ["#7aa2f7", "#bb9af7", "#7dcfff", "#9ece6a"],
+  }),
+)`}
+            />
+            <p>If you just want a “gradient look” without relying on font segmentation, a common trick is layering two ASCIIFonts with small offsets (shadow) or splitting your text into two nodes.</p>
+          </>
+        ),
+      },
+      {
+        id: "selection",
+        title: "Selection",
+        searchText: "ascii font selection selectable selectionBg selectionFg getSelectedText hasSelection",
+        content: (
+          <>
+            <p>ASCIIFont supports mouse-driven selection (when selection is enabled at the renderer level). You can disable selection via <code>selectable: false</code> or style it via <code>selectionBg</code>/<code>selectionFg</code>.</p>
+            <CodeBlock
+              language="ts"
+              code={`import { ASCIIFontRenderable, createCliRenderer } from "@cascadetui/core"
+
+const renderer = await createCliRenderer({ useMouse: true })
+
+const banner = new ASCIIFontRenderable(renderer, {
+  id: "banner",
+  text: "SELECT ME",
+  font: "block",
+  selectionBg: "#33467a",
+  selectionFg: "#c0caf5",
+  selectable: true,
+})
+
+renderer.root.add(banner)
+
+renderer.on("mouse", () => {
+  if (banner.hasSelection()) {
+    console.log("Selected:", banner.getSelectedText())
+  }
+})`}
+            />
+            <p>When layering multiple ASCIIFont nodes (e.g. shadows), consider setting <code>selectable: false</code> on decorative layers to avoid confusing selection behavior.</p>
           </>
         ),
       },
@@ -1678,6 +2754,7 @@ renderer.root.add(
                 </tbody>
               </table>
             </div>
+            <p>Note: width and height are measured from <code>text</code> and <code>font</code>. If you need to “align” the banner visually, prefer putting it in a container and using layout props (<code>alignItems</code>, <code>justifyContent</code>) instead of forcing explicit sizes.</p>
           </>
         ),
       },
@@ -1689,7 +2766,7 @@ renderer.root.add(
           <>
             <CodeBlock
               language="ts"
-              code={`import { Box, ASCIIFont, Text, createCliRenderer } from "@opentui/core"
+              code={`import { Box, ASCIIFont, Text, createCliRenderer } from "@cascadetui/core"
 
 const renderer = await createCliRenderer()
 
@@ -1702,7 +2779,7 @@ const welcomeScreen = Box(
     justifyContent: "center",
   },
   ASCIIFont({
-    text: "OPENTUI",
+    text: "Cascade",
     font: "huge",
     color: "#00FFFF",
   }),
@@ -1755,7 +2832,7 @@ setInterval(() => {
             <p>Create gradient-like effects by positioning multiple ASCII fonts:</p>
             <CodeBlock
               language="ts"
-              code={`import { Box, ASCIIFont } from "@opentui/core"
+              code={`import { Box, ASCIIFont } from "@cascadetui/core"
 
 const gradientTitle = Box(
   {},
@@ -1769,8 +2846,9 @@ const gradientTitle = Box(
     text: "HELLO",
     font: "block",
     color: "#880000",
-    left: 1,
-    top: 1,
+    x: 1,
+    y: 1,
+    selectable: false,
   }),
 )`}
             />
@@ -1908,7 +2986,93 @@ import { createRoot } from "@cascadetui/react"
 const renderer = await createCliRenderer()
 createRoot(renderer).render(<App />)`}
             />
-            <p>You can use all the same hooks available in React (such as state and effect hooks) together with Cascade components.</p>
+            <div className="doc-table-wrap">
+              <table className="doc-table">
+                <thead>
+                  <tr>
+                    <th>API</th>
+                    <th>Signature</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code className="doc-pill" title="createRoot">createRoot</code></td>
+                    <td><code className="doc-pill" title="(renderer: CliRenderer) => Root">(renderer: CliRenderer) =&gt; Root</code></td>
+                    <td>Creates a React root bound to a specific Cascade renderer instance.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="Root.render">root.render</code></td>
+                    <td><code className="doc-pill" title="(node: ReactNode) => void">(node: ReactNode) =&gt; void</code></td>
+                    <td>Mounts (or updates) the React tree. Calling it again replaces the rendered tree.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="Root.unmount">root.unmount</code></td>
+                    <td><code className="doc-pill" title="() => void">() =&gt; void</code></td>
+                    <td>Unmounts the tree and frees React resources. Also triggered automatically on <code>renderer.destroy()</code>.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p>The returned root also exposes <code>unmount()</code>. The tree is automatically cleaned up when <code>renderer.destroy()</code> is called, but explicit unmount can be useful in tests or when embedding Cascade into a larger process.</p>
+            <CodeBlock
+              language="ts"
+              code={`const renderer = await createCliRenderer()
+const root = createRoot(renderer)
+
+root.render(<App />)
+
+// Later
+root.unmount()
+renderer.destroy()`}
+            />
+            <p>Under the hood, the React binding attaches the animation engine to the renderer and wraps your app in an error boundary that forwards crashes to <code>renderer.reportCrash</code> (so you can inspect diagnostics in the console overlay).</p>
+          </>
+        ),
+      },
+      {
+        id: "react-portals-and-sync",
+        title: "Portals and synchronous flushing",
+        searchText: "react createPortal flushSync portal overlay modal popover",
+        content: (
+          <>
+            <p>The React binding also re-exports <code>createPortal</code> and <code>flushSync</code> from the internal reconciler integration. Use portals when you want to render a subtree into a different parent/container, and <code>flushSync</code> when you need a synchronous commit (usually only for edge cases).</p>
+            <CodeBlock
+              language="tsx"
+              code={`import { createPortal, flushSync } from "@cascadetui/react"
+
+// Example: force synchronous update (use sparingly)
+flushSync(() => {
+  // setState(...) etc
+})
+
+// Example: portals depend on your container/host integration
+// (advanced usage; most apps do not need portals)`}
+            />
+            <p>In most applications you can ignore both. Prefer normal React composition and state updates.</p>
+          </>
+        ),
+      },
+      {
+        id: "react-tsconfig",
+        title: "TypeScript / JSX configuration",
+        searchText: "react tsconfig jsxImportSource react-jsx typescript config",
+        content: (
+          <>
+            <p>For best type inference and JSX tag support, set <code>jsxImportSource</code> to <code>@cascadetui/react</code> in your app <code>tsconfig.json</code>.</p>
+            <CodeBlock
+              language="json"
+              code={`{
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "@cascadetui/react",
+    "lib": ["ESNext", "DOM"],
+    "moduleResolution": "bundler",
+    "strict": true
+  }
+}`}
+            />
+            <p>If you don’t set <code>jsxImportSource</code>, you can still use the binding, but you may lose typing on intrinsic elements like <code>&lt;box /&gt;</code> and <code>&lt;text /&gt;</code>.</p>
           </>
         ),
       },
@@ -1928,6 +3092,52 @@ createRoot(renderer).render(<App />)`}
           <>
             <p>Runtime failures in React component trees can be captured and correlated with renderer diagnostics.  Use React error boundaries to catch exceptions and then call the renderer’s crash reporting facilities to inspect the component stack and logs.</p>
             <p>Wrap critical sections in an error boundary and, in the catch handler, invoke <code>renderer.reportCrash</code> with the error and component stack.  This records the failure and optionally displays it in the console overlay.</p>
+            <div className="doc-table-wrap">
+              <table className="doc-table">
+                <thead>
+                  <tr>
+                    <th>Option / Env</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Effect</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code className="doc-pill" title="logCrashReportsToConsole">logCrashReportsToConsole</code></td>
+                    <td><code className="doc-pill" title="boolean">boolean</code></td>
+                    <td><code className="doc-pill" title="false">false</code></td>
+                    <td>When enabled, detailed crash reports are printed (via <code>console.error</code>) as soon as a crash is reported.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="openConsoleOnError">openConsoleOnError</code></td>
+                    <td><code className="doc-pill" title="boolean">boolean</code></td>
+                    <td><code className="doc-pill" title="false">false</code></td>
+                    <td>Automatically opens the console overlay when an error/crash is reported.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="CASCADE_LOG_CRASH_REPORTS">CASCADE_LOG_CRASH_REPORTS</code></td>
+                    <td><code className="doc-pill" title="boolean env">boolean env</code></td>
+                    <td><code className="doc-pill" title="0">0</code></td>
+                    <td>Enables logging crash reports to console (useful in development / CI).</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <CodeBlock
+              language="ts"
+              code={`import { createCliRenderer } from "@cascadetui/core"
+import { createRoot } from "@cascadetui/react"
+
+const renderer = await createCliRenderer({
+  useConsole: true,
+  openConsoleOnError: true,
+  logCrashReportsToConsole: true,
+})
+
+createRoot(renderer).render(<App />)`}
+            />
+            <p>Tip: in terminal UIs, stdout/stderr can be hidden by alternate screen mode. Keeping <code>useConsole</code> enabled during development makes crash debugging much easier.</p>
           </>
         ),
       },
@@ -1946,6 +3156,45 @@ createRoot(renderer).render(<App />)`}
         content: (
           <>
             <p>The React bindings expose hooks analogous to the Solid ones.  Use <code>useKeyboard</code> to register a key handler, <code>useRenderer</code> to access the current renderer and <code>useTerminalDimensions</code> to react to resize events.</p>
+            <div className="doc-table-wrap">
+              <table className="doc-table">
+                <thead>
+                  <tr>
+                    <th>Hook</th>
+                    <th>Signature</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code className="doc-pill" title="useRenderer">useRenderer</code></td>
+                    <td><code className="doc-pill" title="() => CliRenderer">() =&gt; CliRenderer</code></td>
+                    <td>Returns the active renderer from context. Throws if used outside the Cascade React root.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="useKeyboard">useKeyboard</code></td>
+                    <td>
+                      <code className="doc-pill" title="(handler, options?) => void">
+                        {"(handler: (e: KeyEvent) => void, options?: { release?: boolean }) => void"}
+                      </code>
+                    </td>
+                    <td>Subscribes to keyboard events. By default receives press events (including repeats). Use <code>release: true</code> to also receive release events.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="useTerminalDimensions">useTerminalDimensions</code></td>
+                    <td>
+                      <code className="doc-pill" title="() => {width,height}">{"() => { width: number; height: number }"}</code>
+                    </td>
+                    <td>Returns terminal width/height and re-renders on resize.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="useTimeline">useTimeline</code></td>
+                    <td><code className="doc-pill" title="(options?) => Timeline">(options?: TimelineOptions) =&gt; Timeline</code></td>
+                    <td>Creates a timeline and registers it with the animation engine; automatically pauses/unregisters on unmount.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
             <CodeBlock
               language="tsx"
               code={`import { useKeyboard } from "@cascadetui/react"
@@ -1967,6 +3216,316 @@ function App() {
   return <text content={"Size: " + dims.width + "x" + dims.height} />
 }`}
             />
+            <p>Recipe: track pressed keys (press + release)</p>
+            <CodeBlock
+              language="tsx"
+              code={`import { useKeyboard } from "@cascadetui/react"
+import { useMemo, useState } from "react"
+
+function App() {
+  const [pressed, setPressed] = useState<Set<string>>(() => new Set())
+
+  useKeyboard(
+    (e) => {
+      setPressed((prev) => {
+        const next = new Set(prev)
+        if (e.eventType === "release") next.delete(e.name)
+        else next.add(e.name)
+        return next
+      })
+    },
+    { release: true },
+  )
+
+  const text = useMemo(() => Array.from(pressed).sort().join(", ") || "(none)", [pressed])
+  return <text>{"Pressed: " + text}</text>
+}`}
+            />
+            <p>For animation, use <code>useTimeline</code> to register a timeline with the engine. A simple pattern is to update local state in <code>onUpdate</code> and let React re-render declaratively.</p>
+            <CodeBlock
+              language="tsx"
+              code={`import { useTimeline } from "@cascadetui/react"
+import { useEffect, useState } from "react"
+
+function App() {
+  const [progress, setProgress] = useState(0)
+  const timeline = useTimeline({ duration: 1200, loop: true })
+
+  useEffect(() => {
+    timeline.add(
+      { t: 0 },
+      {
+        t: 1,
+        duration: 1200,
+        ease: "linear",
+        onUpdate: (a) => setProgress(a.targets[0].t),
+      },
+    )
+  }, [])
+
+  return (
+    <box border padding={1} width={40}>
+      <text>{"Loading: " + Math.round(progress * 100) + "%"}</text>
+      <box style={{ width: Math.max(1, Math.round(progress * 36)), height: 1, backgroundColor: "#7aa2f7" }} />
+    </box>
+  )
+}`}
+            />
+          </>
+        ),
+      },
+    ],
+  },
+  {
+    id: "create-cascade",
+    group: "Tooling",
+    title: "create-cascade",
+    subtitle: "Scaffold a new Cascade project (core, react, solid) with starter templates.",
+    sections: [
+      {
+        id: "create-cascade-overview",
+        title: "Overview",
+        searchText: "create-cascade bun create cascade scaffold generator core react solid starter",
+        content: (
+          <>
+            <p><code>create-cascade</code> is the official project generator. It scaffolds a ready-to-run Cascade app with a chosen framework (core/React/Solid) and a starter preset.</p>
+            <CodeBlock
+              language="bash"
+              code={`# Interactive mode
+bun create cascade`}
+            />
+            <p>By default it only writes files. Use flags if you want the generator to install dependencies or start the dev server automatically.</p>
+          </>
+        ),
+      },
+      {
+        id: "create-cascade-frameworks",
+        title: "Frameworks and starters",
+        searchText: "create-cascade frameworks starters minimal counter login layout input",
+        content: (
+          <>
+            <p>Frameworks:</p>
+            <div className="doc-table-wrap">
+              <table className="doc-table">
+                <thead>
+                  <tr>
+                    <th>Framework</th>
+                    <th>Use when…</th>
+                    <th>Typical entry</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code className="doc-pill" title="core">core</code></td>
+                    <td>You prefer imperative renderables/constructs and direct control over nodes.</td>
+                    <td><code className="doc-pill" title="createCliRenderer">createCliRenderer</code> + <code className="doc-pill" title="renderer.root.add">root.add</code></td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="react">react</code></td>
+                    <td>You want React state/effects and declarative composition.</td>
+                    <td><code className="doc-pill" title="createRoot">createRoot(renderer).render</code></td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="solid">solid</code></td>
+                    <td>You want Solid signals + declarative composition.</td>
+                    <td><code className="doc-pill" title="render">render(() =&gt; &lt;App /&gt;)</code></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p>Starters depend on the framework. For example, React includes <code>minimal</code>, <code>counter</code>, and <code>login</code>.</p>
+            <CodeBlock
+              language="bash"
+              code={`# Create a React app with the counter starter
+bun create cascade my-app -f react -s counter`}
+            />
+          </>
+        ),
+      },
+      {
+        id: "create-cascade-cli",
+        title: "CLI options",
+        searchText: "create-cascade cli options --framework --starter --here --install --start",
+        content: (
+          <>
+            <CodeBlock
+              language="text"
+              code={`Options:
+  -f, --framework <name>  Framework: core, react, solid
+  -s, --starter <name>    Starter preset for selected framework
+  --here                  Use current directory
+  --install               Run bun install after scaffolding
+  --start                 Run bun install, then bun run dev
+  -h, --help              Show help`}
+            />
+            <div className="doc-table-wrap">
+              <table className="doc-table">
+                <thead>
+                  <tr>
+                    <th>Flag</th>
+                    <th>Behavior</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code className="doc-pill" title="--here">--here</code></td>
+                    <td>Scaffold into the current directory.</td>
+                    <td>Fails if the folder is not empty (to prevent overwriting).</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="--install">--install</code></td>
+                    <td>Runs <code>bun install</code> after scaffolding.</td>
+                    <td>Good for quick starts; skip if you want to inspect files first.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="--start">--start</code></td>
+                    <td>Runs <code>bun install</code> then <code>bun run dev</code>.</td>
+                    <td>Implied <code>--install</code>.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="-f/--framework">-f</code> / <code className="doc-pill" title="--framework">--framework</code></td>
+                    <td>Selects the framework (<code>core</code>, <code>react</code>, <code>solid</code>).</td>
+                    <td>Use in scripts to avoid interactive prompts.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="-s/--starter">-s</code> / <code className="doc-pill" title="--starter">--starter</code></td>
+                    <td>Selects the starter preset for the chosen framework.</td>
+                    <td>Pair it with <code>-f</code>.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p>Tips:</p>
+            <p>- If you’re scripting CI scaffolds, pass <code>-f</code> and <code>-s</code> explicitly to avoid interactive prompts.</p>
+            <p>- Prefer <code>--install</code> over doing installs yourself when you want consistent generator behavior.</p>
+          </>
+        ),
+      },
+      {
+        id: "create-cascade-behavior",
+        title: "Behavior and workflow",
+        searchText: "create-cascade behavior scaffold only install start workflow",
+        content: (
+          <>
+            <p>The generator is intentionally conservative: it scaffolds files first and only installs/runs when you opt in. A typical workflow is:</p>
+            <p>- Scaffold (interactive or scripted)</p>
+            <p>- Run <code>bun install</code></p>
+            <p>- Run <code>bun run dev</code></p>
+            <p>If you’re building libraries or CI templates, prefer keeping scaffold and install separate for reproducibility.</p>
+          </>
+        ),
+      },
+    ],
+  },
+  {
+    id: "create-cascade-skill",
+    group: "Tooling",
+    title: "create-cascade-skill",
+    subtitle: "Install CascadeTUI SKILL.md files for external coding agents.",
+    sections: [
+      {
+        id: "create-cascade-skill-overview",
+        title: "Overview",
+        searchText: "create-cascade-skill skill SKILL.md agents codex cursor windsurf cline",
+        content: (
+          <>
+            <p><code>create-cascade-skill</code> installs CascadeTUI skills for external coding agents using an interactive CLI. It detects supported agents on your machine and can install for one or many in a single run.</p>
+            <CodeBlock
+              language="bash"
+              code={`npx create-cascade-skill`}
+            />
+            <p>The installer writes global <code>SKILL.md</code> files (with Agent Skills frontmatter) into the appropriate agent-specific directories.</p>
+          </>
+        ),
+      },
+      {
+        id: "create-cascade-skill-supported",
+        title: "Supported agents",
+        searchText: "create-cascade-skill supported agents codex claude code cursor windsurf cline roo-code continue aider gemini-cli openhands goose ami",
+        content: (
+          <>
+            <p>Supported agents include:</p>
+            <p><code>Codex</code>, <code>Claude Code</code>, <code>Cursor</code>, <code>Windsurf</code>, <code>Cline</code>, <code>Roo Code</code>, <code>Continue</code>, <code>Aider</code>, <code>Gemini CLI</code>, <code>OpenHands</code>, <code>Goose</code>, <code>Ami</code>.</p>
+            <p>Run with <code>--list</code> to see which agents are supported and which are detected on your machine.</p>
+            <CodeBlock
+              language="bash"
+              code={`npx create-cascade-skill --list`}
+            />
+            <div className="doc-table-wrap">
+              <table className="doc-table">
+                <thead>
+                  <tr>
+                    <th>Mode</th>
+                    <th>What it does</th>
+                    <th>When to use</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code className="doc-pill" title="interactive">interactive</code></td>
+                    <td>Prompts you to select which agents to install for.</td>
+                    <td>Best default; avoids remembering agent IDs.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="--agents">--agents</code></td>
+                    <td>Installs for the specified agent IDs.</td>
+                    <td>CI / scripting / repeatable setup.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="--all-detected">--all-detected</code></td>
+                    <td>Installs for all agents detected on the machine.</td>
+                    <td>Fast setup across multiple editors/agents.</td>
+                  </tr>
+                  <tr>
+                    <td><code className="doc-pill" title="--dry-run">--dry-run</code></td>
+                    <td>Shows what would be written without writing files.</td>
+                    <td>Auditing changes before installing.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </>
+        ),
+      },
+      {
+        id: "create-cascade-skill-cli",
+        title: "CLI options",
+        searchText: "create-cascade-skill cli options --agents --all-detected --list --dry-run --help",
+        content: (
+          <>
+            <CodeBlock
+              language="text"
+              code={`Options:
+  -a, --agents <ids>    Comma-separated agent IDs to install
+  --all-detected        Install for all detected agents
+  --list                Print supported and detected agents
+  --dry-run             Preview files without writing
+  -h, --help            Show help`}
+            />
+            <CodeBlock
+              language="bash"
+              code={`# Install for all detected agents
+npx create-cascade-skill --all-detected
+
+# Install for a specific agent
+npx create-cascade-skill --agents cursor
+
+# Preview what would be written
+npx create-cascade-skill --agents cursor --dry-run`}
+            />
+            <p>Tip: the supported agent IDs are lowercase (e.g. <code>claude-code</code>). The UI labels may be displayed with spacing/case for readability.</p>
+          </>
+        ),
+      },
+      {
+        id: "create-cascade-skill-files",
+        title: "What gets installed",
+        searchText: "create-cascade-skill installs SKILL.md files locations agent directories",
+        content: (
+          <>
+            <p>The installer writes one or more <code>SKILL.md</code> files into agent-specific global skill directories (depending on the agent). These files contain “Agent Skills” frontmatter and instructions that help the agent use CascadeTUI effectively.</p>
+            <p>If you maintain your own customized skills, run with <code>--dry-run</code> first and compare what would change.</p>
           </>
         ),
       },
