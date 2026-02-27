@@ -54,6 +54,11 @@ const ALL_PACKAGES: PackageConfig[] = [
     rootDir: join(rootDir, "packages", "create-cascade"),
     distDir: join(rootDir, "packages", "create-cascade"),
   },
+  {
+    name: "create-cascade-skill",
+    rootDir: join(rootDir, "packages", "skill"),
+    distDir: join(rootDir, "packages", "skill"),
+  },
 ]
 
 const PACKAGES = ALL_PACKAGES
