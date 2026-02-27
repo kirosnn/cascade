@@ -14,7 +14,7 @@
     },
     "packages/core": {
       "name": "@cascadetui/core",
-      "version": "0.1.5",
+      "version": "0.1.6",
       "dependencies": {
         "bun-ffi-structs": "0.1.2",
         "diff": "8.0.2",
@@ -44,38 +44,38 @@
     },
     "packages/core-darwin-arm64": {
       "name": "@cascadetui/core-darwin-arm64",
-      "version": "0.1.5",
+      "version": "0.1.6",
     },
     "packages/core-darwin-x64": {
       "name": "@cascadetui/core-darwin-x64",
-      "version": "0.1.5",
+      "version": "0.1.6",
     },
     "packages/core-linux-arm64": {
       "name": "@cascadetui/core-linux-arm64",
-      "version": "0.1.5",
+      "version": "0.1.6",
     },
     "packages/core-linux-x64": {
       "name": "@cascadetui/core-linux-x64",
-      "version": "0.1.5",
+      "version": "0.1.6",
     },
     "packages/core-win32-arm64": {
       "name": "@cascadetui/core-win32-arm64",
-      "version": "0.1.5",
+      "version": "0.1.6",
     },
     "packages/core-win32-x64": {
       "name": "@cascadetui/core-win32-x64",
-      "version": "0.1.5",
+      "version": "0.1.6",
     },
     "packages/create-cascade": {
       "name": "create-cascade",
-      "version": "0.1.5",
+      "version": "0.1.6",
       "bin": {
         "create-cascade": "./index.js",
       },
     },
     "packages/react": {
       "name": "@cascadetui/react",
-      "version": "0.1.5",
+      "version": "0.1.6",
       "dependencies": {
         "@cascadetui/core": "workspace:*",
         "react-reconciler": "^0.32.0",
@@ -101,9 +101,16 @@
         "ws",
       ],
     },
+    "packages/skill": {
+      "name": "create-cascade-skill",
+      "version": "0.1.6",
+      "bin": {
+        "create-cascade-skill": "index.js",
+      },
+    },
     "packages/solid": {
       "name": "@cascadetui/solid",
-      "version": "0.1.5",
+      "version": "0.1.6",
       "dependencies": {
         "@babel/core": "7.28.0",
         "@babel/preset-typescript": "7.27.1",
@@ -453,6 +460,8 @@
     "convert-source-map": ["convert-source-map@2.0.0", "", {}, "sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg=="],
 
     "create-cascade": ["create-cascade@workspace:packages/create-cascade"],
+
+    "create-cascade-skill": ["create-cascade-skill@workspace:packages/skill"],
 
     "csstype": ["csstype@3.2.3", "", {}, "sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ=="],
 
