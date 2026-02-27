@@ -2,16 +2,16 @@
 
 import { useMemo, useState } from "react"
 
-type QuickstartMode = "install" | "dev" | "test"
+type QuickstartMode = "skill" | "manual" | "create"
 
 const QUICKSTART_COMMANDS: Record<QuickstartMode, string> = {
-  install: "bun install",
-  dev: "bun run dev",
-  test: "bun test",
+  skill: "soon",
+  manual: "bun add @cascadetui/core",
+  create: "bun create cascade",
 }
 
 export function HomeQuickstart() {
-  const [mode, setMode] = useState<QuickstartMode>("install")
+  const [mode, setMode] = useState<QuickstartMode>("skill")
   const [copied, setCopied] = useState(false)
 
   const command = useMemo(() => QUICKSTART_COMMANDS[mode], [mode])
@@ -34,29 +34,29 @@ export function HomeQuickstart() {
           <button
             type="button"
             role="tab"
-            aria-selected={mode === "install"}
+            aria-selected={mode === "create"}
             className="quickstart-tab"
-            onClick={() => setMode("install")}
+            onClick={() => setMode("create")}
           >
-            install
+            create
           </button>
           <button
             type="button"
             role="tab"
-            aria-selected={mode === "dev"}
+            aria-selected={mode === "manual"}
             className="quickstart-tab"
-            onClick={() => setMode("dev")}
+            onClick={() => setMode("manual")}
           >
-            dev
+            manual
           </button>
           <button
             type="button"
             role="tab"
-            aria-selected={mode === "test"}
+            aria-selected={mode === "skill"}
             className="quickstart-tab"
-            onClick={() => setMode("test")}
+            onClick={() => setMode("skill")}
           >
-            test
+            skill
           </button>
         </div>
 
