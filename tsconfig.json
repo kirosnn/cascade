@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "lib": ["ESNext", "DOM"],
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@cascadetui/core": ["packages/core/dist"],
+      "@cascadetui/core/*": ["packages/core/dist/*"],
+      "@cascadetui/react": ["packages/react/src"],
+      "@cascadetui/react/*": ["packages/react/src/*"],
+      "@cascadetui/solid": ["packages/solid"],
+      "@cascadetui/solid/*": ["packages/solid/*"]
+    }
+  }
+}
