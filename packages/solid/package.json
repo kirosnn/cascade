@@ -1,6 +1,6 @@
 {
   "name": "@cascadetui/solid",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "SolidJS renderer for Cascade",
   "repository": {
     "type": "git",
