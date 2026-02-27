@@ -233,6 +233,43 @@ describe("Renderable - Child Management", () => {
     expect(parent.getRenderable("newChild")).toBe(newChild)
   })
 
+  test("replaceChildren reorders existing children", () => {
+    const parent = new TestRenderable(testRenderer, { id: "parent" })
+    const child1 = new TestRenderable(testRenderer, { id: "child1" })
+    const child2 = new TestRenderable(testRenderer, { id: "child2" })
+    const child3 = new TestRenderable(testRenderer, { id: "child3" })
+
+    parent.add(child1)
+    parent.add(child2)
+    parent.add(child3)
+
+    parent.replaceChildren([child3, child1, child2])
+
+    const children = parent.getChildren()
+    expect(children.map((child) => child.id)).toEqual(["child3", "child1", "child2"])
+    expect(child1.parent).toBe(parent)
+    expect(child2.parent).toBe(parent)
+    expect(child3.parent).toBe(parent)
+  })
+
+  test("replaceChildren removes missing children", () => {
+    const parent = new TestRenderable(testRenderer, { id: "parent" })
+    const child1 = new TestRenderable(testRenderer, { id: "child1" })
+    const child2 = new TestRenderable(testRenderer, { id: "child2" })
+    const child3 = new TestRenderable(testRenderer, { id: "child3" })
+
+    parent.add(child1)
+    parent.add(child2)
+    parent.add(child3)
+
+    parent.replaceChildren([child2])
+
+    const children = parent.getChildren()
+    expect(children.map((child) => child.id)).toEqual(["child2"])
+    expect(child1.parent).toBeNull()
+    expect(child3.parent).toBeNull()
+  })
+
   test("insertBefore with same node as anchor should not change order", () => {
     const parent = new TestRenderable(testRenderer, { id: "parent" })
     const child1 = new TestRenderable(testRenderer, { id: "child1" })
