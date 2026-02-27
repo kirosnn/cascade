@@ -248,6 +248,15 @@ export abstract class Renderable extends BaseRenderable {
   private childrenPrimarySortDirty: boolean = true
   private childrenSortedByPrimaryAxis: Renderable[] = []
   private _shouldUpdateBefore: Set<Renderable> = new Set()
+  private renderRequestDepth = 0
+  private renderRequestPending = false
+  private lastLayoutVersion = -1
+  protected dirtyLayout = false
+  protected dirtyPaint = false
+  protected dirtyStructure = false
+  protected subtreeDirtyLayout = false
+  protected subtreeDirtyPaint = false
+  protected subtreeDirtyStructure = false
 
   public onLifecyclePass: (() => void) | null = null
 
@@ -333,6 +342,7 @@ export abstract class Renderable extends BaseRenderable {
     const wasVisible = this._visible
     this._visible = value
     this.yogaNode.setDisplay(value ? Display.Flex : Display.None)
+    this.markDirtyStructure()
 
     if (this._live) {
       if (!wasVisible && value) {
@@ -356,6 +366,7 @@ export abstract class Renderable extends BaseRenderable {
     const clamped = Math.max(0, Math.min(1, value))
     if (this._opacity !== clamped) {
       this._opacity = clamped
+      this.markDirtyStructure()
       this.requestRender()
     }
   }
@@ -499,9 +510,72 @@ export abstract class Renderable extends BaseRenderable {
     return undefined
   }
 
+  protected markClean(): void {
+    super.markClean()
+    this.dirtyPaint = false
+  }
+
+  private markSubtreeDirtyPaint(force: boolean = false): void {
+    if (this.subtreeDirtyPaint) return
+    this.subtreeDirtyPaint = true
+    if (this.parent && (force || this._visible)) {
+      this.parent.markSubtreeDirtyPaint(force)
+    }
+  }
+
+  private markSubtreeDirtyLayout(force: boolean = false): void {
+    if (this.subtreeDirtyLayout) return
+    this.subtreeDirtyLayout = true
+    if (this.parent && (force || this._visible)) {
+      this.parent.markSubtreeDirtyLayout(force)
+    }
+  }
+
+  private markSubtreeDirtyStructure(force: boolean = false): void {
+    if (this.subtreeDirtyStructure) return
+    this.subtreeDirtyStructure = true
+    if (this.parent && (force || this._visible)) {
+      this.parent.markSubtreeDirtyStructure(force)
+    }
+  }
+
+  protected markDirtyPaint(): void {
+    this.dirtyPaint = true
+    this.markSubtreeDirtyPaint()
+  }
+
+  protected markDirtyLayout(): void {
+    this.dirtyLayout = true
+    this.markSubtreeDirtyLayout()
+  }
+
+  protected markDirtyStructure(): void {
+    this.dirtyStructure = true
+    this.markSubtreeDirtyStructure(true)
+    this.markDirtyLayout()
+  }
+
   public requestRender() {
     this.markDirty()
+    this.markDirtyPaint()
+    if (this.renderRequestDepth > 0) {
+      this.renderRequestPending = true
+      return
+    }
     this._ctx.requestRender()
+  }
+
+  protected beginRenderBatch(): void {
+    this.renderRequestDepth += 1
+  }
+
+  protected endRenderBatch(): void {
+    if (this.renderRequestDepth === 0) return
+    this.renderRequestDepth -= 1
+    if (this.renderRequestDepth === 0 && this.renderRequestPending) {
+      this.renderRequestPending = false
+      this._ctx.requestRender()
+    }
   }
 
   public get translateX(): number {
@@ -512,6 +586,7 @@ export abstract class Renderable extends BaseRenderable {
     if (this._translateX === value) return
     this._translateX = value
     if (this.parent) this.parent.childrenPrimarySortDirty = true
+    this.markDirtyStructure()
     this.requestRender()
   }
 
@@ -523,6 +598,7 @@ export abstract class Renderable extends BaseRenderable {
     if (this._translateY === value) return
     this._translateY = value
     if (this.parent) this.parent.childrenPrimarySortDirty = true
+    this.markDirtyStructure()
     this.requestRender()
   }
 
@@ -1071,7 +1147,7 @@ export abstract class Renderable extends BaseRenderable {
 
   protected onLayoutResize(width: number, height: number): void {
     if (this._visible) {
-      // TODO: Should probably .markDirty()
+      this.markDirtyLayout()
       this.handleFrameBufferResize(width, height)
       this.onResize(width, height)
       this.requestRender()
@@ -1151,6 +1227,10 @@ export abstract class Renderable extends BaseRenderable {
       return -1
     }
 
+    const trace = this._ctx.trace
+    const traceEnabled = trace?.enabled === true
+    const traceStart = traceEnabled ? trace.now() : 0
+
     const renderable = maybeMakeRenderable(this._ctx, obj)
     if (!renderable) {
       return -1
@@ -1197,7 +1277,16 @@ export abstract class Renderable extends BaseRenderable {
     this.childrenPrimarySortDirty = true
     this._shouldUpdateBefore.add(renderable)
 
+    this.markDirtyStructure()
     this.requestRender()
+
+    if (traceEnabled) {
+      trace.write(
+        `trace.container.add id=${this.id} child=${renderable.id} index=${insertedIndex} ms=${(
+          trace.now() - traceStart
+        ).toFixed(3)}`,
+      )
+    }
 
     return insertedIndex
   }
@@ -1210,6 +1299,10 @@ export abstract class Renderable extends BaseRenderable {
     if (!obj) {
       return -1
     }
+
+    const trace = this._ctx.trace
+    const traceEnabled = trace?.enabled === true
+    const traceStart = traceEnabled ? trace.now() : 0
 
     const renderable = maybeMakeRenderable(this._ctx, obj)
     if (!renderable) {
@@ -1278,9 +1371,152 @@ export abstract class Renderable extends BaseRenderable {
 
     this._shouldUpdateBefore.add(renderable)
 
+    this.markDirtyStructure()
     this.requestRender()
 
+    if (traceEnabled) {
+      trace.write(
+        `trace.container.insertBefore id=${this.id} child=${renderable.id} index=${insertedIndex} ms=${(
+          trace.now() - traceStart
+        ).toFixed(3)}`,
+      )
+    }
+
     return insertedIndex
+  }
+
+  public replaceChildren(
+    nextChildren: Array<Renderable | VNode<any, any[]> | unknown>,
+    options?: { destroyRemoved?: boolean },
+  ): void {
+    const trace = this._ctx.trace
+    const traceEnabled = trace?.enabled === true
+    const traceStart = traceEnabled ? trace.now() : 0
+    const destroyRemoved = options?.destroyRemoved ?? false
+
+    this.beginRenderBatch()
+    let removedCount = 0
+    let addedCount = 0
+    let orderChanged = false
+
+    try {
+      const nextRenderables: Renderable[] = []
+      const nextIds = new Set<string>()
+      const added: Renderable[] = []
+
+      for (const child of nextChildren ?? []) {
+        if (!child) continue
+        const renderable = maybeMakeRenderable(this._ctx, child)
+        if (!renderable) continue
+        if (renderable.isDestroyed) continue
+        if (nextIds.has(renderable.id)) continue
+
+        this.assertCanAdoptChild(renderable)
+
+        if (renderable.parent !== this) {
+          this.replaceParent(renderable)
+          this.needsZIndexSort = true
+          this.renderableMapById.set(renderable.id, renderable)
+          this._childrenInZIndexOrder.push(renderable)
+
+          if (typeof renderable.onLifecyclePass === "function") {
+            this._ctx.registerLifecyclePass(renderable)
+          }
+
+          if (renderable._liveCount > 0) {
+            this.propagateLiveCount(renderable._liveCount)
+          }
+
+          added.push(renderable)
+        }
+
+        nextRenderables.push(renderable)
+        nextIds.add(renderable.id)
+      }
+
+      const previousChildren = this._childrenInLayoutOrder
+      const removed: Renderable[] = []
+      if (previousChildren.length > 0) {
+        for (const child of previousChildren) {
+          if (!nextIds.has(child.id)) {
+            removed.push(child)
+          }
+        }
+      }
+
+      removedCount = removed.length
+      addedCount = added.length
+
+      if (removed.length > 0) {
+        for (const child of removed) {
+          if (child._liveCount > 0) {
+            this.propagateLiveCount(-child._liveCount)
+          }
+
+          child.onRemove()
+          child.parent = null
+          this._ctx.unregisterLifecyclePass(child)
+          this.renderableMapById.delete(child.id)
+        }
+
+        this._childrenInZIndexOrder = this._childrenInZIndexOrder.filter((child) => nextIds.has(child.id))
+      }
+
+      if (previousChildren.length !== nextRenderables.length) {
+        orderChanged = true
+      } else {
+        for (let i = 0; i < previousChildren.length; i += 1) {
+          if (previousChildren[i] !== nextRenderables[i]) {
+            orderChanged = true
+            break
+          }
+        }
+      }
+
+      if (orderChanged) {
+        for (const child of previousChildren) {
+          this.yogaNode.removeChild(child.getLayoutNode())
+        }
+
+        for (let i = 0; i < nextRenderables.length; i += 1) {
+          this.yogaNode.insertChild(nextRenderables[i]!.getLayoutNode(), i)
+        }
+      }
+
+      this._childrenInLayoutOrder = nextRenderables
+
+      if (added.length > 0) {
+        for (const child of added) {
+          this._shouldUpdateBefore.add(child)
+        }
+      }
+
+      if (orderChanged || removed.length > 0 || added.length > 0) {
+        this.childrenPrimarySortDirty = true
+        this.markDirtyStructure()
+        this.requestRender()
+      }
+
+      if (destroyRemoved) {
+        for (const child of removed) {
+          child.destroyRecursively()
+        }
+      }
+    } finally {
+      this.endRenderBatch()
+    }
+
+    if (traceEnabled) {
+      trace.write(
+        `trace.container.replaceChildren id=${this.id} next=${this._childrenInLayoutOrder.length} added=${addedCount} removed=${removedCount} reordered=${orderChanged} ms=${(
+          trace.now() - traceStart
+        ).toFixed(3)}`,
+      )
+    }
+  }
+
+  public setChildren(nextChildren: Array<Renderable | VNode<any, any[]> | unknown>): void {
+    this.replaceChildren(nextChildren)
   }
 
   // TODO: that naming is meh
@@ -1293,6 +1529,10 @@ export abstract class Renderable extends BaseRenderable {
       return
     }
 
+    const trace = this._ctx.trace
+    const traceEnabled = trace?.enabled === true
+    const traceStart = traceEnabled ? trace.now() : 0
+
     if (this.renderableMapById.has(id)) {
       const obj = this.renderableMapById.get(id)
       if (obj) {
@@ -1302,6 +1542,7 @@ export abstract class Renderable extends BaseRenderable {
 
         const childLayoutNode = obj.getLayoutNode()
         this.yogaNode.removeChild(childLayoutNode)
+        this.markDirtyStructure()
         this.requestRender()
 
         obj.onRemove()
@@ -1321,6 +1562,12 @@ export abstract class Renderable extends BaseRenderable {
 
         this.childrenPrimarySortDirty = true
       }
+    }
+
+    if (traceEnabled) {
+      trace.write(
+        `trace.container.remove id=${this.id} child=${id} ms=${(trace.now() - traceStart).toFixed(3)}`,
+      )
     }
   }
 
@@ -1352,7 +1599,11 @@ export abstract class Renderable extends BaseRenderable {
     // and anctually know if a child has changed or not.
     // That would allow us to to generate optimised render commands,
     // including the layout updates, in one pass.
-    this.updateFromLayout()
+    const layoutVersion = this._ctx.layoutVersion
+    if (this.lastLayoutVersion !== layoutVersion) {
+      this.updateFromLayout()
+      this.lastLayoutVersion = layoutVersion
+    }
 
     // Update newly added children before getting visible children
     // This ensures their positions are current when culling happens
@@ -1360,6 +1611,7 @@ export abstract class Renderable extends BaseRenderable {
       for (const child of this._shouldUpdateBefore) {
         if (!child.isDestroyed) {
           child.updateFromLayout()
+          child.lastLayoutVersion = layoutVersion
         }
       }
       this._shouldUpdateBefore.clear()
@@ -1392,13 +1644,37 @@ export abstract class Renderable extends BaseRenderable {
       })
     }
     const visibleChildren = this._getVisibleChildren()
-    for (const child of this._childrenInZIndexOrder) {
-      if (!visibleChildren.includes(child.num)) {
-        child.updateFromLayout()
-        continue
+    if (visibleChildren.length === this._childrenInZIndexOrder.length) {
+      for (const child of this._childrenInZIndexOrder) {
+        child.updateLayout(deltaTime, renderList)
       }
-      child.updateLayout(deltaTime, renderList)
+    } else {
+      const visibleSet = new Set(visibleChildren)
+      for (const child of this._childrenInZIndexOrder) {
+        if (!visibleSet.has(child.num)) {
+          if (child.lastLayoutVersion !== layoutVersion) {
+            child.updateFromLayout()
+            child.lastLayoutVersion = layoutVersion
+          }
+          continue
+        }
+        child.updateLayout(deltaTime, renderList)
+      }
     }
+
+    let hasDirtyStructure = this.dirtyStructure
+    let hasDirtyLayout = this.dirtyLayout
+    let hasDirtyPaint = this.dirtyPaint
+    for (const child of this._childrenInZIndexOrder) {
+      if (child.subtreeDirtyStructure) hasDirtyStructure = true
+      if (child.subtreeDirtyLayout) hasDirtyLayout = true
+      if (child.subtreeDirtyPaint) hasDirtyPaint = true
+    }
+    this.dirtyStructure = false
+    this.dirtyLayout = false
+    this.subtreeDirtyStructure = hasDirtyStructure
+    this.subtreeDirtyLayout = hasDirtyLayout
+    this.subtreeDirtyPaint = hasDirtyPaint
 
     if (shouldPushScissor) {
       renderList.push({ action: "popScissorRect" })
@@ -1475,7 +1751,9 @@ export abstract class Renderable extends BaseRenderable {
       this.frameBuffer = null
     }
 
-    for (const child of this._childrenInLayoutOrder) {
+    while (this._childrenInLayoutOrder.length > 0) {
+      const child = this._childrenInLayoutOrder[0]
+      if (!child) break
       this.remove(child.id)
     }
 
@@ -1659,6 +1937,8 @@ export type RenderCommand =
 
 export class RootRenderable extends Renderable {
   private renderList: RenderCommand[] = []
+  private renderListDirty: boolean = true
+  private lastRenderListLayoutVersion: number = -1
 
   constructor(ctx: RenderContext) {
     super(ctx, { id: "__root__", zIndex: 0, visible: true, width: ctx.width, height: ctx.height, enableLayout: true })
@@ -1678,6 +1958,9 @@ export class RootRenderable extends Renderable {
   public render(buffer: OptimizedBuffer, deltaTime: number): void {
     if (!this.visible) return
 
+    const trace = this._ctx.trace
+    const traceEnabled = trace?.enabled === true
+
     // 0. Run lifecycle pass
     for (const renderable of this._ctx.getLifecyclePasses()) {
       renderable.onLifecyclePass?.call(renderable)
@@ -1690,16 +1973,36 @@ export class RootRenderable extends Renderable {
     // Should be 2-pass by hooking into the calculateLayout phase,
     // but that's only possible if we move the layout tree to native.
 
-    // 1. Calculate layout from root
+    const layoutStart = traceEnabled ? trace.now() : 0
     if (this.yogaNode.isDirty()) {
       this.calculateLayout()
     }
+    const layoutMs = traceEnabled ? trace.now() - layoutStart : 0
 
-    // 2. Update layout throughout the tree and collect render list
-    this.renderList.length = 0
-    this.updateLayout(deltaTime, this.renderList)
+    const layoutVersion = this._ctx.layoutVersion
+    if (this.renderList.length === 0) {
+      this.renderListDirty = true
+    }
+    if (this.subtreeDirtyStructure || this.subtreeDirtyLayout) {
+      this.renderListDirty = true
+    }
+    if (layoutVersion !== this.lastRenderListLayoutVersion) {
+      this.renderListDirty = true
+    }
 
-    // 3. Render all collected renderables
+    let updateMs = 0
+    let renderListBuildMs = 0
+    if (this.renderListDirty) {
+      const updateStart = traceEnabled ? trace.now() : 0
+      this.renderList.length = 0
+      this.updateLayout(deltaTime, this.renderList)
+      updateMs = traceEnabled ? trace.now() - updateStart : 0
+      renderListBuildMs = updateMs
+      this.renderListDirty = false
+      this.lastRenderListLayoutVersion = layoutVersion
+    }
+
+    const renderStart = traceEnabled ? trace.now() : 0
     this._ctx.clearHitGridScissorRects()
     for (let i = 1; i < this.renderList.length; i++) {
       const command = this.renderList[i]
@@ -1726,6 +2029,13 @@ export class RootRenderable extends Renderable {
           break
       }
     }
+    if (traceEnabled) {
+      const drawMs = trace.now() - renderStart
+      trace.write(`trace.render.layout ms=${layoutMs.toFixed(3)}`)
+      trace.write(`trace.render.updateTraversal ms=${updateMs.toFixed(3)}`)
+      trace.write(`trace.render.renderListBuild ms=${renderListBuildMs.toFixed(3)} count=${this.renderList.length}`)
+      trace.write(`trace.render.draw ms=${drawMs.toFixed(3)}`)
+    }
   }
 
   protected propagateLiveCount(delta: number): void {
@@ -1741,6 +2051,7 @@ export class RootRenderable extends Renderable {
 
   public calculateLayout(): void {
     this.yogaNode.calculateLayout(this.width, this.height, Direction.LTR)
+    this._ctx.layoutVersion += 1
     this.emit(LayoutEvents.LAYOUT_CHANGED)
   }
 
