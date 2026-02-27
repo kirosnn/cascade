@@ -7,11 +7,12 @@
   "scripts": {
     "build": "cd packages/core && bun run build && cd ../solid && bun run build && cd ../react && bun run build",
     "pre-publish": "bun scripts/pre-publish.ts",
-    "publish": "bun run pre-publish && bun run publish:core && bun run publish:react && bun run publish:solid && bun run publish:create",
+    "publish": "bun run pre-publish && bun run publish:core && bun run publish:react && bun run publish:solid && bun run publish:create && bun run publish:skill",
     "publish:core": "cd packages/core && bun run publish",
     "publish:react": "cd packages/react && bun run publish",
     "publish:solid": "cd packages/solid && bun run publish",
     "publish:create": "cd packages/create-cascade && bun run publish:pkg",
+    "publish:skill": "cd packages/skill && bun run publish:pkg",
     "prepare-release": "bun scripts/prepare-release.ts",
     "prettier:write": "prettier --write .",
     "test:core": "bun test packages/core/src",
@@ -30,6 +31,9 @@
   "prettier": {
     "semi": false,
     "printWidth": 120
+  },
+  "dependencies": {
+    "fast-glob": "^3.3.3",
+    "simple-git": "^3.32.3"
   }
 }
-
