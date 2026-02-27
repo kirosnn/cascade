@@ -679,6 +679,7 @@ p.lead {
 .main-content {
   overflow: auto;
   padding-left: 2rem;
+  margin-bottom: 6rem;
 }
 
 .article-card {
