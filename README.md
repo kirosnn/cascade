@@ -26,6 +26,7 @@ This monorepo currently includes:
 - [`@cascadetui/solid`](packages/solid): SolidJS reconciler for Cascade.
 - [`@cascadetui/react`](packages/react): React reconciler for Cascade.
 - [`create-cascade`](packages/create-cascade): Project scaffolding CLI with framework and starter selection.
+- [`create-cascade-skill`](packages/skill): Skill installer CLI for external coding agents.
 
 ## Installation
 
