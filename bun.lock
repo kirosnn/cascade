@@ -10,7 +10,11 @@
         "simple-git": "^3.32.3",
       },
       "devDependencies": {
+        "@cascadetui/core": "workspace:*",
+        "@cascadetui/react": "workspace:*",
+        "@cascadetui/solid": "workspace:*",
         "prettier": "3.6.2",
+        "solid-js": "^1.9.0",
       },
     },
     "packages/core": {
@@ -32,8 +36,8 @@
         "web-tree-sitter": "0.25.10",
       },
       "optionalDependencies": {
-        "@cascadetui/core-win32-arm64": "0.1.1",
-        "@cascadetui/core-win32-x64": "0.1.1",
+        "@cascadetui/core-win32-arm64": "0.1.6",
+        "@cascadetui/core-win32-x64": "0.1.6",
         "@dimforge/rapier2d-simd-compat": "^0.17.3",
         "bun-webgpu": "0.1.5",
         "planck": "^1.4.2",
