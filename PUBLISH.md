@@ -9,6 +9,13 @@ This guide publishes the required npm packages from the `Cascade` monorepo.
 - `@cascadetui/react`
 - `@cascadetui/solid`
 - `create-cascade`
+- `create-cascade-skill`
+
+## Compare repo between fork and this repo
+*(Not mandatory, but for informational purposes.)*
+```bash
+bun scripts/compare-repos.ts https://github.com/anomalyco/opentui https://github.com/kirosnn/cascade
+```
 
 ## Prerequisites
 
@@ -19,7 +26,7 @@ This guide publishes the required npm packages from the `Cascade` monorepo.
 
 ## Prepare a version
 
-Pick a semver version and apply it to `core/react/solid/create-cascade`:
+Pick a semver version and apply it to `core/react/solid/create-cascade/create-cascade-skill`:
 
 ```powershell
 bun scripts/prepare-release.ts 0.1.2
@@ -45,7 +52,7 @@ This pipeline:
 
 - builds `dist` artifacts
 - validates npm auth, versions, and dependency consistency
-- publishes `core`, its native packages, then `react`, `solid`, and `create-cascade`
+- publishes `core`, its native packages, then `react`, `solid`, `create-cascade`, and `create-cascade-skill`
 
 ## GitHub release (optional)
 
@@ -93,3 +100,4 @@ gh --version
 - `packages/react/scripts/publish.ts`
 - `packages/solid/scripts/publish.ts`
 - `packages/create-cascade/scripts/publish.ts`
+- `packages/skill/scripts/publish.ts`
