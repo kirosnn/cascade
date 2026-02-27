@@ -39,10 +39,16 @@ function assertVersionsMatch(): string {
   const reactVersion = readPackageVersion("packages/react")
   const solidVersion = readPackageVersion("packages/solid")
   const createCascadeVersion = readPackageVersion("packages/create-cascade")
+  const createCascadeSkillVersion = readPackageVersion("packages/skill")
 
-  if (coreVersion !== reactVersion || coreVersion !== solidVersion || coreVersion !== createCascadeVersion) {
+  if (
+    coreVersion !== reactVersion ||
+    coreVersion !== solidVersion ||
+    coreVersion !== createCascadeVersion ||
+    coreVersion !== createCascadeSkillVersion
+  ) {
     throw new Error(
-      `Version mismatch: core=${coreVersion}, react=${reactVersion}, solid=${solidVersion}, create-cascade=${createCascadeVersion}`,
+      `Version mismatch: core=${coreVersion}, react=${reactVersion}, solid=${solidVersion}, create-cascade=${createCascadeVersion}, create-cascade-skill=${createCascadeSkillVersion}`,
     )
   }
 
@@ -77,6 +83,7 @@ function main(): void {
     run("bun run publish:react")
     run("bun run publish:solid")
     run("bun run publish:create")
+    run("bun run publish:skill")
 
     const tagCheck = spawnSync("git", ["rev-parse", "--verify", tag], {
       cwd: rootDir,
