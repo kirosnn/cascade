@@ -1,6 +1,6 @@
 {
   "name": "@cascadetui/react",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "React renderer for building terminal user interfaces using Cascade core",
   "license": "MIT",
   "repository": {
