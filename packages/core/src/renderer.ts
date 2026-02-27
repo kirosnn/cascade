@@ -5,6 +5,7 @@ import {
   type CursorStyleOptions,
   type MousePointerStyle,
   type RenderContext,
+  type RenderTrace,
   type ThemeMode,
   type ViewportBounds,
   type WidthMethod,
@@ -114,6 +115,8 @@ export interface CliRendererConfig {
   logCrashReportsToConsole?: boolean
   prependInputHandlers?: ((sequence: string) => boolean)[]
   onDestroy?: () => void
+  trace?: boolean
+  traceWriter?: (line: string) => void
 }
 
 export type PixelResolution = {
@@ -394,6 +397,8 @@ export class CliRenderer extends EventEmitter implements RenderContext {
     arrayBuffers: 0,
   }
   public readonly root: RootRenderable
+  public trace?: RenderTrace
+  public layoutVersion: number = 0
   public width: number
   public height: number
   private _useThread: boolean = false
@@ -637,6 +642,18 @@ export class CliRenderer extends EventEmitter implements RenderContext {
     this.nextRenderBuffer = this.lib.getNextBuffer(this.rendererPtr)
     this.currentRenderBuffer = this.lib.getCurrentBuffer(this.rendererPtr)
     this.postProcessFns = config.postProcessFns || []
+    if (config.trace) {
+      const writer =
+        config.traceWriter ??
+        ((line: string) => {
+          this.realStdoutWrite.call(this.stdout, `${line}\n`)
+        })
+      this.trace = {
+        enabled: true,
+        now: () => performance.now(),
+        write: writer,
+      }
+    }
     this.prependedInputHandlers = config.prependInputHandlers || []
 
     this.root = new RootRenderable(this)
@@ -2181,6 +2198,8 @@ export class CliRenderer extends EventEmitter implements RenderContext {
       this.renderStats.frameCount++
       this.renderStats.fps = this.currentFps
       const overallStart = performance.now()
+      const trace = this.trace
+      const traceEnabled = trace?.enabled === true
 
       const frameRequests = Array.from(this.animationRequest.values())
       this.animationRequest.clear()
@@ -2204,17 +2223,23 @@ export class CliRenderer extends EventEmitter implements RenderContext {
       const end = performance.now()
       this.renderStats.frameCallbackTime = end - start
 
+      const renderTreeStart = traceEnabled ? trace.now() : 0
       this.root.render(this.nextRenderBuffer, deltaTime)
+      const renderTreeMs = traceEnabled ? trace.now() - renderTreeStart : 0
 
+      const postProcessStart = traceEnabled ? trace.now() : 0
       for (const postProcessFn of this.postProcessFns) {
         postProcessFn(this.nextRenderBuffer, deltaTime)
       }
 
       this._console.renderToBuffer(this.nextRenderBuffer)
+      const postProcessMs = traceEnabled ? trace.now() - postProcessStart : 0
 
       // If destroy() was requested during this frame, skip native work and scheduling.
       if (!this._isDestroyed) {
+        const nativeStart = traceEnabled ? trace.now() : 0
         this.renderNative()
+        const nativeMs = traceEnabled ? trace.now() - nativeStart : 0
 
         // Check if hit grid changed and recheck hover state if needed
         if (this._useMouse && this.lib.getHitGridDirty(this.rendererPtr)) {
@@ -2222,6 +2247,12 @@ export class CliRenderer extends EventEmitter implements RenderContext {
         }
 
         const overallFrameTime = performance.now() - overallStart
+        if (traceEnabled) {
+          trace.write(`trace.render.native ms=${nativeMs.toFixed(3)}`)
+          trace.write(
+            `trace.render.pipeline treeMs=${renderTreeMs.toFixed(3)} postMs=${postProcessMs.toFixed(3)} nativeMs=${nativeMs.toFixed(3)} frameMs=${overallFrameTime.toFixed(3)} animMs=${animationRequestTime.toFixed(3)}`,
+          )
+        }
 
         // TODO: Add animationRequestTime to stats
         this.lib.updateStats(
