@@ -688,7 +688,8 @@ p.lead {
   bottom: 0;
   z-index: 15;
   width: 100%;
-  height: 84px;
+  min-height: 84px;
+  height: auto;
   background: transparent;
   padding: 12px 16px;
   transition: opacity 180ms ease;
@@ -705,10 +706,30 @@ p.lead {
   flex-direction: column;
   align-items: center;
   pointer-events: none;
+  position: relative;
+}
+
+.chat-assistant-bar-actions {
+  position: absolute;
+  left: 16px;
+  bottom: 12px;
+  display: flex;
+  align-items: center;
+  pointer-events: auto;
+}
+
+.chat-assistant-bar-actions .copy-btn {
+  position: static;
+  top: auto;
+  right: auto;
+  margin-right: 10px;
 }
 
 .chat-assistant-floating-input {
   width: 100%;
+  max-width: 920px;
+  margin: 0 auto;
+  pointer-events: auto;
 }
 
 .chat-assistant-overlay {
@@ -737,11 +758,11 @@ p.lead {
   font-size: 14px;
   line-height: 1.5;
   color: var(--text);
-  max-height: 240px;
+  max-height: 540px;
   overflow: auto;
 }
 
-.chat-assistant-card--popover-open {
+.chat-assistant-card.chat-assistant-card--popover-open {
   border-top-left-radius: 0;
   border-top-right-radius: 0;
   border-top-color: transparent;
@@ -754,6 +775,7 @@ p.lead {
 .chat-assistant-popover-inner {
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
+  border-bottom-color: transparent;
 }
 
 .chat-assistant-conversation {
@@ -788,7 +810,91 @@ p.lead {
 }
 
 .chat-assistant-bubble-assistant {
-  background: color-mix(in oklab, var(--bg) 88%, transparent);
+  border: none;
+  white-space: normal;
+}
+
+.chat-assistant-markdown {
+  white-space: normal;
+}
+
+.chat-assistant-markdown :where(p, ul, ol, pre, blockquote) {
+  margin: 6px 0;
+}
+
+.chat-assistant-markdown :where(h1, h2, h3, h4) {
+  margin: 10px 0 6px;
+}
+
+.chat-assistant-markdown :where(ul, ol) {
+  padding-left: 18px;
+}
+
+.chat-assistant-markdown :where(li) {
+  margin: 2px 0;
+}
+
+.chat-assistant-markdown :where(li > p) {
+  display: inline;
+  margin: 0;
+}
+
+.chat-assistant-markdown :where(pre) {
+  white-space: pre;
+  overflow: auto;
+}
+
+.chat-assistant-markdown :where(code) {
+  word-break: break-word;
+}
+
+.chat-assistant-msg-tool {
+  justify-content: flex-start;
+}
+
+.chat-assistant-bubble-tool {
+  background: none;
+  border: none;
+}
+
+.chat-assistant-tool-inline-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: color-mix(in oklab, var(--text-soft) 90%, transparent);
+  margin-bottom: 6px;
+}
+
+.chat-assistant-tool-inline-name {
+  font-size: 12px;
+  font-weight: 650;
+  margin: 0;
+  color: color-mix(in oklab, var(--text-soft) 85%, transparent);
+}
+
+.chat-assistant-tool-inline-body {
+  margin: 0;
+  white-space: pre-wrap;
+  font-size: 12px;
+  line-height: 1.5;
+  color: color-mix(in oklab, var(--text) 88%, transparent);
+}
+
+
+.shimmer-text {
+  display: inline-block;
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--text-soft) 65%, transparent) 0%,
+    color-mix(in oklab, var(--text) 92%, transparent) 50%,
+    color-mix(in oklab, var(--text-soft) 65%, transparent) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 1.5s ease-in-out infinite;
 }
 
 .chat-assistant-overlay::before {
@@ -816,6 +922,10 @@ p.lead {
 
 .chat-assistant-card:focus-within {
   border-color: color-mix(in oklab, var(--brand) 60%, var(--line));
+}
+
+.chat-assistant-card.chat-assistant-card--popover-open:focus-within {
+  border-color: color-mix(in oklab, var(--line) 85%, transparent);
 }
 
 .chat-assistant-row {
@@ -879,6 +989,34 @@ p.lead {
   width: 14px;
   height: 14px;
   color: var(--text);
+}
+
+.chat-assistant-tools {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chat-assistant-tool-item {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: color-mix(in oklab, var(--bg) 92%, transparent);
+  border: 1px solid color-mix(in oklab, var(--line) 85%, transparent);
+}
+
+.chat-assistant-tool-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.chat-assistant-tool-args,
+.chat-assistant-tool-result {
+  white-space: pre-wrap;
+  font-size: 12px;
+  line-height: 1.5;
+  color: color-mix(in oklab, var(--text) 88%, transparent);
 }
 
 .article-card {
@@ -1117,5 +1255,18 @@ h2,
 
   .article-card {
     padding: 20px 2rem 20px 0;
+  }
+}
+
+.shimmer {
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
   }
 }
