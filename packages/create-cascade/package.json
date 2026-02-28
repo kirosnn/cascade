@@ -1,6 +1,6 @@
 {
   "name": "create-cascade",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Create a new Cascade TUI project",
   "type": "module",
   "license": "MIT",
