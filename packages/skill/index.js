@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve, join } from "node:path";
 import process from "node:process";
 import { spawnSync } from "node:child_process";
@@ -13,8 +13,16 @@ const ANSI_CYAN = "\x1b[36m";
 const ANSI_GREEN = "\x1b[32m";
 const ANSI_YELLOW = "\x1b[33m";
 
-function getHomeDirectory() {
-  return process.env.HOME || process.env.USERPROFILE || process.cwd();
+function getHomeDirectory(options) {
+  if (options?.home) {
+    return options.home;
+  }
+  return (
+    process.env.CASCADE_SKILL_HOME ||
+    process.env.HOME ||
+    process.env.USERPROFILE ||
+    process.cwd()
+  );
 }
 
 function commandExists(command) {
@@ -34,9 +42,13 @@ function unique(items) {
   return [...new Set(items)];
 }
 
-function getAgents() {
-  const home = getHomeDirectory();
-  const appData = process.env.APPDATA || join(home, "AppData", "Roaming");
+function getAgents(options) {
+  const home = getHomeDirectory(options);
+  const appData =
+    options?.appData ||
+    process.env.CASCADE_SKILL_APPDATA ||
+    process.env.APPDATA ||
+    join(home, "AppData", "Roaming");
   return [
     {
       id: "codex",
@@ -64,6 +76,15 @@ function getAgents() {
       detectPaths: [join(home, ".cursor"), join(appData, "Cursor")],
       installPath: join(home, ".cursor", "skills", "cascadetui", "SKILL.md"),
       flavor: "cursor",
+    },
+    {
+      id: "factory",
+      label: "Factory (Droid CLI)",
+      description: "Install in ~/.factory/skills/cascadetui/SKILL.md",
+      commands: ["droid"],
+      detectPaths: [join(home, ".factory")],
+      installPath: join(home, ".factory", "skills", "cascadetui", "SKILL.md"),
+      flavor: "factory",
     },
     {
       id: "windsurf",
@@ -170,7 +191,9 @@ function parseArgs(argv) {
     allDetected: false,
     list: false,
     dryRun: false,
+    force: false,
     help: false,
+    home: undefined,
   };
   for (let i = 0; i < args.length; i += 1) {
     const arg = args[i];
@@ -195,6 +218,19 @@ function parseArgs(argv) {
       options.dryRun = true;
       continue;
     }
+    if (arg === "--force") {
+      options.force = true;
+      continue;
+    }
+    if (arg === "--home") {
+      options.home = args[i + 1];
+      i += 1;
+      continue;
+    }
+    if (arg.startsWith("--home=")) {
+      options.home = arg.slice("--home=".length);
+      continue;
+    }
     if (arg === "--help" || arg === "-h") {
       options.help = true;
       continue;
@@ -213,6 +249,8 @@ function printHelp() {
   console.log("  --all-detected        Install for all detected agents");
   console.log("  --list                Print supported and detected agents");
   console.log("  --dry-run             Preview files without writing");
+  console.log("  --force               Overwrite SKILL.md when it differs");
+  console.log("  --home <path>          Override home directory used for detection/install");
   console.log("  -h, --help            Show help");
   console.log("");
   console.log("Examples:");
@@ -220,6 +258,7 @@ function printHelp() {
   console.log("  npx create-cascade-skill --all-detected");
   console.log("  npx create-cascade-skill --agents codex,cursor,cline");
   console.log("  npx create-cascade-skill --agents codex --dry-run");
+  console.log("  npx create-cascade-skill --agents windsurf --home ./sandbox --dry-run");
 }
 
 function detectAgents(agents) {
@@ -271,8 +310,7 @@ function toSelectableOptions(agents) {
   return agents.map((agent) => ({
     id: agent.id,
     label: agent.label,
-    description: `${agent.description}${agent.detected ? " [detected]" : ""
-      }`,
+    description: `${agent.description}${agent.detected ? " [detected]" : ""}`,
   }));
 }
 
@@ -300,9 +338,7 @@ async function selectMany(rl, label, options, preselectedIds) {
       const cursor = isCursor
         ? `${ANSI_BOLD}${ANSI_CYAN}>${ANSI_RESET}`
         : " ";
-      const mark = isSelected
-        ? `${ANSI_GREEN}[x]${ANSI_RESET}`
-        : "[ ]";
+      const mark = isSelected ? `${ANSI_GREEN}[x]${ANSI_RESET}` : "[ ]";
       const styleStart = isCursor ? `${ANSI_BOLD}${ANSI_CYAN}` : "";
       const styleEnd = isCursor ? ANSI_RESET : "";
       stdout.write(
@@ -378,7 +414,7 @@ async function selectMany(rl, label, options, preselectedIds) {
 function getSkillFrontmatter(agent) {
   const baseName = "cascadetui";
   const description =
-    "Build terminal user interfaces with CascadeTUI. Use this skill when building, debugging, or refactoring Cascade-based TUIs. Triggers: Cascade, TUI, terminal UI, keyboard navigation, component layout.";
+    "Build terminal user interfaces with CascadeTUI. Use this skill to scaffold, debug, and refactor Cascade-based TUIs (layout, input, rendering, keyboard navigation, React/Solid bindings). Triggers: Cascade, CascadeTUI, TUI, terminal UI, keybindings, focus, renderer.";
   let compatibility = "Requires Bun and TypeScript.";
   if (agent.flavor === "claude") {
     compatibility += " Designed for Claude Code.";
@@ -386,83 +422,141 @@ function getSkillFrontmatter(agent) {
     compatibility += " Designed for Cursor.";
   } else if (agent.flavor === "codex") {
     compatibility += " Designed for OpenAI Codex.";
+  } else if (agent.flavor === "factory") {
+    compatibility += " Designed for Factory (Droid CLI).";
   } else {
     compatibility += ` Designed for ${agent.label}.`;
   }
-  const allowedTools = "Bash(bun:*) Bash(npm:*) Bash(node:*)";
+
+  const allowedTools =
+    agent.flavor === "factory"
+      ? "Read, Bash, Write"
+      : "Bash(bun:*) Bash(npm:*) Bash(node:*)";
+
+  const extraFactoryFrontmatter =
+    agent.flavor === "factory"
+      ? `\nuser-invocable: true\ndisable-model-invocation: false`
+      : "";
+
   return (
     `---\n` +
     `name: ${baseName}\n` +
     `description: ${description}\n` +
     `compatibility: ${compatibility}\n` +
-    `allowed-tools: ${allowedTools}\n` +
+    `allowed-tools: ${allowedTools}` +
+    `${extraFactoryFrontmatter}\n` +
     `metadata:\n` +
     `  author: cascadetui\n` +
-    `  version: "1.1"\n` +
+    `  version: "1.2"\n` +
     `---`
   );
 }
 
 function getSkillBody() {
-  return `# Building Terminal UIs with CascadeTUI
+  return `# CascadeTUI Engineering Skill
 
-## When to Activate
+## Use This When
 
-- Use this skill when asked to build, debug, or refactor a text-based user interface using the CascadeTUI library.
-- Trigger this skill if the user mentions "Cascade", "TUI", "terminal UI", "keyboard navigation", or "component layout".
-- Use when scaffolding new projects or customizing existing ones.
+Activate for tasks involving:
+- Building a new terminal UI (TUI) with CascadeTUI
+- Fixing layout, rendering glitches, or resize bugs
+- Keyboard navigation, focus, selection, shortcuts, input handling
+- React/Solid bindings on top of CascadeTUI core
+- Performance issues (re-render storms, slow lists) or state determinism
 
-## Key Principles
+## Output Expectations
 
-- **Bun first**: Use the Bun runtime and its native package manager for running scripts and managing dependencies. Avoid using Node-specific commands or features unless absolutely required.
-- **Core Library**: The \`@cascadetui/core\` package provides the primitives for rendering, layout, and input handling. Use it for basic applications. Only reach for the React (\`@cascadetui/react\`) or Solid (\`@cascadetui/solid\`) wrappers when explicitly requested.
-- **Typed and deterministic**: Write TypeScript code with explicit types. Avoid dynamic evaluation and unpredictable side effects.
-- **Minimal reproducible examples**: When diagnosing issues, start by isolating the problem in a tiny script or component that reproduces the bug. Only after reproducing should you propose fixes.
-- **Interactive validation**: Test keyboard navigation, focus management, and resize events across multiple terminal sizes. Ensure accessible shortcuts and fallback navigation.
+When implementing or refactoring, produce:
+- A minimal, runnable entrypoint that demonstrates the behavior
+- Deterministic state updates and predictable render cycles
+- Clear keybindings and focus behavior
+- A short verification checklist (commands + manual steps)
 
-## Typical Workflow
+## Project Workflow (Bun-first)
 
-1. **Scaffold a project**  
-   Use Bun's project generator to create a new CascadeTUI app:
-   \`\`\`bash
-   bun create cascade my-app
-   cd my-app
-   bun install
-   bun run dev
-   \`\`\`
+1) Ensure dependencies
+\`\`\`bash
+bun install
+\`\`\`
 
-2. **Develop components**  
-   - Keep components pure and functions side-effect free where possible.  
-   - Compose layouts using containers (horizontal, vertical, grid) and ensure consistent spacing.  
-   - Use dedicated input handlers rather than global listeners.
+2) Run the app (or a repro script)
+\`\`\`bash
+bun run dev
+\`\`\`
 
-3. **Debug rendering**  
-   - If a component fails to render or update, add logging and ensure the state drives the UI deterministically.  
-   - Recreate the failing state in isolation.  
-   - Check for improper asynchronous updates.
+3) Add a tiny repro when debugging
+- Create \`scripts/repro.ts\` or a minimal app entrypoint
+- Keep it self-contained: one screen, one interaction, one bug
 
-4. **Keyboard & interaction**  
-   - Provide intuitive key bindings with documentation.  
-   - Implement focus rings or highlight states.  
-   - Handle edge cases like simultaneous key presses, terminal resize, and loss of focus.
+## Design Rules (CascadeTUI-specific)
 
-5. **Performance considerations**  
-   - Avoid expensive re-renders inside tight loops.  
-   - Batch state updates where possible.  
-   - Profile for memory leaks or event listener accumulation.
+### Deterministic UI
+- Treat rendering as a pure function of state
+- Avoid hidden mutable globals for UI state
+- Prefer single source of truth (one store or a small set of state atoms)
 
-## Best Practices
+### Layout & Composition
+- Compose screens with containers and consistent spacing
+- Keep one responsibility per component: layout vs input vs domain logic
+- Use stable keys for lists; avoid index keys if items can move
 
-- **State management**: Use a predictable state container or simple \`useState\`-like patterns. Avoid hidden state.
-- **Testing**: Write unit tests for components and integration tests for complex flows. Use snapshot tests carefully.
-- **Documentation**: Document all public-facing components with usage examples and list supported props.
-- **Clean-up**: Remove unused dependencies and scripts. Keep the codebase tidy for readability.
+### Input, Focus, and Navigation
+- Define a keymap per screen (Up/Down, Enter, Esc, Tab, Ctrl shortcuts)
+- Always document primary actions and an escape/back path
+- Ensure focus is explicit: which element receives keys right now
+- Handle terminal resize: reflow layout and keep selection stable
 
-## Additional Resources
+### Rendering & Performance
+- Avoid rebuilding large trees on every keypress
+- For large lists: paginate, virtualize, or reduce per-row computation
+- Batch state updates; avoid cascading updates during render
 
-- Official CascadeTUI documentation (if available).
-- Bun runtime documentation: https://bun.sh/docs for details on Bun-specific APIs.
-- Example projects in the CascadeTUI GitHub repository (if available).
+## Debugging Playbook
+
+When something is wrong:
+1) Confirm the bug in a tiny repro
+2) Log state transitions around the interaction
+3) Verify input events fire once (no duplicated handlers)
+4) Verify keys/ids are stable (especially lists)
+5) Verify resize behavior by changing terminal size rapidly
+
+Common failure modes:
+- Duplicate listeners attached on re-render
+- Non-stable list keys causing selection jumps
+- Async state updates racing; UI shows stale selection
+- Layout constraints (width/height) not propagated as expected
+
+## Quick Recipes
+
+### Add a consistent keymap footer
+- Show the active shortcuts at the bottom (e.g. \`q\` quit, \`/\` search, arrows navigate)
+- Keep it updated per screen
+
+### Search + List pattern
+- Input line at top
+- Filtered list in the middle
+- Details/preview panel (optional)
+- Enter selects, Esc clears/back
+
+### React binding guidance
+- Keep bridge components thin
+- Avoid passing unstable props that trigger full-tree rerenders
+- Prefer memoization at boundaries (list row, heavy panels)
+
+## Verification Checklist
+
+Run:
+\`\`\`bash
+bun run typecheck
+bun run lint
+bun test
+\`\`\`
+
+Manual:
+- Start app in small and large terminals
+- Resize while a list item is selected
+- Navigate with keyboard only
+- Confirm exit behavior (Ctrl+C and explicit quit key)
 `;
 }
 
@@ -494,6 +588,22 @@ function getImprovedCursorAppendix() {
 `;
 }
 
+function getImprovedFactoryAppendix() {
+  return `## Factory (Droid CLI) Skill Notes
+
+- Skills are discovered from:
+  - Workspace: \`<repo>/.factory/skills/<skill-name>/SKILL.md\`
+  - Personal: \`~/.factory/skills/<skill-name>/SKILL.md\`
+  - Compatibility: \`<repo>/.agent/skills/\` :contentReference[oaicite:1]{index=1}
+- This installer writes to the personal location by default: \`~/.factory/skills/cascadetui/SKILL.md\`.
+- If you want to share the skill with teammates, copy it into your repo under \`.factory/skills/cascadetui/SKILL.md\` and commit it. :contentReference[oaicite:2]{index=2}
+- Invocation control:
+  - \`disable-model-invocation: true\` to require manual \`/cascadetui\` invocation
+  - \`user-invocable: false\` to hide it from slash commands and keep it model-only :contentReference[oaicite:3]{index=3}
+- Restart \`droid\` after adding/updating skills so it rescans them. :contentReference[oaicite:4]{index=4}
+`;
+}
+
 function getGenericAppendix(agent) {
   return `## ${agent.label} Skill Notes
 
@@ -508,34 +618,60 @@ function getSkillContent(agent) {
   const frontmatter = getSkillFrontmatter(agent);
   const body = getSkillBody();
   if (agent.flavor === "claude") {
-    return (
-      frontmatter +
-      "\n\n" +
-      body +
-      "\n\n" +
-      getImprovedClaudeAppendix()
-    );
+    return frontmatter + "\n\n" + body + "\n\n" + getImprovedClaudeAppendix();
   }
   if (agent.flavor === "cursor") {
-    return (
-      frontmatter + "\n\n" + body + "\n\n" + getImprovedCursorAppendix()
-    );
+    return frontmatter + "\n\n" + body + "\n\n" + getImprovedCursorAppendix();
   }
-  return (
-    frontmatter + "\n\n" + body + "\n\n" + getGenericAppendix(agent)
-  );
+  if (agent.flavor === "factory") {
+    return frontmatter + "\n\n" + body + "\n\n" + getImprovedFactoryAppendix();
+  }
+  return frontmatter + "\n\n" + body + "\n\n" + getGenericAppendix(agent);
 }
 
-function installSkill(agent, dryRun) {
+function installSkill(agent, options) {
   const content = getSkillContent(agent);
   const targetFile = agent.installPath;
   const targetDir = resolve(targetFile, "..");
-  if (dryRun) {
-    return { agent: agent.id, path: targetFile, written: false };
+  if (options.dryRun) {
+    return { agent: agent.id, path: targetFile, written: false, skipped: false, reason: "dry-run" };
+  }
+  if (existsSync(targetFile)) {
+    try {
+      const existing = readFileSync(targetFile, "utf8");
+      if (existing === content) {
+        return {
+          agent: agent.id,
+          path: targetFile,
+          written: false,
+          skipped: true,
+          reason: "already up-to-date",
+        };
+      }
+      if (!options.force) {
+        return {
+          agent: agent.id,
+          path: targetFile,
+          written: false,
+          skipped: true,
+          reason: "exists (use --force to overwrite)",
+        };
+      }
+    } catch {
+      if (!options.force) {
+        return {
+          agent: agent.id,
+          path: targetFile,
+          written: false,
+          skipped: true,
+          reason: "exists (unreadable; use --force to overwrite)",
+        };
+      }
+    }
   }
   mkdirSync(targetDir, { recursive: true });
   writeFileSync(targetFile, content);
-  return { agent: agent.id, path: targetFile, written: true };
+  return { agent: agent.id, path: targetFile, written: true, skipped: false, reason: "written" };
 }
 
 async function resolveAgentsToInstall(rl, detectedAgents, options) {
@@ -582,8 +718,7 @@ async function resolveAgentsToInstall(rl, detectedAgents, options) {
       rl,
       "No agent selected. Enter comma-separated IDs (or leave empty to cancel): "
     )
-  )
-    .trim();
+  ).trim();
   if (!fallback) {
     return [];
   }
@@ -598,7 +733,7 @@ async function main() {
     printHelp();
     return;
   }
-  const agents = detectAgents(getAgents());
+  const agents = detectAgents(getAgents({ home: options.home }));
   if (options.list) {
     printList(agents);
     return;
@@ -613,27 +748,22 @@ async function main() {
       console.log("Nothing to install.");
       return;
     }
-    const selectedAgents = agents.filter((agent) =>
-      selectedIds.includes(agent.id)
-    );
-    const results = selectedAgents.map((agent) =>
-      installSkill(agent, options.dryRun)
-    );
+    const selectedAgents = agents.filter((agent) => selectedIds.includes(agent.id));
+    const results = selectedAgents.map((agent) => installSkill(agent, options));
     console.log("");
     console.log(`${ANSI_BOLD}CascadeTUI skill installer${ANSI_RESET}`);
     for (const result of results) {
       const prefix = result.written
         ? `${ANSI_GREEN}installed${ANSI_RESET}`
-        : `${ANSI_YELLOW}planned${ANSI_RESET}`;
-      console.log(
-        `- ${result.agent}: ${prefix} -> ${result.path}`
-      );
+        : result.skipped
+          ? `${ANSI_YELLOW}skipped${ANSI_RESET}`
+          : `${ANSI_YELLOW}planned${ANSI_RESET}`;
+      const suffix = result.reason ? ` (${result.reason})` : "";
+      console.log(`- ${result.agent}: ${prefix} -> ${result.path}${suffix}`);
     }
     if (options.dryRun) {
       console.log("");
-      console.log(
-        "Dry run complete. Re-run without --dry-run to write files."
-      );
+      console.log("Dry run complete. Re-run without --dry-run to write files.");
     }
   } finally {
     rl.close();
@@ -641,8 +771,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error(
-    error instanceof Error ? error.message : String(error)
-  );
+  console.error(error instanceof Error ? error.message : String(error));
   process.exit(1);
 });

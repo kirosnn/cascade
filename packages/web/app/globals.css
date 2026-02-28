@@ -681,6 +681,150 @@ p.lead {
   padding-left: 2rem;
   margin-bottom: 6rem;
   padding-bottom: 72px;
+  position: relative;
+}
+
+.page-copy-tools {
+  width: 100%;
+  max-width: 920px;
+  margin: 22px auto 0;
+  display: flex;
+  justify-content: flex-end;
+  position: relative;
+  padding-right: 2rem;
+}
+
+.page-copy-tools-row {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid var(--code-button-border);
+  border-radius: 10px;
+  background: var(--code-button-bg);
+  overflow: hidden;
+}
+
+.page-copy-main-btn,
+.page-copy-toggle-btn,
+.page-copy-dropdown-item {
+  border: 0;
+  background: transparent;
+  color: var(--code-button-text);
+  cursor: pointer;
+  transition: background 0.16s ease;
+}
+
+.page-copy-main-btn:hover,
+.page-copy-toggle-btn:hover,
+.page-copy-dropdown-item:hover {
+  background: var(--code-button-hover);
+}
+
+.page-copy-main-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.page-copy-main-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.page-copy-main-btn .check-icon {
+  display: none;
+}
+
+.page-copy-main-btn.copied .copy-icon {
+  display: none;
+}
+
+.page-copy-main-btn.copied .check-icon {
+  display: block;
+}
+
+.page-copy-toggle-btn {
+  width: 32px;
+  height: 32px;
+  border-left: 1px solid var(--code-button-border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-copy-toggle-btn svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.15s ease;
+}
+
+.page-copy-toggle-btn.is-open svg {
+  transform: rotate(180deg);
+}
+
+.page-copy-dropdown {
+  position: absolute;
+  right: 2rem;
+  bottom: calc(100% + 8px);
+  min-width: 190px;
+  border: 1px solid var(--code-button-border);
+  border-radius: 10px;
+  background: var(--code-button-bg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  z-index: 10;
+}
+
+.page-copy-dropdown-item {
+  width: 100%;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.page-copy-dropdown-item svg {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+}
+
+.page-copy-dropdown-item .check-icon {
+  display: none;
+}
+
+.page-copy-dropdown-item.copied .markdown-icon {
+  display: none;
+}
+
+.page-copy-dropdown-item.copied .check-icon {
+  display: block;
+  color: color-mix(in oklab, var(--brand) 70%, var(--code-button-text));
+}
+
+.page-copy-dropdown-item .markdown-icon {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 15px;
+  opacity: 0.95;
+}
+
+.page-copy-dropdown-item .check-icon {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 15px;
+  stroke-width: 2.4;
+}
+
+.page-copy-dropdown-item span {
+  white-space: nowrap;
 }
 
 .docs-bottom-bar {
@@ -1255,6 +1399,14 @@ h2,
 
   .article-card {
     padding: 20px 2rem 20px 0;
+  }
+
+  .page-copy-tools {
+    padding-right: 0;
+  }
+
+  .page-copy-dropdown {
+    right: 0;
   }
 }
 

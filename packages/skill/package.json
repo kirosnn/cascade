@@ -17,6 +17,7 @@
     "README.md"
   ],
   "scripts": {
-    "publish:pkg": "bun scripts/publish.ts"
+    "publish:pkg": "bun scripts/publish.ts",
+    "test:skill": "bun scripts/user-test.ts"
   }
 }

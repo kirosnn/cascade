@@ -88,6 +88,128 @@ type SearchModalProps = {
     onResultHover: (index: number) => void
 }
 
+type CopyPageToolsProps = {
+    mainContentEl: HTMLElement | null
+}
+
+type CopyPayload = {
+    plain: string
+    markdown: string
+}
+
+function extractArticleCopyPayload(mainContentEl: HTMLElement | null): CopyPayload | null {
+    const article = mainContentEl?.querySelector("article")
+    if (!article) return null
+    const pageTitle = article.querySelector("h1")?.textContent?.trim() ?? ""
+    const pageSubtitle = article.querySelector("p.lead")?.textContent?.trim() ?? ""
+
+    const sections = Array.from(article.querySelectorAll<HTMLElement>(".doc-section"))
+    const lines: string[] = []
+    const markdownParts: string[] = []
+
+    if (pageTitle) {
+        lines.push(pageTitle)
+        markdownParts.push(`# ${pageTitle}`)
+    }
+
+    if (pageSubtitle) {
+        lines.push("", pageSubtitle)
+        markdownParts.push("", pageSubtitle)
+    }
+
+    for (const section of sections) {
+        const heading = section.querySelector("h2")?.textContent?.trim() ?? ""
+        const clone = section.cloneNode(true) as HTMLElement
+        clone.querySelector("h2")?.remove()
+        const body = clone.innerText.trim()
+
+        if (heading) {
+            lines.push("", heading)
+            markdownParts.push("", `## ${heading}`)
+        }
+
+        if (body) {
+            lines.push("", body)
+            markdownParts.push("", body)
+        }
+    }
+
+    return {
+        plain: lines.join("\n").trim(),
+        markdown: markdownParts.join("\n").trim(),
+    }
+}
+
+function CopyPageTools({ mainContentEl }: CopyPageToolsProps) {
+    const [isMenuOpen, setIsMenuOpen] = useState(false)
+    const [copiedType, setCopiedType] = useState<"page" | "markdown" | null>(null)
+    const menuRef = useRef<HTMLDivElement | null>(null)
+
+    useEffect(() => {
+        if (!isMenuOpen) return
+        const onPointerDown = (event: PointerEvent) => {
+            const target = event.target as Node | null
+            if (!target) return
+            if (menuRef.current?.contains(target)) return
+            setIsMenuOpen(false)
+        }
+        const onKeyDown = (event: KeyboardEvent) => {
+            if (event.key === "Escape") setIsMenuOpen(false)
+        }
+        window.addEventListener("pointerdown", onPointerDown)
+        window.addEventListener("keydown", onKeyDown)
+        return () => {
+            window.removeEventListener("pointerdown", onPointerDown)
+            window.removeEventListener("keydown", onKeyDown)
+        }
+    }, [isMenuOpen])
+
+    const copy = async (type: "page" | "markdown") => {
+        const payload = extractArticleCopyPayload(mainContentEl)
+        if (!payload) return
+        const text = type === "page" ? payload.plain : payload.markdown
+        await navigator.clipboard.writeText(text)
+        setCopiedType(type)
+        setTimeout(() => setCopiedType((value) => (value === type ? null : value)), 1200)
+        if (type === "markdown") setIsMenuOpen(false)
+    }
+
+    return (
+        <div className="page-copy-tools" ref={menuRef}>
+            <div className="page-copy-tools-row">
+                <button type="button" className={`page-copy-main-btn ${copiedType === "page" ? "copied" : ""}`} onClick={() => void copy("page")} aria-label="Copy page">
+                    <svg className="copy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    <svg className="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    <span>Copy Page</span>
+                </button>
+                <button type="button" className={`page-copy-toggle-btn ${isMenuOpen ? "is-open" : ""}`} onClick={() => setIsMenuOpen((open) => !open)} aria-label="Open copy options" aria-expanded={isMenuOpen}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                        <path d="m6 9 6 6 6-6"></path>
+                    </svg>
+                </button>
+            </div>
+            {isMenuOpen ? (
+                <div className="page-copy-dropdown" role="menu">
+                    <button type="button" className={`page-copy-dropdown-item ${copiedType === "markdown" ? "copied" : ""}`} onClick={() => void copy("markdown")} role="menuitem">
+                        <svg className="markdown-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <path d="M2 5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5Zm3 3v8h2V11l3 3 3-3v5h2V8h-2l-3 3-3-3H5Zm12 5h2.2L17 15.8h1.7l2.1-2.8H19V8h-2v5Z"></path>
+                        </svg>
+                        <svg className="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>Copy Markdown</span>
+                    </button>
+                </div>
+            ) : null}
+        </div>
+    )
+}
+
 function SearchModal({
     query,
     highlightedIndex,
@@ -831,6 +953,7 @@ export default function DocsSiteClient({ pages, groupedPages, currentPage, stars
                             </section>
                         ))}
                     </article>
+                    <CopyPageTools mainContentEl={layout.mainContentEl} />
                 </main>
             </div>
 

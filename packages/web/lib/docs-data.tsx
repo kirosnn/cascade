@@ -3432,7 +3432,7 @@ bun create cascade my-app -f react -s counter`}
       {
         id: "create-cascade-skill-overview",
         title: "Overview",
-        searchText: "create-cascade-skill skill SKILL.md agents codex cursor windsurf cline",
+        searchText: "create-cascade-skill skill SKILL.md agents codex cursor windsurf cline factory",
         content: (
           <>
             <p><code>create-cascade-skill</code> installs CascadeTUI skills for external coding agents using an interactive CLI. It detects supported agents on your machine and can install for one or many in a single run.</p>
@@ -3447,11 +3447,11 @@ bun create cascade my-app -f react -s counter`}
       {
         id: "create-cascade-skill-supported",
         title: "Supported agents",
-        searchText: "create-cascade-skill supported agents codex claude code cursor windsurf cline roo-code continue aider gemini-cli openhands goose ami",
+        searchText: "create-cascade-skill supported agents codex claude code cursor windsurf cline roo-code continue aider gemini-cli openhands goose ami factory",
         content: (
           <>
             <p>Supported agents include:</p>
-            <p><code>Codex</code>, <code>Claude Code</code>, <code>Cursor</code>, <code>Windsurf</code>, <code>Cline</code>, <code>Roo Code</code>, <code>Continue</code>, <code>Aider</code>, <code>Gemini CLI</code>, <code>OpenHands</code>, <code>Goose</code>, <code>Ami</code>.</p>
+            <p><code>Codex</code>, <code>Claude Code</code>, <code>Cursor</code>, <code>Windsurf</code>, <code>Cline</code>, <code>Roo Code</code>, <code>Continue</code>, <code>Aider</code>, <code>Gemini CLI</code>, <code>OpenHands</code>, <code>Goose</code>, <code>Ami</code>, <code>Factory</code>.</p>
             <p>Run with <code>--list</code> to see which agents are supported and which are detected on your machine.</p>
             <CodeBlock
               language="bash"
