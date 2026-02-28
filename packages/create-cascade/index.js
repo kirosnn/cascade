@@ -111,11 +111,13 @@ function printHelp() {
 }
 
 function normalizePackageName(name) {
-  return name
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9-_]+/g, "-")
-    .replace(/^-+|-+$/g, "") || "cascade-app"
+  return (
+    name
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9-_]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "cascade-app"
+  )
 }
 
 function ensureDirectoryIsEmpty(targetDir) {
@@ -158,7 +160,9 @@ async function selectOption(rl, label, options) {
       const prefix = isSelected ? `${ANSI_BOLD}${ANSI_CYAN}>${ANSI_RESET}` : " "
       const styleStart = isSelected ? `${ANSI_BOLD}${ANSI_CYAN}` : ""
       const styleEnd = isSelected ? ANSI_RESET : ""
-      stdout.write(`${prefix} ${styleStart}${option.label}${styleEnd} ${ANSI_DIM}(${option.id}) - ${option.description}${ANSI_RESET}\n`)
+      stdout.write(
+        `${prefix} ${styleStart}${option.label}${styleEnd} ${ANSI_DIM}(${option.id}) - ${option.description}${ANSI_RESET}\n`
+      )
     }
 
     stdout.write(`${ANSI_DIM}Use Up/Down arrows and Enter${ANSI_RESET}\n`)
@@ -367,84 +371,212 @@ function getSource(framework, starter) {
 
 const renderer = await createCliRenderer({ exitOnCtrlC: true })
 
-const panel = new BoxRenderable(renderer, {
-  border: true,
-  borderStyle: "single",
+const root = new BoxRenderable(renderer, {
+  width: "100%",
+  height: "100%",
   padding: 1,
-  margin: 1,
-  width: 56,
-  height: 8,
   flexDirection: "column",
 })
 
+const card = new BoxRenderable(renderer, {
+  border: true,
+  borderStyle: "single",
+  padding: 1,
+  width: 72,
+  height: 16,
+  flexDirection: "column",
+})
+
+const header = new BoxRenderable(renderer, {
+  flexDirection: "column",
+  marginBottom: 1,
+})
+
 const title = new TextRenderable(renderer, {
-  content: "Hello from Cascade Core",
+  content: "Cascade Core",
   fg: "#00ff99",
 })
 
 const subtitle = new TextRenderable(renderer, {
-  content: "Run bun run dev after edits to refresh your app",
+  content: "A tiny terminal UI runtime with clean layout primitives.",
+  fg: "#cbd5e1",
   marginTop: 1,
-  fg: "#cccccc",
+})
+
+header.add(title)
+header.add(subtitle)
+
+const steps = new BoxRenderable(renderer, {
+  flexDirection: "column",
+  marginTop: 1,
+})
+
+const s1 = new TextRenderable(renderer, { content: "1) Edit src/index.ts", fg: "#e2e8f0" })
+const s2 = new TextRenderable(renderer, { content: "2) bun run dev", fg: "#e2e8f0", marginTop: 1 })
+const s3 = new TextRenderable(renderer, { content: "3) Compose renderables into screens", fg: "#e2e8f0", marginTop: 1 })
+
+steps.add(s1)
+steps.add(s2)
+steps.add(s3)
+
+const footer = new BoxRenderable(renderer, {
+  marginTop: 2,
+  border: true,
+  borderStyle: "single",
+  padding: 1,
+  flexDirection: "column",
+})
+
+const keys = new TextRenderable(renderer, {
+  content: "Keys: Ctrl+C quit",
+  fg: "#94a3b8",
 })
 
 const hint = new TextRenderable(renderer, {
-  content: "Press Ctrl+C to exit",
+  content: "Tip: Keep rendering deterministic. Let state drive UI updates.",
+  fg: "#94a3b8",
   marginTop: 1,
-  fg: "#999999",
 })
 
-panel.add(title)
-panel.add(subtitle)
-panel.add(hint)
-renderer.root.add(panel)
+footer.add(keys)
+footer.add(hint)
+
+card.add(header)
+card.add(steps)
+card.add(footer)
+
+root.add(card)
+renderer.root.add(root)
 `,
-      counter: `import { TextRenderable, createCliRenderer } from "@cascadetui/core"
+      counter: `import { BoxRenderable, TextRenderable, createCliRenderer } from "@cascadetui/core"
 
 const renderer = await createCliRenderer({ exitOnCtrlC: true })
 let count = 0
 
-const text = new TextRenderable(renderer, {
-  content: "Count: 0",
-  margin: 2,
+const root = new BoxRenderable(renderer, {
+  width: "100%",
+  height: "100%",
+  padding: 1,
+  flexDirection: "column",
+})
+
+const card = new BoxRenderable(renderer, {
+  border: true,
+  borderStyle: "single",
+  padding: 1,
+  width: 60,
+  height: 10,
+  flexDirection: "column",
+})
+
+const title = new TextRenderable(renderer, {
+  content: "Core Counter",
   fg: "#00ff99",
 })
 
-renderer.root.add(text)
+const value = new TextRenderable(renderer, {
+  content: "Count: 0",
+  fg: "#e2e8f0",
+  marginTop: 1,
+})
+
+const meta = new TextRenderable(renderer, {
+  content: "Updates every second. Ctrl+C to exit.",
+  fg: "#94a3b8",
+  marginTop: 1,
+})
+
+card.add(title)
+card.add(value)
+card.add(meta)
+
+root.add(card)
+renderer.root.add(root)
 
 setInterval(() => {
   count += 1
-  text.content = \`Count: \${count}\`
+  value.content = \`Count: \${count}\`
 }, 1000)
 `,
       layout: `import { BoxRenderable, TextRenderable, createCliRenderer } from "@cascadetui/core"
 
 const renderer = await createCliRenderer({ exitOnCtrlC: true })
 
-const container = new BoxRenderable(renderer, {
+const root = new BoxRenderable(renderer, {
+  width: "100%",
+  height: "100%",
+  padding: 1,
+  flexDirection: "row",
+  gap: 2,
+})
+
+const sidebar = new BoxRenderable(renderer, {
   border: true,
   borderStyle: "single",
   padding: 1,
-  margin: 1,
-  width: 50,
-  height: 9,
+  width: 26,
+  height: 18,
   flexDirection: "column",
 })
 
-const title = new TextRenderable(renderer, {
-  content: "Cascade Core Starter",
+const sideTitle = new TextRenderable(renderer, {
+  content: "Navigation",
   fg: "#00ff99",
 })
 
-const subtitle = new TextRenderable(renderer, {
-  content: "Press Ctrl+C to exit",
-  marginTop: 1,
-  fg: "#cccccc",
+const nav1 = new TextRenderable(renderer, { content: "• Overview", fg: "#e2e8f0", marginTop: 1 })
+const nav2 = new TextRenderable(renderer, { content: "• Components", fg: "#e2e8f0", marginTop: 1 })
+const nav3 = new TextRenderable(renderer, { content: "• Input & Focus", fg: "#e2e8f0", marginTop: 1 })
+const nav4 = new TextRenderable(renderer, { content: "• Performance", fg: "#e2e8f0", marginTop: 1 })
+
+sidebar.add(sideTitle)
+sidebar.add(nav1)
+sidebar.add(nav2)
+sidebar.add(nav3)
+sidebar.add(nav4)
+
+const main = new BoxRenderable(renderer, {
+  border: true,
+  borderStyle: "single",
+  padding: 1,
+  width: 74,
+  height: 18,
+  flexDirection: "column",
 })
 
-container.add(title)
-container.add(subtitle)
-renderer.root.add(container)
+const mainTitle = new TextRenderable(renderer, {
+  content: "Layout Starter",
+  fg: "#00ff99",
+})
+
+const mainBody = new TextRenderable(renderer, {
+  content: "Compose a screen with a sidebar + content panel. Add your own state and update text/content deterministically.",
+  fg: "#cbd5e1",
+  marginTop: 1,
+})
+
+const mainFooter = new BoxRenderable(renderer, {
+  border: true,
+  borderStyle: "single",
+  padding: 1,
+  marginTop: 2,
+  flexDirection: "column",
+})
+
+const footerText = new TextRenderable(renderer, {
+  content: "Keys: Ctrl+C quit",
+  fg: "#94a3b8",
+})
+
+mainFooter.add(footerText)
+
+main.add(mainTitle)
+main.add(mainBody)
+main.add(mainFooter)
+
+root.add(sidebar)
+root.add(main)
+renderer.root.add(root)
 `,
     },
     react: {
@@ -453,10 +585,20 @@ import { createRoot } from "@cascadetui/react"
 
 function App() {
   return (
-    <box style={{ border: true, borderStyle: "single", padding: 1, margin: 1, width: 56, height: 8, flexDirection: "column" }}>
-      <text content="Hello from Cascade React" fg="#00ff99" />
-      <text content="Edit src/index.tsx and run bun run dev" marginTop={1} fg="#cccccc" />
-      <text content="Press Ctrl+C to exit" marginTop={1} fg="#999999" />
+    <box style={{ width: "100%", height: "100%", padding: 1, flexDirection: "column", alignItems: "flex-start" }}>
+      <box style={{ border: true, borderStyle: "single", padding: 1, width: 72, height: 16, flexDirection: "column" }}>
+        <text content="Cascade React" fg="#00ff99" />
+        <text content="Build interactive terminal UIs with components and hooks." fg="#cbd5e1" marginTop={1} />
+        <box style={{ flexDirection: "column", marginTop: 2 }}>
+          <text content="1) Edit src/index.tsx" fg="#e2e8f0" />
+          <text content="2) bun run dev" fg="#e2e8f0" marginTop={1} />
+          <text content="3) Add screens, keymaps, and deterministic state" fg="#e2e8f0" marginTop={1} />
+        </box>
+        <box style={{ border: true, borderStyle: "single", padding: 1, marginTop: 2, flexDirection: "column" }}>
+          <text content="Keys: Ctrl+C quit" fg="#94a3b8" />
+          <text content="Tip: Keep expensive panels stable. Avoid re-render storms in lists." fg="#94a3b8" marginTop={1} />
+        </box>
+      </box>
     </box>
   )
 }
@@ -466,19 +608,27 @@ createRoot(renderer).render(<App />)
 `,
       counter: `import { createCliRenderer } from "@cascadetui/core"
 import { createRoot } from "@cascadetui/react"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 function App() {
   const [count, setCount] = useState(0)
+  const startedAt = useMemo(() => Date.now(), [])
 
   useEffect(() => {
     const timer = setInterval(() => setCount((value) => value + 1), 1000)
     return () => clearInterval(timer)
   }, [])
 
+  const seconds = Math.floor((Date.now() - startedAt) / 1000)
+
   return (
-    <box style={{ border: true, padding: 1, margin: 1 }}>
-      <text content={\`React counter: \${count}\`} fg="#00ff99" />
+    <box style={{ width: "100%", height: "100%", padding: 1, flexDirection: "column" }}>
+      <box style={{ border: true, borderStyle: "single", padding: 1, width: 60, height: 10, flexDirection: "column" }}>
+        <text content="React Counter" fg="#00ff99" />
+        <text content={\`Count: \${count}\`} fg="#e2e8f0" marginTop={1} />
+        <text content={\`Uptime: \${seconds}s\`} fg="#cbd5e1" marginTop={1} />
+        <text content="Ctrl+C to exit" fg="#94a3b8" marginTop={1} />
+      </box>
     </box>
   )
 }
@@ -488,22 +638,36 @@ createRoot(renderer).render(<App />)
 `,
       login: `import { createCliRenderer } from "@cascadetui/core"
 import { createRoot, useKeyboard } from "@cascadetui/react"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 
 function App() {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
-  const [focused, setFocused] = useState("username")
-  const [status, setStatus] = useState("idle")
+  const [focused, setFocused] = useState<"username" | "password">("username")
+  const [status, setStatus] = useState<"idle" | "invalid" | "success">("idle")
+
+  const statusText = useMemo(() => {
+    if (status === "success") return "Authenticated"
+    if (status === "invalid") return "Invalid credentials"
+    return "Idle"
+  }, [status])
 
   useKeyboard((key) => {
     if (key.name === "tab") {
       setFocused((value) => (value === "username" ? "password" : "username"))
+      return
+    }
+    if (key.name === "escape") {
+      setUsername("")
+      setPassword("")
+      setStatus("idle")
+      setFocused("username")
+      return
     }
   })
 
   const submit = () => {
-    if (username === "admin" && password === "secret") {
+    if (username.trim() === "admin" && password === "secret") {
       setStatus("success")
       return
     }
@@ -511,15 +675,19 @@ function App() {
   }
 
   return (
-    <box style={{ padding: 2, flexDirection: "column" }}>
+    <box style={{ width: "100%", height: "100%", padding: 2, flexDirection: "column" }}>
       <text content="Cascade Login" fg="#00ff99" />
-      <box title="Username" style={{ border: true, width: 40, height: 3, marginTop: 1 }}>
-        <input focused={focused === "username"} placeholder="admin" onInput={setUsername} onSubmit={submit} />
+      <text content="Tab switch fields, Enter submit, Esc reset" fg="#94a3b8" marginTop={1} />
+      <box title="Username" style={{ border: true, borderStyle: "single", width: 44, height: 3, marginTop: 2 }}>
+        <input focused={focused === "username"} placeholder="admin" value={username} onInput={setUsername} onSubmit={submit} />
       </box>
-      <box title="Password" style={{ border: true, width: 40, height: 3, marginTop: 1 }}>
-        <input focused={focused === "password"} placeholder="secret" onInput={setPassword} onSubmit={submit} />
+      <box title="Password" style={{ border: true, borderStyle: "single", width: 44, height: 3, marginTop: 1 }}>
+        <input focused={focused === "password"} placeholder="secret" value={password} onInput={setPassword} onSubmit={submit} />
       </box>
-      <text content={\`Status: \${status}\`} marginTop={1} fg={status === "success" ? "green" : "yellow"} />
+      <box style={{ border: true, borderStyle: "single", padding: 1, width: 44, marginTop: 2, flexDirection: "column" }}>
+        <text content={\`Status: \${statusText}\`} fg={status === "success" ? "green" : status === "invalid" ? "yellow" : "#cbd5e1"} />
+        <text content={\`Focused: \${focused}\`} fg="#94a3b8" marginTop={1} />
+      </box>
     </box>
   )
 }
@@ -532,10 +700,20 @@ createRoot(renderer).render(<App />)
       minimal: `import { render } from "@cascadetui/solid"
 
 const App = () => (
-  <box style={{ border: true, borderStyle: "single", padding: 1, margin: 1, width: 56, height: 8, flexDirection: "column" }}>
-    <text content="Hello from Cascade Solid" fg="#00ff99" />
-    <text content="Edit src/index.tsx and run bun run dev" marginTop={1} fg="#cccccc" />
-    <text content="Press Ctrl+C to exit" marginTop={1} fg="#999999" />
+  <box style={{ width: "100%", height: "100%", padding: 1, flexDirection: "column" }}>
+    <box style={{ border: true, borderStyle: "single", padding: 1, width: 72, height: 16, flexDirection: "column" }}>
+      <text content="Cascade Solid" fg="#00ff99" />
+      <text content="Write reactive terminal apps with signals and components." fg="#cbd5e1" marginTop={1} />
+      <box style={{ flexDirection: "column", marginTop: 2 }}>
+        <text content="1) Edit src/index.tsx" fg="#e2e8f0" />
+        <text content="2) bun run dev" fg="#e2e8f0" marginTop={1} />
+        <text content="3) Keep state and rendering deterministic" fg="#e2e8f0" marginTop={1} />
+      </box>
+      <box style={{ border: true, borderStyle: "single", padding: 1, marginTop: 2, flexDirection: "column" }}>
+        <text content="Keys: Ctrl+C quit" fg="#94a3b8" />
+        <text content="Tip: Keep list rows stable to avoid selection jumps." fg="#94a3b8" marginTop={1} />
+      </box>
+    </box>
   </box>
 )
 
@@ -546,12 +724,23 @@ import { createSignal, onCleanup } from "solid-js"
 
 const App = () => {
   const [count, setCount] = createSignal(0)
-  const timer = setInterval(() => setCount((value) => value + 1), 1000)
+  const [uptime, setUptime] = createSignal(0)
+
+  const timer = setInterval(() => {
+    setCount((value) => value + 1)
+    setUptime((value) => value + 1)
+  }, 1000)
+
   onCleanup(() => clearInterval(timer))
 
   return (
-    <box style={{ border: true, padding: 1, margin: 1 }}>
-      <text content={\`Solid counter: \${count()}\`} fg="#00ff99" />
+    <box style={{ width: "100%", height: "100%", padding: 1, flexDirection: "column" }}>
+      <box style={{ border: true, borderStyle: "single", padding: 1, width: 60, height: 10, flexDirection: "column" }}>
+        <text content="Solid Counter" fg="#00ff99" />
+        <text content={\`Count: \${count()}\`} fg="#e2e8f0" marginTop={1} />
+        <text content={\`Uptime: \${uptime()}s\`} fg="#cbd5e1" marginTop={1} />
+        <text content="Ctrl+C to exit" fg="#94a3b8" marginTop={1} />
+      </box>
     </box>
   )
 }
@@ -564,20 +753,32 @@ import { createSignal } from "solid-js"
 const App = () => {
   const [value, setValue] = createSignal("")
   const [submitted, setSubmitted] = createSignal("")
+  const [status, setStatus] = createSignal<"idle" | "submitted">("idle")
 
   return (
-    <box style={{ padding: 2, flexDirection: "column" }}>
-      <text content="Cascade Solid Input" fg="#00ff99" />
-      <box title="Message" style={{ border: true, width: 40, height: 3, marginTop: 1 }}>
+    <box style={{ width: "100%", height: "100%", padding: 2, flexDirection: "column" }}>
+      <text content="Solid Input" fg="#00ff99" />
+      <text content="Enter submit, Ctrl+C quit" fg="#94a3b8" marginTop={1} />
+      <box title="Message" style={{ border: true, borderStyle: "single", width: 52, height: 3, marginTop: 2 }}>
         <input
           focused
           placeholder="Type something..."
-          onInput={setValue}
-          onSubmit={(nextValue) => setSubmitted(nextValue)}
+          value={value()}
+          onInput={(nextValue) => {
+            setValue(nextValue)
+            setStatus("idle")
+          }}
+          onSubmit={(nextValue) => {
+            setSubmitted(nextValue)
+            setStatus("submitted")
+          }}
         />
       </box>
-      <text content={\`Current: \${value()}\`} marginTop={1} />
-      <text content={\`Submitted: \${submitted() || "-"}\`} />
+      <box style={{ border: true, borderStyle: "single", padding: 1, width: 52, marginTop: 2, flexDirection: "column" }}>
+        <text content={\`Current: \${value() || "-"}\`} fg="#cbd5e1" />
+        <text content={\`Last submit: \${submitted() || "-"}\`} fg="#cbd5e1" marginTop={1} />
+        <text content={\`Status: \${status()}\`} fg={status() === "submitted" ? "green" : "#94a3b8"} marginTop={1} />
+      </box>
     </box>
   )
 }
@@ -689,6 +890,6 @@ async function main() {
 }
 
 main().catch((error) => {
-    console.error(error instanceof Error ? error.message : String(error))
-    process.exit(1)
+  console.error(error instanceof Error ? error.message : String(error))
+  process.exit(1)
 })
