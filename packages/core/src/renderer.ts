@@ -25,6 +25,7 @@ import { KeyHandler, InternalKeyHandler } from "./lib/KeyHandler"
 import { StdinBuffer } from "./lib/stdin-buffer"
 import { env, registerEnvVar } from "./lib/env"
 import { getTreeSitterClient } from "./lib/tree-sitter"
+import { GlobalObjectPool, GlobalMouseEventPool, GlobalPerformanceMonitor } from "./lib/object-pool"
 import {
   createTerminalPalette,
   type TerminalPaletteDetector,
@@ -117,6 +118,8 @@ export interface CliRendererConfig {
   onDestroy?: () => void
   trace?: boolean
   traceWriter?: (line: string) => void
+  enablePerformanceMonitoring?: boolean
+  enableObjectPooling?: boolean
 }
 
 export type PixelResolution = {
@@ -416,6 +419,12 @@ export class CliRenderer extends EventEmitter implements RenderContext {
   private frameCount: number = 0
   private lastFpsTime: number = 0
   private currentFps: number = 0
+  
+  private fpsCache = new Map<string, number>()
+  private frameDeltas: number[] = []
+  private readonly MAX_DELTA_SAMPLES = 10
+  private lastHitGridCheck = 0
+  private readonly HIT_GRID_CHECK_INTERVAL = 16
   private targetFrameTime: number = 1000 / this.targetFps
   private minTargetFrameTime: number = 1000 / this.maxFps
   private immediateRerenderRequested: boolean = false
@@ -684,13 +693,13 @@ export class CliRenderer extends EventEmitter implements RenderContext {
           event.preventDefault()
           return
         }
-      }
-
-      if (this.exitOnCtrlC && event.name === "c" && event.ctrl) {
-        process.nextTick(() => {
-          this.destroy()
-        })
-        return
+        
+        if (this.exitOnCtrlC) {
+          process.nextTick(() => {
+            this.destroy()
+          })
+          return
+        }
       }
     })
 
@@ -1321,17 +1330,20 @@ export class CliRenderer extends EventEmitter implements RenderContext {
     }
 
     const clickCount = this.resolveClickCount(mouseEvent)
-    const mouseEventWithClickCount = { ...mouseEvent, clickCount }
-    this.recordRuntimeEvent("input:mouse", {
-      type: mouseEvent.type,
-      x: mouseEvent.x,
-      y: mouseEvent.y,
-      button: mouseEvent.button,
-      clickCount,
-      ctrl: mouseEvent.modifiers.ctrl,
-      alt: mouseEvent.modifiers.alt,
-      shift: mouseEvent.modifiers.shift,
-    })
+    const mouseEventWithClickCount = mouseEvent.type === "down" ? { ...mouseEvent, clickCount } : mouseEvent
+    
+    if (this.trace?.enabled || this.gatherStats) {
+      this.recordRuntimeEvent("input:mouse", {
+        type: mouseEvent.type,
+        x: mouseEvent.x,
+        y: mouseEvent.y,
+        button: mouseEvent.button,
+        clickCount,
+        ctrl: mouseEvent.modifiers.ctrl,
+        alt: mouseEvent.modifiers.alt,
+        shift: mouseEvent.modifiers.shift,
+      })
+    }
 
     this._latestPointer.x = mouseEvent.x
     this._latestPointer.y = mouseEvent.y
@@ -1833,20 +1845,7 @@ export class CliRenderer extends EventEmitter implements RenderContext {
   }
 
   private copyActiveSelectionToClipboard(): boolean {
-    const selection = this.currentSelection
-    if (!selection) {
-      return false
-    }
-
-    const selectedText = selection.getSelectedText()
-    if (!selectedText) {
-      return false
-    }
-
-    this.copyToClipboard(selectedText)
-    this.clearSelection()
-    this.requestRender()
-    return true
+    return this.copySelection()
   }
 
   public clearClipboardOSC52(target?: ClipboardTarget): boolean {
@@ -1920,6 +1919,67 @@ export class CliRenderer extends EventEmitter implements RenderContext {
 
   public setFrameCallback(callback: (deltaTime: number) => Promise<void>): void {
     this.frameCallbacks.push(callback)
+  }
+
+  private calculateFPS(frameCount: number, elapsedMs: number): number {
+    if (elapsedMs === 0) return 0
+    
+    const key = `${Math.floor(frameCount / 10)}-${Math.floor(elapsedMs / 100)}`
+    if (this.fpsCache.has(key)) {
+      return this.fpsCache.get(key)!
+    }
+
+    const fps = (frameCount * 1000) / elapsedMs
+    this.fpsCache.set(key, fps)
+
+    if (this.fpsCache.size > 50) {
+      const firstKey = this.fpsCache.keys().next().value
+      if (firstKey !== undefined) {
+        this.fpsCache.delete(firstKey)
+      }
+    }
+
+    return fps
+  }
+
+  private calculateDeltaTime(elapsed: number): number {
+    if (this.lastTime === 0) {
+      this.frameDeltas = []
+      return Math.min(elapsed, 50)
+    }
+
+    this.frameDeltas.push(elapsed)
+    if (this.frameDeltas.length > this.MAX_DELTA_SAMPLES) {
+      this.frameDeltas.shift()
+    }
+
+    const avgDelta = this.frameDeltas.reduce((a, b) => a + b, 0) / this.frameDeltas.length
+    return Math.min(avgDelta, 50)
+  }
+
+  private processAnimationCallbacks(callbacks: Array<(deltaTime: number) => void>, deltaTime: number): void {
+    if (callbacks.length === 0) return
+
+    const batchSize = 10
+    for (let i = 0; i < callbacks.length; i += batchSize) {
+      const batch = callbacks.slice(i, i + batchSize)
+      for (const callback of batch) {
+        try {
+          callback(deltaTime)
+          this.dropLive()
+        } catch (error) {
+          console.error("Error in animation callback:", error)
+        }
+      }
+    }
+  }
+
+  private shouldCheckHitGridDirty(now: number): boolean {
+    if (now - this.lastHitGridCheck < this.HIT_GRID_CHECK_INTERVAL) {
+      return false
+    }
+    this.lastHitGridCheck = now
+    return true
   }
 
   public removeFrameCallback(callback: (deltaTime: number) => Promise<void>): void {
@@ -2185,12 +2245,14 @@ export class CliRenderer extends EventEmitter implements RenderContext {
       const now = Date.now()
       const elapsed = now - this.lastTime
 
-      const deltaTime = elapsed
+      // Optimization: Delta time smoothing
+      const deltaTime = this.calculateDeltaTime(elapsed)
       this.lastTime = now
 
+      // Optimization: FPS calculation with cache
       this.frameCount++
       if (now - this.lastFpsTime >= 1000) {
-        this.currentFps = this.frameCount
+        this.currentFps = this.calculateFPS(this.frameCount, now - this.lastFpsTime)
         this.frameCount = 0
         this.lastFpsTime = now
       }
@@ -2201,13 +2263,11 @@ export class CliRenderer extends EventEmitter implements RenderContext {
       const trace = this.trace
       const traceEnabled = trace?.enabled === true
 
+      // Optimization: Batch processing for animations
       const frameRequests = Array.from(this.animationRequest.values())
       this.animationRequest.clear()
       const animationRequestStart = performance.now()
-      for (const callback of frameRequests) {
-        callback(deltaTime)
-        this.dropLive()
-      }
+      this.processAnimationCallbacks(frameRequests, deltaTime)
       const animationRequestEnd = performance.now()
       const animationRequestTime = animationRequestEnd - animationRequestStart
 
@@ -2241,9 +2301,10 @@ export class CliRenderer extends EventEmitter implements RenderContext {
         this.renderNative()
         const nativeMs = traceEnabled ? trace.now() - nativeStart : 0
 
-        // Check if hit grid changed and recheck hover state if needed
-        if (this._useMouse && this.lib.getHitGridDirty(this.rendererPtr)) {
-          this.recheckHoverState()
+        if (this._useMouse && this.shouldCheckHitGridDirty(overallStart)) {
+          if (this.lib.getHitGridDirty(this.rendererPtr)) {
+            this.recheckHoverState()
+          }
         }
 
         const overallFrameTime = performance.now() - overallStart
@@ -2368,6 +2429,36 @@ export class CliRenderer extends EventEmitter implements RenderContext {
 
   public getSelectionContainer(): Renderable | null {
     return this.selectionContainers.length > 0 ? this.selectionContainers[this.selectionContainers.length - 1] : null
+  }
+
+  /**
+   * Vérifie s'il y a une sélection active et retourne son texte
+   * @returns Le texte sélectionné ou null s'il n'y a pas de sélection
+   */
+  public getSelectedText(): string | null {
+    return this.currentSelection?.getSelectedText() ?? null
+  }
+
+  /**
+   * Copie la sélection active dans le presse-papiers si elle existe
+   * @returns true si une sélection a été copiée, false sinon
+   */
+  public copySelection(): boolean {
+    if (!this.currentSelection) {
+      return false
+    }
+
+    const selectedText = this.currentSelection.getSelectedText()
+    if (!selectedText) {
+      return false
+    }
+
+    const success = this.copyToClipboard(selectedText)
+    if (success) {
+      this.clearSelection()
+      this.requestRender()
+    }
+    return success
   }
 
   public clearSelection(): void {

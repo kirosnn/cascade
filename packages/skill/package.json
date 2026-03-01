@@ -1,6 +1,6 @@
 {
   "name": "create-cascade-skill",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Install CascadeTUI skills for external coding agents",
   "type": "module",
   "license": "MIT",
