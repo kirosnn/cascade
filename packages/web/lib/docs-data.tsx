@@ -170,8 +170,8 @@ bun run dev`}
                   <tr>
                     <td><code className="doc-pill" title="exitOnCtrlC">exitOnCtrlC</code></td>
                     <td><code className="doc-pill" title="boolean">boolean</code></td>
-                    <td><code className="doc-pill" title="true">true</code></td>
-                    <td>Quits cleanly on Ctrl+C and restores terminal state.</td>
+                    <td><code className="doc-pill" title="true (default)">true (default)</code></td>
+                    <td>Auto-exits on Ctrl+C. Set <code>false</code> only if you need custom exit handling.</td>
                   </tr>
                   <tr>
                     <td><code className="doc-pill" title="useAlternateScreen">useAlternateScreen</code></td>
@@ -215,7 +215,6 @@ bun run dev`}
               code={`import { BoxRenderable, TextRenderable, createCliRenderer } from "@cascadetui/core"
 
 const renderer = await createCliRenderer({
-  exitOnCtrlC: true,
   useAlternateScreen: true,
   useMouse: true,
 })
@@ -522,16 +521,15 @@ console.log("Renderer started")`}
       {
         id: "creating-a-renderer",
         title: "Creating a renderer",
-        searchText: "createCliRenderer options exitOnCtrlC targetFps useMouse useAlternateScreen",
+        searchText: "createCliRenderer options targetFps useMouse useAlternateScreen",
         content: (
           <>
-            <p>Create a renderer with <code>createCliRenderer</code>.  You typically enable Ctrl+C exit, mouse support, and an alternate screen for a clean UI.</p>
+            <p>Create a renderer with <code>createCliRenderer</code>.  Ctrl+C exit is enabled by default.  You typically add mouse support and an alternate screen for a clean UI.</p>
             <CodeBlock
               language="ts"
               code={`import { createCliRenderer } from "@cascadetui/core"
 
 const renderer = await createCliRenderer({
-  exitOnCtrlC: true,
   targetFps: 30,
   useMouse: true,
   useAlternateScreen: true,
@@ -672,21 +670,33 @@ renderer.resume()`}
       {
         id: "cleanup-and-exit",
         title: "Cleanup and exit",
-        searchText: "renderer destroy onDestroy exitOnCtrlC signals cleanup restore terminal",
+        searchText: "renderer destroy onDestroy exitOnCtrlC exitSignals cleanup restore terminal",
         content: (
           <>
-            <p>Always destroy the renderer before exiting.  This restores terminal state (cursor, input modes, alternate screen) and avoids leaving the terminal in a broken state.</p>
+            <p>By default, <code>exitOnCtrlC: true</code> handles clean exit automatically. When the user presses Ctrl+C, Cascade calls <code>destroy()</code> internally, restoring terminal state (cursor, input modes, alternate screen). No manual handling is required.</p>
+            <CodeBlock
+              language="ts"
+              code={`// Default behavior: Ctrl+C exits cleanly
+const renderer = await createCliRenderer()
+
+// Optional: run cleanup code before exit
+renderer.onDestroy(() => {
+  // stop timers, close sockets, flush logs
+})`}
+            />
+            <p>For broader signal handling, <code>exitSignals</code> (default: SIGINT, SIGTERM, SIGQUIT, SIGHUP, etc.) also triggers clean shutdown. Set to an empty array to disable.</p>
+            <p>If you need custom Ctrl+C behavior (e.g., confirmation prompt), disable the default and handle it yourself:</p>
             <CodeBlock
               language="ts"
               code={`const renderer = await createCliRenderer({ exitOnCtrlC: false })
 
 renderer.on("key", (event) => {
   if (event.ctrl && event.name === "c") {
+    // custom logic, then:
     renderer.destroy()
   }
 })`}
             />
-            <p>If you have background resources (timers, sockets, file watchers), treat <code>destroy</code> as your single shutdown hook and stop everything there.</p>
           </>
         ),
       },

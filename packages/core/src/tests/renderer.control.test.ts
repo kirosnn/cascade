@@ -429,6 +429,62 @@ test("ctrl+c can be handled without destroying renderer when exitOnCtrlC is disa
   ctrlRenderer.destroy()
 })
 
+test("onDestroy callbacks are called when renderer is destroyed", async () => {
+  const setup = await createTestRenderer({})
+  const testRenderer = setup.renderer
+
+  const called: string[] = []
+  
+  const unsub1 = testRenderer.onDestroy(() => {
+    called.push("callback1")
+  })
+  
+  testRenderer.onDestroy(() => {
+    called.push("callback2")
+  })
+
+  // Unsubscribe should work
+  unsub1()
+
+  testRenderer.destroy()
+  
+  expect(called).toEqual(["callback2"])
+})
+
+test("onDestroy callbacks may be async (scheduled) and do not throw", async () => {
+  const setup = await createTestRenderer({})
+  const testRenderer = setup.renderer
+
+  const called: string[] = []
+
+  testRenderer.onDestroy(async () => {
+    await Bun.sleep(5)
+    called.push("async-callback")
+  })
+
+  testRenderer.destroy()
+
+  await Bun.sleep(10)
+  expect(called).toEqual(["async-callback"])
+})
+
+test("onDestroy callback called immediately via queueMicrotask if already destroyed", async () => {
+  const setup = await createTestRenderer({})
+  const testRenderer = setup.renderer
+
+  testRenderer.destroy()
+  expect(testRenderer.isDestroyed).toBe(true)
+
+  const called: string[] = []
+  testRenderer.onDestroy(() => {
+    called.push("late-callback")
+  })
+
+  // Should be queued via queueMicrotask
+  await Bun.sleep(10)
+  expect(called).toEqual(["late-callback"])
+})
+
 test("copyToClipboard uses best available clipboard backend", () => {
   const spy = {
     copyToBestAvailable: (_text: string) => true,

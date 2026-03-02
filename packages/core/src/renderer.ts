@@ -533,6 +533,7 @@ export class CliRenderer extends EventEmitter implements RenderContext {
   private _cachedPalette: TerminalColors | null = null
   private _paletteDetectionPromise: Promise<TerminalColors> | null = null
   private _onDestroy?: () => void
+  private _destroyCallbacks = new Set<() => void | Promise<void>>()
   private _themeMode: ThemeMode | null = null
 
   private inputHandlers: ((sequence: string) => boolean)[] = []
@@ -2160,10 +2161,52 @@ export class CliRenderer extends EventEmitter implements RenderContext {
     }
   }
 
+  /**
+   * Register a callback to be called when the renderer is destroyed.
+   * Returns an unsubscribe function.
+   * If the renderer is already destroyed, the callback is called immediately via queueMicrotask.
+   */
+  public onDestroy(cb: () => void | Promise<void>): () => void {
+    if (this._isDestroyed) {
+      queueMicrotask(() => {
+        try {
+          const r = cb()
+          if (r && typeof (r as any).then === "function") {
+            ;(r as Promise<void>).catch(() => {})
+          }
+        } catch {}
+      })
+      return () => {}
+    }
+
+    this._destroyCallbacks.add(cb)
+    return () => {
+      this._destroyCallbacks.delete(cb)
+    }
+  }
+
   public destroy(): void {
     if (this._isDestroyed) return
     this._isDestroyed = true
     this._destroyPending = true
+
+    // Run all registered destroy callbacks BEFORE native teardown
+    for (const cb of Array.from(this._destroyCallbacks)) {
+      try {
+        const r = cb()
+        if (r && typeof (r as any).then === "function") {
+          ;(r as Promise<void>).catch(() => {})
+        }
+      } catch {}
+    }
+    this._destroyCallbacks.clear()
+
+    // Run legacy single callback
+    if (this._onDestroy) {
+      try {
+        this._onDestroy()
+      } catch {}
+    }
 
     if (this.rendering) {
       // Defer teardown until the active frame completes to avoid freeing native resources mid-render.
@@ -2255,14 +2298,6 @@ export class CliRenderer extends EventEmitter implements RenderContext {
 
     this.lib.destroyRenderer(this.rendererPtr)
     rendererTracker.removeRenderer(this)
-
-    if (this._onDestroy) {
-      try {
-        this._onDestroy()
-      } catch (e) {
-        console.error("Error in onDestroy callback:", e instanceof Error ? e.stack : String(e))
-      }
-    }
 
     // Resolve any pending idle() calls
     this.resolveIdleIfNeeded()
