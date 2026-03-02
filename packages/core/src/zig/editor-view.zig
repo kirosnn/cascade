@@ -271,9 +271,7 @@ pub const EditorView = struct {
 
     pub fn getLogicalLineInfo(self: *EditorView) tbv.LineInfo {
         self.updatePlaceholderVisibility();
-        self.text_buffer_view.virtual_lines_dirty = true;
-        const line_info = self.text_buffer_view.getLogicalLineInfo();
-        return line_info;
+        return self.text_buffer_view.getLogicalLineInfo();
     }
 
     pub fn getTextBufferView(self: *EditorView) *UnifiedTextBufferView {

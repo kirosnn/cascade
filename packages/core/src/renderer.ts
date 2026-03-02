@@ -386,6 +386,8 @@ export class CliRenderer extends EventEmitter implements RenderContext {
   private _isDestroyed: boolean = false
   private _destroyPending: boolean = false
   private _destroyFinalized: boolean = false
+  private destroyTimeoutId: ReturnType<typeof setTimeout> | null = null
+  private readonly destroyTimeoutMs: number = 100
   public nextRenderBuffer: OptimizedBuffer
   public currentRenderBuffer: OptimizedBuffer
   private _isRunning: boolean = false
@@ -430,6 +432,12 @@ export class CliRenderer extends EventEmitter implements RenderContext {
   private immediateRerenderRequested: boolean = false
   private updateScheduled: boolean = false
 
+  // Guard against infinite render loops
+  private consecutiveImmediateRerenders: number = 0
+  private lastImmediateRerenderTime: number = 0
+  private readonly maxConsecutiveImmediateRerenders: number = 10
+  private readonly immediateRerenderResetMs: number = 1000
+
   private liveRequestCounter: number = 0
   private _controlState: RendererControlState = RendererControlState.IDLE
 
@@ -445,6 +453,19 @@ export class CliRenderer extends EventEmitter implements RenderContext {
     renderTime: 0,
     frameCallbackTime: 0,
   }
+
+  // Frame breakdown ring buffer for diagnosing freezes
+  private frameBreakdownBuffer: Array<{
+    timestamp: number
+    yogaMs: number
+    renderTreeMs: number
+    nativeMs: number
+    stdoutMs: number
+    frameCallbackMs: number
+    totalMs: number
+  }> = []
+  private frameBreakdownMaxSize = 100
+  private traceFrameBreakdown = env.CASCADE_TRACE_FRAME_BREAKDOWN
   public debugOverlay = {
     enabled: env.CASCADE_SHOW_STATS,
     corner: DebugOverlayCorner.bottomRight,
@@ -1797,6 +1818,17 @@ export class CliRenderer extends EventEmitter implements RenderContext {
       console.error(this.formatCrashReportForConsole(report))
     }
 
+    // Dump frame breakdown if tracing enabled
+    if (this.traceFrameBreakdown && this.frameBreakdownBuffer.length > 0) {
+      const breakdownDump = this.dumpFrameBreakdown()
+      console.error("\n" + breakdownDump)
+      report.recentEvents.push({
+        timestamp: report.timestamp,
+        type: "crash:frame_breakdown",
+        payload: { breakdown: breakdownDump },
+      })
+    }
+
     this.emit(CliRenderEvents.CRASH, report)
     return report
   }
@@ -2135,6 +2167,14 @@ export class CliRenderer extends EventEmitter implements RenderContext {
 
     if (this.rendering) {
       // Defer teardown until the active frame completes to avoid freeing native resources mid-render.
+      if (this.destroyTimeoutId === null) {
+        this.destroyTimeoutId = setTimeout(() => {
+          this.destroyTimeoutId = null
+          if (this._destroyPending && !this._destroyFinalized && !this.renderingNative) {
+            this.finalizeDestroy()
+          }
+        }, this.destroyTimeoutMs)
+      }
       return
     }
 
@@ -2145,6 +2185,10 @@ export class CliRenderer extends EventEmitter implements RenderContext {
     if (this._destroyFinalized) return
     this._destroyFinalized = true
     this._destroyPending = false
+    if (this.destroyTimeoutId !== null) {
+      clearTimeout(this.destroyTimeoutId)
+      this.destroyTimeoutId = null
+    }
 
     process.removeListener("SIGWINCH", this.sigwinchHandler)
     process.removeListener("uncaughtException", this.uncaughtExceptionHandler)
@@ -2183,6 +2227,9 @@ export class CliRenderer extends EventEmitter implements RenderContext {
       this.renderTimeout = null
     }
     this._isRunning = false
+    this.rendering = false
+    this.updateScheduled = false
+    this.immediateRerenderRequested = false
 
     this.waitingForPixelResolution = false
     this.setCapturedRenderable(undefined)
@@ -2219,6 +2266,34 @@ export class CliRenderer extends EventEmitter implements RenderContext {
 
     // Resolve any pending idle() calls
     this.resolveIdleIfNeeded()
+  }
+
+  /**
+   * Dump frame breakdown buffer for debugging freezes
+   * Called automatically on crash when CASCADE_TRACE_FRAME_BREAKDOWN is enabled
+   */
+  dumpFrameBreakdown(): string {
+    if (this.frameBreakdownBuffer.length === 0) {
+      return "No frame breakdown data recorded"
+    }
+
+    const lines = this.frameBreakdownBuffer.map((f, i) => {
+      const time = new Date(f.timestamp).toISOString()
+      return `[${i}] ${time} total=${f.totalMs.toFixed(2)}ms tree=${f.renderTreeMs.toFixed(2)}ms native=${f.nativeMs.toFixed(2)}ms callback=${f.frameCallbackMs.toFixed(2)}ms`
+    })
+
+    // Calculate statistics
+    const totals = this.frameBreakdownBuffer.map(f => f.totalMs)
+    const avgTotal = totals.reduce((a, b) => a + b, 0) / totals.length
+    const maxTotal = Math.max(...totals)
+    const minTotal = Math.min(...totals)
+
+    return [
+      `=== Frame Breakdown (${this.frameBreakdownBuffer.length} frames) ===`,
+      `Avg: ${avgTotal.toFixed(2)}ms, Max: ${maxTotal.toFixed(2)}ms, Min: ${minTotal.toFixed(2)}ms`,
+      "",
+      ...lines,
+    ].join("\n")
   }
 
   private startRenderLoop(): void {
@@ -2283,6 +2358,10 @@ export class CliRenderer extends EventEmitter implements RenderContext {
       const end = performance.now()
       this.renderStats.frameCallbackTime = end - start
 
+      if (this._destroyPending) {
+        return
+      }
+
       const renderTreeStart = traceEnabled ? trace.now() : 0
       this.root.render(this.nextRenderBuffer, deltaTime)
       const renderTreeMs = traceEnabled ? trace.now() - renderTreeStart : 0
@@ -2308,6 +2387,24 @@ export class CliRenderer extends EventEmitter implements RenderContext {
         }
 
         const overallFrameTime = performance.now() - overallStart
+
+        // Record frame breakdown for diagnostics
+        if (this.traceFrameBreakdown) {
+          const breakdown = {
+            timestamp: Date.now(),
+            yogaMs: 0, // Will be populated from Renderable if trace enabled
+            renderTreeMs,
+            nativeMs,
+            stdoutMs: 0, // Populated from native stats
+            frameCallbackMs: this.renderStats.frameCallbackTime,
+            totalMs: overallFrameTime,
+          }
+          if (this.frameBreakdownBuffer.length >= this.frameBreakdownMaxSize) {
+            this.frameBreakdownBuffer.shift()
+          }
+          this.frameBreakdownBuffer.push(breakdown)
+        }
+
         if (traceEnabled) {
           trace.write(`trace.render.native ms=${nativeMs.toFixed(3)}`)
           trace.write(
@@ -2328,6 +2425,29 @@ export class CliRenderer extends EventEmitter implements RenderContext {
         }
 
         if (this._isRunning || this.immediateRerenderRequested) {
+          // Guard against infinite immediate re-render loops
+          const now = Date.now()
+          if (this.immediateRerenderRequested) {
+            if (now - this.lastImmediateRerenderTime > this.immediateRerenderResetMs) {
+              // Reset counter if enough time has passed
+              this.consecutiveImmediateRerenders = 0
+            }
+            this.consecutiveImmediateRerenders++
+            this.lastImmediateRerenderTime = now
+
+            if (this.consecutiveImmediateRerenders > this.maxConsecutiveImmediateRerenders) {
+              console.warn(`[Cascade] Too many consecutive immediate re-renders (${this.consecutiveImmediateRerenders}), forcing delay`)
+              this.consecutiveImmediateRerenders = 0
+              // Force a longer delay to break the loop
+              this.immediateRerenderRequested = false
+              this.renderTimeout = setTimeout(() => {
+                this.renderTimeout = null
+                this.loop()
+              }, 100) // 100ms forced delay
+              return
+            }
+          }
+
           const targetFrameTime = this.immediateRerenderRequested ? this.minTargetFrameTime : this.targetFrameTime
           const delay = Math.max(1, targetFrameTime - Math.floor(overallFrameTime))
           this.immediateRerenderRequested = false

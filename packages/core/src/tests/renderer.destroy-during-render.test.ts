@@ -108,3 +108,25 @@ test("destroying renderer during renderBefore should not crash", async () => {
 
   expect(destroyedDuringRenderBefore).toBe(true)
 })
+
+test("destroy resolves idle even if frame callback never settles", async () => {
+  const { renderer } = await createTestRenderer({})
+
+  renderer.setFrameCallback(async () => {
+    await new Promise(() => {})
+  })
+
+  renderer.start()
+
+  await new Promise((resolve) => setTimeout(resolve, 50))
+
+  const idlePromise = renderer.idle()
+  renderer.destroy()
+
+  const result = await Promise.race([
+    idlePromise.then(() => "idle"),
+    new Promise((resolve) => setTimeout(() => resolve("timeout"), 300)),
+  ])
+
+  expect(result).toBe("idle")
+})

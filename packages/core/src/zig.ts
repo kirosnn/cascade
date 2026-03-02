@@ -68,6 +68,27 @@ registerEnvVar({
   default: false,
 })
 
+registerEnvVar({
+  name: "CASCADE_TRACE_FFI_SLOW_MS",
+  description: "Log slow FFI calls (>= threshold, in ms).",
+  type: "number",
+  default: 0,
+})
+
+registerEnvVar({
+  name: "CASCADE_TRACE_FFI_MAX_SAMPLES",
+  description: "Max timing samples to keep per FFI symbol when CASCADE_TRACE_FFI is enabled.",
+  type: "number",
+  default: 5000,
+})
+
+registerEnvVar({
+  name: "CASCADE_TRACE_FRAME_BREAKDOWN",
+  description: "Enable detailed frame timing breakdown (yoga, render tree, native, stdout write)",
+  type: "boolean",
+  default: false,
+})
+
 // Env vars used in terminal.zig
 registerEnvVar({
   name: "CASCADE_FORCE_WCWIDTH",
@@ -1146,8 +1167,54 @@ function convertToDebugSymbols<T extends Record<string, any>>(symbols: T): T {
   if (env.CASCADE_DEBUG_FFI && !globalFFILogWriter) {
     const now = new Date()
     const timestamp = now.toISOString().replace(/[:.]/g, "-").replace(/T/, "_").split("Z")[0]
-    const logFilePath = `ffi_otui_debug_${timestamp}.log`
+    const logFilePath = `ffi_cascade_debug_${timestamp}.log`
     globalFFILogWriter = Bun.file(logFilePath).writer()
+  }
+
+  const slowThresholdMs = typeof env.CASCADE_TRACE_FFI_SLOW_MS === "number" ? env.CASCADE_TRACE_FFI_SLOW_MS : 0
+  const maxSamples =
+    typeof env.CASCADE_TRACE_FFI_MAX_SAMPLES === "number" && env.CASCADE_TRACE_FFI_MAX_SAMPLES > 0
+      ? env.CASCADE_TRACE_FFI_MAX_SAMPLES
+      : 5000
+
+  const formatArg = (arg: any): string => {
+    if (arg === null) return "null"
+    if (arg === undefined) return "undefined"
+    const t = typeof arg
+    if (t === "string") return JSON.stringify(arg.length > 200 ? arg.slice(0, 200) + "…" : arg)
+    if (t === "number" || t === "boolean" || t === "bigint") return String(arg)
+
+    if (arg instanceof Uint8Array) return `Uint8Array(${arg.byteLength})`
+    if (arg instanceof ArrayBuffer) return `ArrayBuffer(${arg.byteLength})`
+
+    if (Array.isArray(arg)) return `Array(${arg.length})`
+
+    if (t === "object") {
+      const ctor = (arg as any)?.constructor?.name
+      if (ctor && ctor !== "Object") return ctor
+      try {
+        const json = JSON.stringify(arg)
+        if (typeof json === "string") return json.length > 200 ? json.slice(0, 200) + "…" : json
+      } catch {
+        return "Object"
+      }
+      return "Object"
+    }
+
+    return String(arg)
+  }
+
+  let slowWriter: any = null
+  const writeSlow = (line: string) => {
+    if (slowThresholdMs <= 0) return
+    if (!slowWriter) {
+      const now = new Date()
+      const timestamp = now.toISOString().replace(/[:.]/g, "-").replace(/T/, "_").split("Z")[0]
+      const slowFilePath = `ffi_cascade_slow_${timestamp}.log`
+      slowWriter = Bun.file(slowFilePath).writer()
+    }
+    const buffer = new TextEncoder().encode(line + "\n")
+    slowWriter.write(buffer)
   }
 
   const debugSymbols: Record<string, any> = {}
@@ -1191,7 +1258,17 @@ function convertToDebugSymbols<T extends Record<string, any>>(symbols: T): T {
           const start = performance.now()
           const result = originalFunc(...args)
           const end = performance.now()
-          globalTraceSymbols![key].push(end - start)
+          const dt = end - start
+          const timings = globalTraceSymbols![key]
+          timings.push(dt)
+          if (timings.length > maxSamples) {
+            timings.splice(0, timings.length - maxSamples)
+          }
+
+          if (slowThresholdMs > 0 && dt >= slowThresholdMs) {
+            const argStr = args.map(formatArg).join(", ")
+            writeSlow(`${new Date().toISOString()} ${key} ${dt.toFixed(2)}ms (${argStr})`)
+          }
           return result
         }
       }
@@ -1206,6 +1283,10 @@ function convertToDebugSymbols<T extends Record<string, any>>(symbols: T): T {
       try {
         if (globalFFILogWriter) {
           globalFFILogWriter.end()
+        }
+
+        if (slowWriter) {
+          slowWriter.end()
         }
       } catch (e) {
         // Ignore errors on exit
@@ -1329,7 +1410,7 @@ function convertToDebugSymbols<T extends Record<string, any>>(symbols: T): T {
         try {
           const now = new Date()
           const timestamp = now.toISOString().replace(/[:.]/g, "-").replace(/T/, "_").split("Z")[0]
-          const traceFilePath = `ffi_otui_trace_${timestamp}.log`
+          const traceFilePath = `ffi_cascade_trace_${timestamp}.log`
           Bun.write(traceFilePath, output)
         } catch (e) {
           console.error("Failed to write FFI trace file:", e)

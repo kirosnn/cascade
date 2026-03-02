@@ -268,9 +268,6 @@ pub const CliRenderer = struct {
 
     pub fn destroy(self: *CliRenderer) void {
         self.renderMutex.lock();
-        while (self.renderInProgress) {
-            self.renderCondition.wait(&self.renderMutex);
-        }
 
         self.shouldTerminate = true;
         self.renderRequested = true;
@@ -422,9 +419,7 @@ pub const CliRenderer = struct {
             if (self.renderThread) |thread| {
                 // Signal the render thread to terminate (same pattern as destroy)
                 self.renderMutex.lock();
-                while (self.renderInProgress) {
-                    self.renderCondition.wait(&self.renderMutex);
-                }
+
                 self.shouldTerminate = true;
                 self.renderRequested = true;
                 self.renderCondition.signal();
@@ -504,7 +499,10 @@ pub const CliRenderer = struct {
                 self.renderCondition.wait(&self.renderMutex);
             }
 
-            if (self.shouldTerminate and !self.renderRequested) {
+            // Exit immediately if terminate requested - don't wait for render
+            if (self.shouldTerminate) {
+                self.renderInProgress = false;
+                self.renderCondition.signal();
                 self.renderMutex.unlock();
                 break;
             }
@@ -513,17 +511,27 @@ pub const CliRenderer = struct {
 
             const outputData = self.currentOutputBuffer;
             const outputLen = self.currentOutputLen;
+            self.renderMutex.unlock();
 
             const writeStart = std.time.microTimestamp();
 
             if (outputLen > 0 and !self.testing) {
-                var stdoutWriter = std.fs.File.stdout().writer(&self.stdoutBuffer);
-                const w = &stdoutWriter.interface;
-                w.writeAll(outputData[0..outputLen]) catch {};
-                w.flush() catch {};
+                const stdoutFile = std.fs.File.stdout();
+                var i: usize = 0;
+                while (i < outputLen) {
+                    // Check for termination during write to allow quick exit
+                    self.renderMutex.lock();
+                    const shouldStop = self.shouldTerminate;
+                    self.renderMutex.unlock();
+                    if (shouldStop) break;
+
+                    const end = @min(i + self.writeOutBuf.len, outputLen);
+                    stdoutFile.writeAll(outputData[i..end]) catch break;
+                    i = end;
+                }
             }
 
-            // Signal that rendering is complete
+            self.renderMutex.lock();
             self.renderStats.stdoutWriteTime = @as(f64, @floatFromInt(std.time.microTimestamp() - writeStart));
             self.renderInProgress = false;
             self.renderCondition.signal();
@@ -544,7 +552,18 @@ pub const CliRenderer = struct {
 
         if (self.useThread) {
             self.renderMutex.lock();
+
+            // Wait for previous render to complete with timeout to prevent deadlock
+            // On Windows, stdout can block indefinitely in some terminal states
+            const waitStart = std.time.microTimestamp();
+            const maxWaitMicros: i64 = 500000; // 500ms timeout
             while (self.renderInProgress) {
+                const elapsed = std.time.microTimestamp() - waitStart;
+                if (elapsed > maxWaitMicros) {
+                    // Timeout - force reset to prevent deadlock
+                    self.renderInProgress = false;
+                    break;
+                }
                 self.renderCondition.wait(&self.renderMutex);
             }
 
@@ -565,10 +584,16 @@ pub const CliRenderer = struct {
         } else {
             const writeStart = std.time.microTimestamp();
             if (!self.testing) {
-                var stdoutWriter = std.fs.File.stdout().writer(&self.stdoutBuffer);
-                const w = &stdoutWriter.interface;
-                w.writeAll(outputBuffer[0..outputBufferLen]) catch {};
-                w.flush() catch {};
+                const stdoutFile = std.fs.File.stdout();
+                const out = if (activeBuffer == .A) outputBuffer[0..outputBufferLen] else outputBufferB[0..outputBufferBLen];
+                var i: usize = 0;
+                while (i < out.len) {
+                    // Check for termination in non-threaded mode too
+                    if (self.shouldTerminate) break;
+                    const end = @min(i + self.writeOutBuf.len, out.len);
+                    stdoutFile.writeAll(out[i..end]) catch break;
+                    i = end;
+                }
             }
             self.renderStats.stdoutWriteTime = @as(f64, @floatFromInt(std.time.microTimestamp() - writeStart));
         }
@@ -860,10 +885,13 @@ pub const CliRenderer = struct {
             self.renderMutex.unlock();
         }
 
-        var stdoutWriter = std.fs.File.stdout().writer(&self.stdoutBuffer);
-        const w = &stdoutWriter.interface;
-        w.writeAll(data) catch {};
-        w.flush() catch {};
+        const stdoutFile = std.fs.File.stdout();
+        var i: usize = 0;
+        while (i < data.len) {
+            const end = @min(i + self.writeOutBuf.len, data.len);
+            stdoutFile.writeAll(data[i..end]) catch break;
+            i = end;
+        }
     }
 
     pub fn writeOutMultiple(self: *CliRenderer, data_slices: []const []const u8) void {
@@ -884,12 +912,15 @@ pub const CliRenderer = struct {
 
         if (totalLen == 0) return;
 
-        var stdoutWriter = std.fs.File.stdout().writer(&self.stdoutBuffer);
-        const w = &stdoutWriter.interface;
+        const stdoutFile = std.fs.File.stdout();
         for (data_slices) |slice| {
-            w.writeAll(slice) catch {};
+            var i: usize = 0;
+            while (i < slice.len) {
+                const end = @min(i + self.writeOutBuf.len, slice.len);
+                stdoutFile.writeAll(slice[i..end]) catch break;
+                i = end;
+            }
         }
-        w.flush() catch {};
     }
 
     /// Write a renderable's bounds to nextHitGrid for the upcoming frame.

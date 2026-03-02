@@ -47,6 +47,15 @@ export abstract class TextBufferRenderable extends Renderable implements LineInf
   protected _scrollY: number = 0
   protected _truncate: boolean = false
 
+  // Guard against measure feedback loops
+  private _measureCallCount: number = 0
+  private _lastMeasureReset: number = 0
+  private static readonly MEASURE_RESET_INTERVAL_MS: number = 1000
+  private static readonly MAX_MEASURE_CALLS_PER_INTERVAL: number = 100
+
+  private _lastYogaMeasureKey: string | null = null
+  private _lastYogaMeasureResult: { width: number; height: number } | null = null
+
   protected textBuffer: TextBuffer
   protected textBufferView: TextBufferView
   protected _textBufferSyntaxStyle: SyntaxStyle
@@ -401,6 +410,22 @@ export abstract class TextBufferRenderable extends Renderable implements LineInf
       height: number,
       heightMode: MeasureMode,
     ): { width: number; height: number } => {
+      // Guard against measure feedback loops
+      const now = Date.now()
+      if (now - this._lastMeasureReset > TextBufferRenderable.MEASURE_RESET_INTERVAL_MS) {
+        this._measureCallCount = 0
+        this._lastMeasureReset = now
+      }
+      this._measureCallCount++
+      
+      if (this._measureCallCount > TextBufferRenderable.MAX_MEASURE_CALLS_PER_INTERVAL) {
+        console.warn(`[Cascade] Measure loop detected on ${this.id}, returning cached dimensions`)
+        if (this._lastYogaMeasureResult) {
+          return this._lastYogaMeasureResult
+        }
+        return { width: 1, height: 1 }
+      }
+
       // When widthMode is Undefined, Yoga is asking for the intrinsic/natural width
       // Pass width=0 to measureForDimensions to signal we want max-content (no wrapping)
       // The Zig code treats width=0 with wrap_mode != none as null wrap_width,
@@ -414,6 +439,11 @@ export abstract class TextBufferRenderable extends Renderable implements LineInf
 
       const effectiveHeight = isNaN(height) ? 1 : height
 
+      const yogaKey = `${Math.floor(effectiveWidth)}:${widthMode}:${Math.floor(effectiveHeight)}:${heightMode}:${this._wrapMode}`
+      if (this._lastYogaMeasureKey === yogaKey && this._lastYogaMeasureResult) {
+        return this._lastYogaMeasureResult
+      }
+
       const measureResult = this.textBufferView.measureForDimensions(
         Math.floor(effectiveWidth),
         Math.floor(effectiveHeight),
@@ -423,18 +453,24 @@ export abstract class TextBufferRenderable extends Renderable implements LineInf
       const measuredHeight = measureResult ? Math.max(1, measureResult.lineCount) : 1
 
       if (widthMode === MeasureMode.AtMost && this._positionType !== "absolute") {
-        return {
+        const result = {
           width: Math.min(effectiveWidth, measuredWidth),
           height: Math.min(effectiveHeight, measuredHeight),
         }
+        this._lastYogaMeasureKey = yogaKey
+        this._lastYogaMeasureResult = result
+        return result
       }
 
       // NOTE: Yoga may use these measurements or not.
       // If the yoga node settings and the parent allow this node to grow, it will.
-      return {
+      const result = {
         width: measuredWidth,
         height: measuredHeight,
       }
+      this._lastYogaMeasureKey = yogaKey
+      this._lastYogaMeasureResult = result
+      return result
     }
 
     this.yogaNode.setMeasureFunc(measureFunc)
